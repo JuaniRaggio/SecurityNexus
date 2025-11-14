@@ -30,6 +30,7 @@ tracing-subscriber.workspace = true
 
 # Utils
 lazy_static.workspace = true
+walkdir = "2.4"
 
 [dev-dependencies]
 pretty_assertions.workspace = true
