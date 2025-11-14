@@ -15,10 +15,6 @@ ark-groth16.workspace = true
 ark-bn254.workspace = true
 ark-serialize.workspace = true
 
-# Substrate
-sp-core.workspace = true
-sp-std.workspace = true
-
 # Serialization
 serde.workspace = true
 serde_json.workspace = true
@@ -35,8 +31,8 @@ thiserror.workspace = true
 # Logging
 tracing.workspace = true
 
-# Utils
-lazy_static.workspace = true
+# Time
+chrono.workspace = true
 
 [dev-dependencies]
 mockall.workspace = true
