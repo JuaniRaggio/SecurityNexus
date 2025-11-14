@@ -1,0 +1,51 @@
+{
+  "name": "polkadot-security-nexus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Comprehensive security platform for the Polkadot ecosystem",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/polkadot-security-nexus.git"
+  },
+  "license": "MIT",
+  "author": "Polkadot Security Nexus Team",
+  "workspaces": [
+    "packages/*",
+    "packages/hydration-module/ts"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "turbo run typecheck",
+    "cargo:build": "cargo build --workspace",
+    "cargo:test": "cargo test --workspace",
+    "cargo:lint": "cargo clippy --workspace -- -D warnings",
+    "cargo:format": "cargo fmt --all",
+    "cargo:format:check": "cargo fmt --all -- --check",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.0",
+    "turbo": "^1.11.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.12.0"
+}

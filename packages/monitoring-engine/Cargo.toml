@@ -1,0 +1,59 @@
+[package]
+name = "monitoring-engine"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Substrate & Polkadot
+subxt.workspace = true
+sp-core.workspace = true
+sp-runtime.workspace = true
+
+# Async runtime
+tokio.workspace = true
+async-trait.workspace = true
+
+# Web framework
+actix-web.workspace = true
+actix-cors.workspace = true
+
+# HTTP client
+reqwest.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Database
+diesel.workspace = true
+redis.workspace = true
+
+# WebSocket
+tungstenite.workspace = true
+tokio-tungstenite.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+log.workspace = true
+
+# Time
+chrono.workspace = true
+
+# Utils
+lazy_static.workspace = true
+once_cell.workspace = true
+
+[dev-dependencies]
+mockall.workspace = true
+pretty_assertions.workspace = true
+
+[lib]
+name = "monitoring_engine"
+path = "src/lib.rs"
