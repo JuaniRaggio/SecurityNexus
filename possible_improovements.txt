@@ -20,4 +20,88 @@ your Web Dashboard & API and clear documentation lower the security barrier for
 developers new to Substrate, making it "radically useful" for a broader
 audience.
 
+Fact-Checking de los Datos
+===============================================================================
+
+- "$474M lost in DeFi in 2024": Esta cifra es consistente con los reportes de
+  seguridad de empresas como https://immunefi.com/ o https://www.certik.com/.
+  Los números varían ligeramente entre fuentes, pero están en ese rango
+
+- Vectores de Ataque (Private key theft, Oracle manipulation, etc.): Los
+  vectores de ataque que listamos son correctos y coinciden con los análisis de
+  seguridad post-mortem de los principales hacks. El robo de claves privadas y
+  la manipulación de oráculos son consistentemente los métodos más dañinos.
+
+- Barreras del Ecosistema Polkadot: Las barreras históricas (complejidad,
+  subastas) y las mejoras recientes (Agile Coretime, Polkadot
+  Deployment Portal) es muy acertada. Refleja bien la evolución del ecosistema
+  y demuestra que están al dí.
+
+
+Mejoras para el Proyecto
+===============================================================================
+
+Definir un "Demo-Loop" de alto impacto
+-------------------------------------------------------------
+Para la hackathon, es crucial tener una demo que impacte. Propongo que
+nos centremos en un ciclo de demostración claro y visual:
+
+1.  Mostramos un pallet de Substrate simple con una vulnerabilidad obvia
+    (ej. un `integer overflow`).
+2.  Ejecutamos SAFT Enhanced en vivo y vemos cómo detecta la falla al
+    instante, generando un reporte claro.
+3.  Simulamos el ataque sobre un testnet local con un script que explote
+    la vulnerabilidad.
+4.  En nuestro dashboard, vemos cómo el Monitoring Engine detecta la tx
+    maliciosa en el mempool y dispara una alerta.
+5.  Como bonus, mostramos cómo un auditor genera una prueba ZKP del bug
+    para reclamar una recompensa en el Marketplace.
+
+Este ciclo completo (código > análisis > explotación > detección > reporte)
+sería una demo muy potente y fácil de entender para los jueces.
+
+
+Potenciar la integración con Hyperbridge
+-------------------------------------------------------------
+El track de Hyperbridge busca el "mejor uso del SDK para consultas de
+almacenamiento". Podemos destacarnos haciendo lo siguiente:
+
+- Dashboard de Seguridad Cross-Chain: En lugar de solo mostrar alertas,
+  podríamos usar Hyperbridge para consultar y comparar el estado de
+  seguridad de un mismo protocolo desplegado en varias cadenas.
+
+- Ejemplo práctico: Imaginemos un protocolo de lending en Astar y en
+  Arbitrum. Nuestro dashboard podría usar Hyperbridge para consultar en
+  tiempo real los "health factors" de las posiciones más grandes en
+  ambas cadenas. Si detecta una divergencia peligrosa, podría ser un
+  indicio de un ataque de oráculo en una de ellas. Esto demuestra un
+  uso avanzado del SDK, más allá de la simple mensajería.
+
+
+Implementar Gamificación para Auditores
+-------------------------------------------------------------
+El "Auditor Registry" y el "Bug Bounty Marketplace" son grandes ideas.
+Podemos hacerlas más atractivas con elementos de gamificación:
+
+- Leaderboard de Auditores: Mostrar en el dashboard un ranking de
+  auditores basado en las vulnerabilidades que han reportado (verificadas
+  por ZKP).
+
+- Insignias con NFTs: Otorgar Soulbound Tokens (NFTs no transferibles)
+  por logros: "Primer bug crítico reportado", "Experto en XCM", etc.
+  Esto encaja con la cultura Web3 y fomenta la participación.
+
+
+Simplificar nuestro mensaje para el pitch
+-------------------------------------------------------------
+El proyecto es denso técnicamente. Para el pitch final, sugiero que
+tengamos preparada una versión ultra-simplificada del mensaje. Algo así:
+
+> "En Polkadot, construir es cada vez más fácil, pero auditar sigue
+> siendo difícil y caro. Creamos Polkadot Security Nexus, el 'cinturón
+> de seguridad' para los desarrolladores de Substrate. Nuestra
+> herramienta encuentra fallos antes de que cuesten millones, monitoriza
+> amenazas en vivo y permite a los hackers buenos reportar bugs de forma
+> segura. Estamos protegiendo el futuro de Polkadot."
+
 ===============================================================================
