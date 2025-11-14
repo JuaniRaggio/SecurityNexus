@@ -1,7 +1,7 @@
 //! Advanced AST visitors for security analysis
 
 use syn::{
-    visit::Visit, Expr, ExprBinary, ExprCall, ExprMethodCall, Item, ItemFn, Stmt,
+    visit::Visit, Expr, ExprBinary, ExprCall, ExprMethodCall, ItemFn,
 };
 
 /// Visitor for detecting arithmetic operations

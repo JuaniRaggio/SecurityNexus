@@ -64,11 +64,14 @@ impl<'ast> Visit<'ast> for PalletExtractor {
     fn visit_item_mod(&mut self, node: &'ast ItemMod) {
         // Check for #[frame_support::pallet] attribute
         for attr in &node.attrs {
-            if let Ok(meta) = attr.parse_meta() {
-                if is_pallet_macro(&meta) {
-                    self.has_pallet_macro = true;
-                    self.pallet_name = Some(node.ident.to_string());
-                }
+            let path_str = attr.path().segments.iter()
+                .map(|seg| seg.ident.to_string())
+                .collect::<Vec<_>>()
+                .join("::");
+
+            if path_str.contains("frame_support") && path_str.contains("pallet") {
+                self.has_pallet_macro = true;
+                self.pallet_name = Some(node.ident.to_string());
             }
         }
 
@@ -116,7 +119,7 @@ impl<'ast> Visit<'ast> for PalletExtractor {
                 // Check for Pallet implementation with dispatchable calls
                 if has_call_attribute(&item_impl.attrs) {
                     for item in &item_impl.items {
-                        if let syn::ImplItem::Method(method) = item {
+                        if let syn::ImplItem::Fn(method) = item {
                             // Check if method is a dispatchable call
                             if has_weight_attribute(&method.attrs) {
                                 self.calls.push(PalletCall {
@@ -135,24 +138,10 @@ impl<'ast> Visit<'ast> for PalletExtractor {
     }
 }
 
-/// Check if a meta attribute is the pallet macro
-fn is_pallet_macro(meta: &syn::Meta) -> bool {
-    if let syn::Meta::Path(path) = meta {
-        if let Some(segment) = path.segments.first() {
-            if segment.ident == "frame_support" {
-                if let Some(segment) = path.segments.iter().nth(1) {
-                    return segment.ident == "pallet";
-                }
-            }
-        }
-    }
-    false
-}
-
 /// Check if attributes contain storage macro
 fn has_storage_attribute(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| {
-        attr.path
+        attr.path()
             .segments
             .last()
             .map(|seg| seg.ident == "storage")
@@ -163,7 +152,7 @@ fn has_storage_attribute(attrs: &[syn::Attribute]) -> bool {
 /// Check if attributes contain event macro
 fn has_event_attribute(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| {
-        attr.path
+        attr.path()
             .segments
             .last()
             .map(|seg| seg.ident == "event")
@@ -174,7 +163,7 @@ fn has_event_attribute(attrs: &[syn::Attribute]) -> bool {
 /// Check if attributes contain error macro
 fn has_error_attribute(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| {
-        attr.path
+        attr.path()
             .segments
             .last()
             .map(|seg| seg.ident == "error")
@@ -185,7 +174,7 @@ fn has_error_attribute(attrs: &[syn::Attribute]) -> bool {
 /// Check if attributes contain call macro
 fn has_call_attribute(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| {
-        attr.path
+        attr.path()
             .segments
             .last()
             .map(|seg| seg.ident == "call" || seg.ident == "pallet")
@@ -196,7 +185,7 @@ fn has_call_attribute(attrs: &[syn::Attribute]) -> bool {
 /// Check if attributes contain weight macro
 fn has_weight_attribute(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| {
-        attr.path
+        attr.path()
             .segments
             .last()
             .map(|seg| seg.ident == "weight")
