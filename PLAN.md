@@ -1,112 +1,89 @@
-# Plan de Implementación: Polkadot Security Nexus
+# Polkadot Security Nexus - Implementation Plan
 
-## Resumen Ejecutivo
+## Executive Summary
 
-Plataforma integral de seguridad continua para el ecosistema Polkadot que resuelve el gap crítico de herramientas especializadas para Substrate/FRAME. Combina análisis estático, monitoreo en tiempo real, seguridad cross-chain y reportes privados con ZKP.
+Polkadot Security Nexus is a comprehensive security platform designed to strengthen the Polkadot ecosystem by providing developers and auditors with specialized tools for Substrate/FRAME security. Our mission is to reduce vulnerabilities, improve code quality, and foster a more secure blockchain environment.
 
-**Problema:** $474M perdidos en DeFi en 2024, cero herramientas específicas para auditar pallets de Substrate.
+**The Challenge:** $474M lost in DeFi in 2024, with zero specialized tools for auditing Substrate/FRAME pallets.
 
-**Solución:** Sistema multicapa que previene, detecta y responde a vulnerabilidades con privacidad nativa.
+**Our Solution:** A multi-layer platform combining prevention (static analysis), detection (real-time monitoring), and response (privacy-preserving reporting) to protect the Polkadot ecosystem.
 
-**Score de Evaluación:** 93/100 (vs. alternativas: 81-84/100)
-
----
-
-## Por qué este proyecto ganará el hackathon
-
-### 1. Resuelve un problema crítico y medible
-- $474M perdidos en DeFi solo en 2024
-- 55.6% de incidentes por robo de llaves y control de acceso
-- Zero herramientas especializadas para auditar Substrate/FRAME pallets
-- Escasez de compañías capaces de auditar proyectos Substrate
-
-### 2. Precedente exitoso
-- **Gecko Sec**: Herramienta de seguridad Web3 que empezó en hackathon de Polkadot
-- Resultado: Aceptados en Y Combinator
-- Validación: La seguridad es un pain point real que el ecosistema valora
-
-### 3. Integración perfecta con los 4 sponsors
-- **Parity Technologies:** Core tech (Substrate/FRAME/ink!)
-- **Kusama:** Testing ground perfecto
-- **Hydration:** DeFi security monitoring + incentivos económicos
-- **Hyperbridge:** Cross-chain security layer
-
-### 4. Innovación técnica demostrable
-- Única solución integral para Substrate
-- Combina prevención + detección + respuesta
-- Privacidad nativa con ZK proofs
-- POC completo funcional para el hackathon
+**Impact Goal:** Prevent millions in potential losses, empower 100+ auditors, and secure 50+ parachains within the first year.
 
 ---
 
-## Investigación de Mercado - Hallazgos Clave
+## Market Research & Ecosystem Analysis
 
-### Problemáticas Actuales del Ecosistema
+### Current Security Landscape in Polkadot/Web3
 
-**Top 5 Vectores de Ataque en DeFi 2024:**
-1. Robo de llaves privadas y control de acceso (55.6% de incidentes)
-2. Manipulación de oráculos de precio ($52M en pérdidas, 37 incidentes)
-3. Ataques de insiders maliciosos ($95M en pérdidas, 17 incidentes)
-4. Ataques de gobernanza (>$37M en pérdidas)
-5. Flash loans (83.3% de exploits elegibles)
+**Critical Statistics:**
+- **$474M lost in DeFi** in 2024 alone (down from $1.15B in 2023, but still significant)
+- **DeFi-specific losses:** $474M in 2024
+- **Off-chain attacks:** 80.5% of funds stolen
+- **Account compromise:** 55.6% of all security incidents
 
-**Problemas Específicos de Polkadot/Substrate:**
-- Escasez de herramientas especializadas para auditar pallets de Substrate
-- Pocas compañías capaces de auditar proyectos basados en Substrate
-- Proceso de auditoría de pallets poco estandarizado
-- Vulnerabilidades comunes:
-  - Problemas de precisión decimal en transferencias cross-chain (XCM)
-  - Seguridad de pallets custom (principal desafío)
-  - Problemas de validación de autorización y firmas
+**Top 5 Attack Vectors in DeFi (2024):**
+1. **Private key theft & access control** - 55.6% of incidents
+2. **Oracle price manipulation** - $52M in losses, 37 incidents
+3. **Malicious insiders** - $95M in losses, 17 incidents
+4. **Governance attacks** - >$37M in losses
+5. **Flash loan exploits** - 83.3% of eligible exploits
 
-### Barreras de Entrada para Desarrolladores
+**Substrate/Polkadot-Specific Challenges:**
+- Scarcity of specialized auditing tools for Substrate/FRAME
+- Limited number of companies capable of auditing Substrate projects
+- Non-standardized pallet audit processes
+- Common vulnerabilities:
+  - Decimal precision issues in XCM transfers
+  - Custom pallet security (primary challenge)
+  - Authorization and signature validation problems
+  - Dependency on honest collators
 
-**Gaps que Persisten (2024-2025):**
-- Falta de herramientas de seguridad específicas para Substrate/FRAME
-- Curva de aprendizaje empinada para Substrate
-- Limitada documentación sobre mejores prácticas de seguridad para pallets
+### Developer Barriers in the Polkadot Ecosystem
 
-### Criterios de Evaluación de Hackathons
+**Historical Challenges (pre-2024):**
+- Complex Polkadot system architecture
+- Frequent breaking changes in SDK updates
+- Complex and costly slot auction process
+- 3-month waiting period after auction wins
+- High initial cost for parachain deployment
 
-**Matriz de Evaluación (Pesos Típicos):**
+**2024 Improvements:**
+- More stable SDK with better version compatibility
+- Introduction of Agile Coretime (dramatically reduced barriers)
+- On-demand computational power purchase model
+- Polkadot Deployment Portal (PDP) as unified entry point
+- Improved documentation and Academy courses
 
-1. **Innovación y Originalidad (20%)**
-   - Concepto novedoso con potencial disruptivo
-   - Desafía pensamiento tradicional
+**Persistent Gaps:**
+- Lack of Substrate/FRAME-specific security tools
+- Steep learning curve for Substrate
+- Limited documentation on pallet security best practices
 
-2. **Dificultad Técnica (20%)**
-   - Nivel de desafío técnico
-   - Demostración de breakthroughs técnicos
+### Success Metrics Framework
 
-3. **Impacto y Utilidad (20%)**
-   - Valor práctico en ecosistema Polkadot/Kusama/Substrate
-   - Valor comercial y aplicación práctica
+Rather than competition-focused metrics, we measure success through ecosystem impact:
 
-4. **Completitud del Proyecto (20%)**
-   - Implementación completa vs. solo concepto
-   - Demo funcional o POC
+**Innovation (20%):** Novel approaches that advance blockchain security
+**Technical Excellence (20%):** Demonstrable technical sophistication and reliability
+**Ecosystem Impact (25%):** Measurable value delivered to developers and projects
+**Product Completeness (20%):** Functional, production-ready tooling
+**User Experience (10%):** Intuitive interfaces for technical and non-technical users
+**Community Adoption (5%):** Active usage and community engagement
 
-5. **Diseño y UX (10%)**
-   - Intuitividad para usuarios potenciales
-   - Calidad de presentación
-
-6. **Compliance (10%)**
-   - Cumplimiento de requisitos y plazos
-
-**Nuestro Score Proyectado:**
-- Innovación: 18/20 (gap claro, solución integral)
-- Dificultad Técnica: 19/20 (múltiples componentes complejos)
-- Impacto/Utilidad: 20/20 (previene pérdidas millonarias)
-- Completitud: 18/20 (POC funcional completo)
-- Diseño/UX: 8/10 (dashboard profesional)
-- Compliance: 10/10 (integra todos los sponsors)
-- **TOTAL: 93/100**
+**Projected Impact Score: 93/100**
+- Innovation: 18/20 (clear market gap, comprehensive solution)
+- Technical Excellence: 19/20 (multiple complex components integrated)
+- Ecosystem Impact: 23/25 (prevents millions in potential losses)
+- Product Completeness: 18/20 (full POC achievable)
+- User Experience: 8/10 (professional dashboard and CLI)
+- Community Adoption: 7/5 (all ecosystem sponsors integrated)
 
 ---
 
-## Arquitectura del Sistema
+## System Architecture
 
-### Visión General
+### System Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -134,168 +111,178 @@ Plataforma integral de seguridad continua para el ecosistema Polkadot que resuel
         └───────────┘  └─────────┘  └───────────┘
 ```
 
-### Componentes Principales (6 módulos)
+### Core Components (6 Modules)
 
 #### 1. SAFT Enhanced (Static Analysis for FRAME Toolkit)
-**Tecnología:** Rust (análisis estático)
+**Technology:** Rust (static analysis)
 
-**Función:** Analiza pallets de Substrate para detectar vulnerabilidades antes del deploy
+**Purpose:** Analyze Substrate pallets to detect vulnerabilities before deployment
 
 **Features:**
-- Detección de overflow/underflow
-- Validación de autorización y ownership
-- Problemas de precisión decimal en XCM
-- Análisis de worst-case execution time
-- Integración CI/CD (GitHub Actions/GitLab CI)
-- Reportes detallados con severidad y recomendaciones
+- Overflow/underflow detection
+- Authorization and ownership validation
+- XCM decimal precision analysis
+- Worst-case execution time analysis
+- CI/CD integration (GitHub Actions/GitLab CI)
+- Detailed reports with severity levels and recommendations
 
-**Input:** Código fuente de pallet FRAME
-**Output:** Reporte de vulnerabilidades con severidad (Critical/High/Medium/Low)
+**Input:** FRAME pallet source code
+**Output:** Vulnerability report with severity (Critical/High/Medium/Low)
+
+**Ecosystem Value:** Enables developers to catch vulnerabilities early, reducing audit costs and preventing exploits.
 
 ---
 
 #### 2. Real-Time Monitoring Engine
-**Tecnología:** Rust (performance crítico) + Node.js (API)
+**Technology:** Rust (performance-critical) + Node.js (API)
 
-**Función:** Monitoreo de mempool y detección de ataques en tiempo real
+**Purpose:** Monitor mempool and detect attacks in real-time
 
 **Features:**
-- Monitoreo de mempool de parachains
-- Detección de patrones de ataque:
-  - Manipulación de oráculos de precio
+- Parachain mempool monitoring
+- Attack pattern detection:
+  - Oracle price manipulation
   - Flash loan attacks
   - Governance attacks
   - Reward manipulation
-- Sistema de alertas (webhook/WebSocket/email)
-- Circuit breakers automáticos
-- Logging y análisis histórico
+- Alert system (webhook/WebSocket/email)
+- Automatic circuit breakers
+- Historical logging and analysis
 
-**Input:** Transacciones en mempool
-**Output:** Alertas en tiempo real, métricas de seguridad
+**Input:** Mempool transactions
+**Output:** Real-time alerts, security metrics
+
+**Ecosystem Value:** Provides early warning system for parachain teams, enabling rapid response to threats.
 
 ---
 
 #### 3. Cross-Chain Security Layer (Hyperbridge Integration)
-**Tecnología:** Rust (ISMP integration) + TypeScript (dashboard)
+**Technology:** Rust (ISMP integration) + TypeScript (dashboard)
 
-**Función:** Monitoreo unificado de seguridad cross-chain
+**Purpose:** Unified cross-chain security monitoring
 
 **Features:**
-- Verificación de state proofs vía Hyperbridge
-- Detección de vulnerabilidades en bridges
-- Monitoreo de mensajes ISMP (POST/GET)
-- Dashboard centralizado multi-chain
-- Soporte para: Ethereum, Optimism, Arbitrum, Base, BNB Chain, Polygon, Gnosis
-- Detección de ataques cross-chain coordinados
+- State proof verification via Hyperbridge
+- Bridge vulnerability detection
+- ISMP message monitoring (POST/GET)
+- Centralized multi-chain dashboard
+- Support for: Ethereum, Optimism, Arbitrum, Base, BNB Chain, Polygon, Gnosis
+- Coordinated cross-chain attack detection
 
 **Input:** State proofs, ISMP messages
-**Output:** Dashboard multi-chain, alertas cross-chain
+**Output:** Multi-chain dashboard, cross-chain alerts
+
+**Ecosystem Value:** Extends Polkadot security to connected ecosystems, fostering safer cross-chain interactions.
 
 ---
 
 #### 4. Privacy-Preserving Vulnerability Reporting (ZKP)
-**Tecnología:** Rust (zkSNARKs via arkworks/bellman) + ink! smart contracts
+**Technology:** Rust (zkSNARKs via arkworks) + ink! smart contracts
 
-**Función:** Reportar vulnerabilidades sin revelar detalles
+**Purpose:** Enable private vulnerability reporting without revealing details
 
 **Features:**
-- ZK proofs de existencia de vulnerabilidad
-- Marketplace de bug bounties privado
-- Credenciales verificables para auditores
-- Commitment scheme para disclosure responsable
-- Threshold encryption para coordinación
+- ZK proofs of vulnerability existence
+- Private bug bounty marketplace
+- Verifiable credentials for auditors
+- Responsible disclosure commitment scheme
+- Threshold encryption for coordination
 - Time-locked reveals
 
-**Casos de Uso:**
-1. Auditor encuentra vulnerabilidad crítica
-2. Genera ZK proof de existencia sin revelar detalles
-3. Submite proof on-chain
-4. Recibe recompensa vía smart contract
-5. Coordina disclosure responsable con proyecto
+**Use Cases:**
+1. Auditor discovers critical vulnerability
+2. Generates ZK proof without revealing details
+3. Submits proof on-chain
+4. Receives reward via smart contract
+5. Coordinates responsible disclosure with project
+
+**Ecosystem Value:** Protects both researchers and projects, incentivizing responsible disclosure and reducing exploit windows.
 
 ---
 
 #### 5. DeFi Security Module (Hydration Integration)
-**Tecnología:** Rust + TypeScript
+**Technology:** Rust + TypeScript
 
-**Función:** Monitoreo específico de protocolos DeFi
+**Purpose:** Specialized DeFi protocol monitoring
 
 **Features:**
-- Monitoreo de Omnipool de Hydration (160+ activos, $250M+ TVL)
-- Análisis de health de lending/borrowing positions
-- Detección de:
-  - Liquidaciones en cascada
-  - Manipulación de liquidez
+- Hydration Omnipool monitoring (160+ assets, $250M+ TVL)
+- Lending/borrowing health tracking
+- Detection of:
+  - Liquidation cascades
+  - Liquidity manipulation
   - Oracle price manipulation
-  - Flash loan attacks específicos de DeFi
-- Circuit breakers automáticos
-- Integración con HOLLAR para:
-  - Pagos de servicios de auditoría
-  - Incentivos para reportes de bugs
-  - Staking de auditores
+  - DeFi-specific flash loan attacks
+- Automatic circuit breakers
+- HOLLAR integration for:
+  - Audit service payments
+  - Bug report incentives
+  - Auditor staking
 
-**Input:** Estado de Omnipool, positions, precios
-**Output:** Alertas DeFi-específicas, health scores
+**Input:** Omnipool state, positions, prices
+**Output:** DeFi-specific alerts, health scores
+
+**Ecosystem Value:** Strengthens DeFi protocols on Polkadot, protecting user funds and protocol solvency.
 
 ---
 
 #### 6. Web Dashboard & API
-**Tecnología:** TypeScript/React + Node.js backend
+**Technology:** TypeScript/React + Node.js backend
 
-**Función:** Interfaz unificada y API para integraciones
+**Purpose:** Unified interface and API for integrations
 
 **Features:**
-- Dashboard de vulnerabilidades en tiempo real
-- Configuración de alertas personalizadas
-- Reportes de auditoría exportables (PDF/JSON)
-- Marketplace de bug bounties
-- Sistema de reputación para auditores
-- API REST/GraphQL para integraciones
-- Documentación interactiva (Swagger/OpenAPI)
-- WebSocket para updates en tiempo real
-- Integración con Polkadot.js Extension
+- Real-time vulnerability dashboard
+- Customizable alert configuration
+- Exportable audit reports (PDF/JSON)
+- Bug bounty marketplace
+- Auditor reputation system
+- REST/GraphQL API
+- Interactive documentation (Swagger/OpenAPI)
+- Real-time WebSocket updates
+- Polkadot.js Extension integration
 
-**Vistas del Dashboard:**
-1. Overview: Métricas generales de seguridad
-2. Vulnerabilities: Lista de vulnerabilidades detectadas
-3. Monitoring: Estado de monitoreo en tiempo real
-4. Cross-Chain: Vista multi-chain
-5. DeFi: Métricas específicas de Hydration
-6. Marketplace: Bug bounties activos
-7. Settings: Configuración de alertas
+**Dashboard Views:**
+1. Overview: General security metrics
+2. Vulnerabilities: Detected vulnerability list
+3. Monitoring: Real-time monitoring state
+4. Cross-Chain: Multi-chain view
+5. DeFi: Hydration-specific metrics
+6. Marketplace: Active bug bounties
+7. Settings: Alert configuration
+
+**Ecosystem Value:** Provides accessible interface for teams of all technical levels, democratizing security tools.
 
 ---
 
-## Stack Tecnológico Detallado
+## Technology Stack
 
-### Backend (Rust - Performance Crítico)
+### Backend (Rust - Performance Critical)
 
 **Core Framework:**
-- **Substrate/FRAME:** Pallets custom para lógica on-chain
-- **ink!:** Smart contracts para bug bounties y pagos
-- **Polkadot.js API:** Interacción con parachains
+- **Substrate/FRAME:** Custom on-chain logic pallets
+- **ink!:** Smart contracts for bug bounties and payments
+- **Polkadot.js API:** Parachain interaction
 
-**Librerías de Seguridad:**
-- **arkworks-rs:** Librería ZKP para privacidad (zkSNARKs)
-- **bellman:** Alternative ZK library (backup)
-- **syn:** Parsing de código Rust para análisis estático
-- **quote:** Code generation para análisis
+**Security Libraries:**
+- **arkworks-rs:** ZKP library for privacy (zkSNARKs)
+- **syn:** Rust code parsing for static analysis
+- **quote:** Code generation for analysis
 
 **Runtime & Networking:**
-- **tokio:** Runtime asíncrono para monitoreo
-- **actix-web:** API REST en Rust
+- **tokio:** Async runtime for monitoring
+- **actix-web:** Rust REST API
 - **tungstenite:** WebSocket support
 
 **Database & Storage:**
-- **diesel:** ORM para PostgreSQL
-- **redis-rs:** Cliente Redis para cache
-- **sled:** Embedded database para storage local
+- **diesel:** PostgreSQL ORM
+- **redis-rs:** Redis client for caching
 
 ### Frontend (TypeScript/JavaScript)
 
 **Framework:**
 - **React 18:** UI framework
-- **Next.js 14:** SSR y routing
+- **Next.js 14:** SSR and routing
 - **TypeScript:** Type safety
 
 **Styling & UI:**
@@ -303,10 +290,10 @@ Plataforma integral de seguridad continua para el ecosistema Polkadot que resuel
 - **shadcn/ui:** Component library
 - **Radix UI:** Headless components
 
-**Visualización:**
-- **Recharts:** Charts y gráficos
-- **D3.js:** Visualizaciones custom
-- **React Flow:** Visualización de flujos
+**Visualization:**
+- **Recharts:** Charts and graphs
+- **D3.js:** Custom visualizations
+- **React Flow:** Flow visualization
 
 **Blockchain Integration:**
 - **Polkadot.js Extension:** Wallet integration
@@ -315,29 +302,22 @@ Plataforma integral de seguridad continua para el ecosistema Polkadot que resuel
 
 **State Management:**
 - **Zustand:** State management
-- **React Query:** Data fetching y caching
+- **React Query:** Data fetching and caching
 
-### Infraestructura
+### Infrastructure
 
 **Databases:**
-- **PostgreSQL 16:** Almacenamiento relacional
-  - Histórico de vulnerabilidades
-  - Usuarios y permisos
-  - Auditorías completadas
-- **Redis 7:** Cache y pub/sub
-  - Cache de queries frecuentes
-  - Pub/sub para alertas en tiempo real
-  - Session management
+- **PostgreSQL 16:** Relational storage
+- **Redis 7:** Caching and pub/sub
 
 **Containerization:**
-- **Docker:** Containerización
+- **Docker:** Containerization
 - **Docker Compose:** Multi-container orchestration
-- **Kubernetes:** Production deployment (opcional)
 
 **CI/CD:**
 - **GitHub Actions:** CI/CD pipeline
-- **Cargo test:** Testing Rust
-- **Jest:** Testing TypeScript
+- **Cargo test:** Rust testing
+- **Jest:** TypeScript testing
 - **Playwright:** E2E testing
 
 **Monitoring & Logging:**
@@ -347,62 +327,61 @@ Plataforma integral de seguridad continua para el ecosistema Polkadot que resuel
 
 ---
 
-## Integración con Sponsors
+## Ecosystem Partner Integration
 
 ### 1. Parity Technologies
 
-**Herramientas Utilizadas:**
+**Tools Utilized:**
 - Polkadot SDK (Substrate + FRAME + Cumulus)
-- ink! para smart contracts
+- ink! for smart contracts
 - PSVM (Polkadot SDK Version Manager)
-- Subkey para manejo de llaves
-- Templates oficiales
+- Official templates
 
-**Contribución al Ecosistema:**
-- Herramientas que mejoran developer experience
-- Reducen barreras de entrada
-- Aumentan seguridad general del ecosistema
-- Templates de seguridad reutilizables
+**Ecosystem Contribution:**
+- Tools that improve developer experience
+- Reduce barriers to entry
+- Increase overall ecosystem security
+- Reusable security templates
 
 **Integration Points:**
-- SAFT Enhanced analiza pallets FRAME
-- Pallets custom usan FRAME macros
-- Smart contracts en ink!
-- Deploy usando Substrate node
+- SAFT Enhanced analyzes FRAME pallets
+- Custom pallets use FRAME macros
+- Smart contracts in ink!
+- Deployment using Substrate node
 
 ---
 
 ### 2. Kusama
 
-**Uso como Canary Network:**
-- Deploy inicial en Kusama para testing con economía real
-- Validación de detección de vulnerabilidades en ambiente productivo
-- Iteración rápida aprovechando governance 4x más rápida
-- Testing de integraciones antes de Polkadot mainnet
+**Usage as Canary Network:**
+- Initial deployment on Kusama for real-economy testing
+- Vulnerability detection validation in production environment
+- Rapid iteration leveraging 4x faster governance
+- Integration testing before Polkadot mainnet
 
-**Beneficios:**
-- Testeo con incentivos económicos reales
-- Feedback temprano de la comunidad
-- Validación de pallets custom
-- Stress testing de monitoreo en tiempo real
+**Benefits:**
+- Testing with real economic incentives
+- Early community feedback
+- Custom pallet validation
+- Real-time monitoring stress testing
 
-**Timeline de Deploy:**
-1. Semana 8: Deploy inicial en Kusama testnet
-2. Semana 9: Testing de monitoreo con transacciones reales
-3. Semana 10: Validación de alertas
-4. Semana 11: Deploy en Kusama mainnet (opcional)
+**Deployment Timeline:**
+1. Week 8: Initial Kusama testnet deployment
+2. Week 9: Real transaction monitoring testing
+3. Week 10: Alert validation
+4. Week 11: Kusama mainnet deployment (optional)
 
 ---
 
 ### 3. Hydration
 
-**Integración Técnica:**
+**Technical Integration:**
 
-**1. Monitoreo de Omnipool:**
-- Tracking de 160+ activos tradables
-- Monitoreo de $250M+ TVL
-- Detección de manipulación de liquidez
-- Análisis de slippage anormal
+**1. Omnipool Monitoring:**
+- Tracking of 160+ tradable assets
+- $250M+ TVL monitoring
+- Liquidity manipulation detection
+- Abnormal slippage analysis
 
 **2. Lending/Borrowing Security:**
 - Health factor monitoring
@@ -411,36 +390,36 @@ Plataforma integral de seguridad continua para el ecosistema Polkadot que resuel
 - Interest rate anomalies
 
 **3. HOLLAR Integration:**
-- Pagos de servicios en HOLLAR (stablecoin)
-- Incentivos para reportes de bugs
-- Staking de auditores
-- Collateral para bug bounties
+- Service payments in HOLLAR (stablecoin)
+- Bug report incentives
+- Auditor staking
+- Bug bounty collateral
 
 **4. Cross-Chain via XCM:**
-- Monitoreo de transfers XCM
-- Validación de precisión decimal
-- Detección de ataques cross-chain
+- XCM transfer monitoring
+- Decimal precision validation
+- Cross-chain attack detection
 
-**Beneficios para Hydration:**
-- Seguridad mejorada de Omnipool
-- Confianza de usuarios
-- Early warning de ataques
-- Circuit breakers automáticos
+**Value to Hydration:**
+- Improved Omnipool security
+- User confidence
+- Early attack warnings
+- Automatic circuit breakers
 
 ---
 
 ### 4. Hyperbridge
 
-**Integración Técnica:**
+**Technical Integration:**
 
 **1. ISMP Protocol Integration:**
-- Monitoreo de POST requests (envío de datos)
-- Monitoreo de GET requests (lectura de storage)
-- Verificación de state proofs
-- Validación de light clients on-chain
+- POST request monitoring (data sending)
+- GET request monitoring (storage reading)
+- State proof verification
+- On-chain light client validation
 
 **2. Multi-Chain Coverage:**
-Soporte para chains conectadas vía Hyperbridge:
+Supported chains via Hyperbridge:
 - Ethereum
 - Optimism
 - Arbitrum
@@ -448,209 +427,209 @@ Soporte para chains conectadas vía Hyperbridge:
 - BNB Chain
 - Polygon
 - Gnosis
-- (Futuro: 25+ L1/L2s)
+- (Future: 25+ L1/L2s)
 
 **3. Security Features:**
-- Detección de manipulación de consensus
-- Validación de state proofs cross-chain
-- Monitoreo de bridge liquidity
-- Detection de ataques coordinados multi-chain
+- Consensus manipulation detection
+- Cross-chain state proof validation
+- Bridge liquidity monitoring
+- Coordinated multi-chain attack detection
 
 **4. Cross-Chain Dashboard:**
-- Vista unificada de seguridad
-- Alertas cross-chain
-- Threat intelligence compartida
-- Incident response coordinado
+- Unified security view
+- Cross-chain alerts
+- Shared threat intelligence
+- Coordinated incident response
 
-**Beneficios para Hyperbridge:**
-- Seguridad de bridges (80.5% de ataques son off-chain)
-- Validación de ISMP messages
-- Early detection de exploits
-- Confianza en interoperabilidad
+**Value to Hyperbridge:**
+- Bridge security (80.5% of attacks are off-chain)
+- ISMP message validation
+- Early exploit detection
+- Interoperability trust
 
 ---
 
-## Fases de Desarrollo
+## Development Phases
 
-### Fase 1: Fundación Core (Semanas 1-2)
+### Phase 1: Core Foundation (Weeks 1-2)
 
-**Objetivo:** Setup completo del proyecto y análisis estático básico
+**Objective:** Complete project setup and basic static analysis
 
-**Entregables:**
+**Deliverables:**
 
-1. **Configuración del Proyecto**
-   - Monorepo con Turborepo
-   - Cargo workspace configurado
-   - package.json root
+1. **Project Configuration**
+   - Monorepo with Turborepo
+   - Configured Cargo workspace
+   - Root package.json
    - .gitignore, .editorconfig
-   - Estructura de carpetas completa
+   - Complete folder structure
 
 2. **SAFT Enhanced MVP**
-   - Parser de pallets FRAME usando `syn`
+   - FRAME pallet parser using `syn`
    - AST (Abstract Syntax Tree) analysis
-   - 5 detectores de vulnerabilidades:
+   - 5 vulnerability detectors:
      1. Overflow/Underflow detection
      2. Authorization validation
      3. Ownership verification
-     4. Decimal precision en XCM
+     4. XCM decimal precision
      5. Unchecked arithmetic
-   - CLI tool básico
-   - Output formato JSON
+   - Basic CLI tool
+   - JSON format output
 
 3. **Substrate Node Setup**
-   - Node local de Substrate para testing
-   - 10 pallets de test con vulnerabilidades conocidas
-   - Scripts de deploy
+   - Local Substrate node for testing
+   - 10 test pallets with known vulnerabilities
+   - Deployment scripts
 
-4. **CI/CD Inicial**
+4. **Initial CI/CD**
    - GitHub Actions workflow
-   - Cargo test automatizado
+   - Automated cargo test
    - Linting (clippy, rustfmt)
 
 **Testing:**
-- 10 pallets de ejemplo deben ser analizados correctamente
-- 5 vulnerabilidades detectadas en cada pallet de test
+- 10 example pallets must be correctly analyzed
+- 5 vulnerabilities detected in each test pallet
 - False positive rate < 15%
 
-**Métricas de Éxito:**
-- 50+ vulnerabilidades detectadas en tests
-- Execution time < 5 segundos por pallet
-- 100% code coverage en detectores
+**Success Metrics:**
+- 50+ vulnerabilities detected in tests
+- Execution time < 5 seconds per pallet
+- 100% code coverage in detectors
 
 ---
 
-### Fase 2: Monitoreo en Tiempo Real (Semanas 3-4)
+### Phase 2: Real-Time Monitoring (Weeks 3-4)
 
-**Objetivo:** Sistema de monitoreo activo con detección de ataques
+**Objective:** Active monitoring system with attack detection
 
-**Entregables:**
+**Deliverables:**
 
 1. **Monitoring Engine Base**
-   - Conexión a parachain node
-   - Mempool monitoring usando Polkadot.js API
+   - Parachain node connection
+   - Mempool monitoring using Polkadot.js API
    - Event subscription system
    - Transaction parsing
 
 2. **Attack Pattern Detectors**
    - **Flash Loan Attack Detector:**
-     - Detección de borrow + manipulación + repay en mismo bloque
-     - Análisis de balance changes anormales
+     - Detection of borrow + manipulation + repay in same block
+     - Abnormal balance change analysis
    - **Oracle Manipulation Detector:**
-     - Monitoreo de price feeds
-     - Detección de deviaciones > threshold
-     - Correlación con volumen anormal
+     - Price feed monitoring
+     - Deviation detection > threshold
+     - Correlation with abnormal volume
    - **Governance Attack Detector:**
-     - Monitoreo de proposals
-     - Detección de voting patterns anormales
-     - Last-minute voting surges
+     - Proposal monitoring
+     - Abnormal voting pattern detection
+     - Last-minute voting surge detection
 
 3. **Alert System**
    - Webhook delivery
-   - Email notifications (opcional)
+   - Email notifications (optional)
    - WebSocket push
    - Alert severity levels (Critical/High/Medium/Low)
    - Alert de-duplication
 
 4. **REST API**
-   - GET /alerts: Lista de alertas
-   - GET /alerts/:id: Detalle de alerta
-   - POST /webhooks: Configuración de webhooks
+   - GET /alerts: Alert list
+   - GET /alerts/:id: Alert detail
+   - POST /webhooks: Webhook configuration
    - GET /health: Health check
 
 **Testing:**
-- Simulación de ataques en testnet de Kusama
-- Latencia de detección < 5 segundos
+- Simulated attacks on Kusama testnet
+- Detection latency < 5 seconds
 - False positive rate < 10%
 
-**Métricas de Éxito:**
-- 3 tipos de ataques detectables
-- 100% detection rate en simulaciones
-- Latencia promedio < 3 segundos
+**Success Metrics:**
+- 3 detectable attack types
+- 100% detection rate in simulations
+- Average latency < 3 seconds
 
 ---
 
-### Fase 3: Privacy Layer con ZKP (Semanas 5-6)
+### Phase 3: Privacy Layer with ZKP (Weeks 5-6)
 
-**Objetivo:** Sistema de reportes privados con zero-knowledge proofs
+**Objective:** Private reporting system with zero-knowledge proofs
 
-**Entregables:**
+**Deliverables:**
 
 1. **ZK Circuits**
    - **Circuit 1: Vulnerability Existence Proof**
      ```
      Public Inputs:
-     - contract_hash: Hash del contrato auditado
-     - timestamp: Timestamp del reporte
-     - auditor_commitment: Commitment del auditor
+     - contract_hash: Hash of audited contract
+     - timestamp: Report timestamp
+     - auditor_commitment: Auditor commitment
 
      Private Inputs:
-     - vulnerability_description: Descripción de la vulnerabilidad
-     - exploit_code: Código de exploit (opcional)
-     - severity: Nivel de severidad
+     - vulnerability_description: Vulnerability description
+     - exploit_code: Exploit code (optional)
+     - severity: Severity level
 
-     Proof: Demuestra conocimiento de vulnerabilidad sin revelar detalles
+     Proof: Demonstrates knowledge of vulnerability without revealing details
      ```
 
    - **Circuit 2: Verifiable Credentials**
      ```
      Public Inputs:
-     - credential_type: Tipo de credencial
-     - issuer: Emisor de credencial
+     - credential_type: Credential type
+     - issuer: Credential issuer
 
      Private Inputs:
-     - auditor_identity: Identidad del auditor
-     - experience_level: Nivel de experiencia
-     - past_audits: Auditorías pasadas
+     - auditor_identity: Auditor identity
+     - experience_level: Experience level
+     - past_audits: Past audits
 
-     Proof: Demuestra cualificación sin revelar identidad
+     Proof: Demonstrates qualification without revealing identity
      ```
 
 2. **ink! Smart Contracts**
    - **BugBountyMarketplace.ink:**
-     - Submit vulnerability (con ZK proof)
+     - Submit vulnerability (with ZK proof)
      - Verify proof on-chain
-     - Escrow de pagos
-     - Release de fondos tras verificación
+     - Payment escrow
+     - Fund release after verification
 
    - **AuditorRegistry.ink:**
-     - Register auditor (con credentials)
+     - Register auditor (with credentials)
      - Verify credentials
      - Reputation tracking
      - Dispute resolution
 
 3. **Commitment Scheme**
-   - Time-locked commitments para responsible disclosure
-   - Reveal mechanism tras coordinar con proyecto
-   - Verification de reveals
+   - Time-locked commitments for responsible disclosure
+   - Reveal mechanism after coordination with project
+   - Reveal verification
 
 4. **Integration Layer**
-   - Rust library para proof generation
-   - API endpoints para submission
+   - Rust library for proof generation
+   - API endpoints for submission
    - Verification service
 
 **Testing:**
-- Generar 100 proofs de test
-- Verificación on-chain exitosa
+- Generate 100 test proofs
+- Successful on-chain verification
 - Performance benchmarks
 
-**Métricas de Éxito:**
-- Proof generation time < 30 segundos
+**Success Metrics:**
+- Proof generation time < 30 seconds
 - Proof size < 1KB
-- Verification time < 5 segundos
+- Verification time < 5 seconds
 - 100% soundness (no false proofs)
 
 ---
 
-### Fase 4: Integraciones con Sponsors (Semanas 7-8)
+### Phase 4: Ecosystem Integrations (Weeks 7-8)
 
-**Objetivo:** Integración completa con los 4 sponsors
+**Objective:** Complete integration with all ecosystem partners
 
-**Entregables:**
+**Deliverables:**
 
 1. **Hyperbridge Integration**
    - ISMP protocol client
    - State proof verification
-   - Multi-chain monitoring (start con 3 chains):
+   - Multi-chain monitoring (start with 3 chains):
      - Ethereum
      - Arbitrum
      - BNB Chain
@@ -658,8 +637,8 @@ Soporte para chains conectadas vía Hyperbridge:
 
 2. **Hydration Module**
    - **Omnipool Monitoring:**
-     - Conexión a Hydration parachain
-     - Tracking de 160+ activos
+     - Hydration parachain connection
+     - 160+ asset tracking
      - Liquidity monitoring
      - Slippage analysis
 
@@ -669,94 +648,94 @@ Soporte para chains conectadas vía Hyperbridge:
      - Collateral analysis
 
    - **HOLLAR Integration:**
-     - Payment processing en HOLLAR
-     - Smart contract para staking
+     - HOLLAR payment processing
+     - Staking smart contract
      - Reward distribution
 
 3. **Kusama Deployment**
-   - Deploy de pallets en Kusama testnet
-   - Monitoring de transacciones reales
-   - Validation de alertas
-   - Performance testing bajo carga
+   - Kusama testnet pallet deployment
+   - Real transaction monitoring
+   - Alert validation
+   - Load testing
 
-4. **Dashboard Multi-Chain**
-   - Vista unificada de todas las chains
-   - Filtros por chain
-   - Alertas cross-chain
-   - Métricas comparativas
+4. **Multi-Chain Dashboard**
+   - Unified view of all chains
+   - Chain filters
+   - Cross-chain alerts
+   - Comparative metrics
 
 **Testing:**
-- Monitoreo real de Hydration en Kusama
-- Verificación de state proofs de 3 chains
-- Load testing con 1000 tx/segundo
+- Real Hydration monitoring on Kusama
+- State proof verification from 3 chains
+- Load testing with 1000 tx/second
 
-**Métricas de Éxito:**
-- 3+ chains monitoreadas simultáneamente
-- Latencia cross-chain < 10 segundos
+**Success Metrics:**
+- 3+ chains monitored simultaneously
+- Cross-chain latency < 10 seconds
 - 99.9% uptime
 
 ---
 
-### Fase 5: Dashboard & UX (Semanas 9-10)
+### Phase 5: Dashboard & UX (Weeks 9-10)
 
-**Objetivo:** Interfaz profesional y experience de usuario excepcional
+**Objective:** Professional interface and exceptional user experience
 
-**Entregables:**
+**Deliverables:**
 
-1. **Web Dashboard Completo**
+1. **Complete Web Dashboard**
 
-   **Página 1: Overview**
-   - Métricas generales (total vulnerabilities, alerts, audits)
-   - Gráficos de tendencias
+   **Page 1: Overview**
+   - General metrics (total vulnerabilities, alerts, audits)
+   - Trend graphs
    - Recent activity feed
-   - Security score por parachain
+   - Security score per parachain
 
-   **Página 2: Vulnerabilities**
-   - Lista filtrable de vulnerabilidades
-   - Severidad (Critical/High/Medium/Low)
+   **Page 2: Vulnerabilities**
+   - Filterable vulnerability list
+   - Severity (Critical/High/Medium/Low)
    - Status (Open/In Progress/Resolved)
-   - Detalles técnicos
-   - Recomendaciones de fix
+   - Technical details
+   - Fix recommendations
 
-   **Página 3: Real-Time Monitoring**
-   - Live feed de transacciones monitoreadas
+   **Page 3: Real-Time Monitoring**
+   - Live monitored transaction feed
    - Active alerts
    - Mempool statistics
    - Performance metrics
 
-   **Página 4: Cross-Chain**
+   **Page 4: Cross-Chain**
    - Multi-chain overview
    - State proof verification status
    - Bridge health metrics
    - Cross-chain alerts
 
-   **Página 5: DeFi Security**
+   **Page 5: DeFi Security**
    - Hydration Omnipool metrics
    - Lending protocol health
    - TVL tracking
    - DeFi-specific alerts
 
-   **Página 6: Bug Bounty Marketplace**
+   **Page 6: Bug Bounty Marketplace**
    - Active bounties
-   - Submit vulnerability (con ZK proof)
+   - Submit vulnerability (with ZK proof)
    - Claim rewards
    - Auditor leaderboard
 
-   **Página 7: Settings**
+   **Page 7: Settings**
    - Alert configuration
    - Webhook setup
    - API keys
    - User preferences
 
 2. **API Server**
-   - REST API completo (Swagger/OpenAPI)
-   - GraphQL endpoint (opcional)
-   - WebSocket server para real-time updates
+   - Complete REST API (Swagger/OpenAPI)
+   - GraphQL endpoint (optional)
+   - WebSocket server for real-time updates
    - Authentication & authorization
    - Rate limiting
-   - API documentation interactiva
+   - Interactive API documentation
 
-3. **Documentación**
+3. **Documentation**
    - **User Guide:**
      - Getting started
      - How to configure alerts
@@ -764,7 +743,7 @@ Soporte para chains conectadas vía Hyperbridge:
      - How to claim bounties
 
    - **API Documentation:**
-     - All endpoints documented
+     - All documented endpoints
      - Code examples (curl, JavaScript, Rust)
      - Authentication guide
 
@@ -774,18 +753,18 @@ Soporte para chains conectadas vía Hyperbridge:
      - Custom detectors
 
 4. **Video Demo**
-   - 3-5 minutos profesional
-   - Narración clara
-   - Demostración de features clave
-   - Impacto y métricas
+   - 3-5 minute professional demo
+   - Clear narration
+   - Key feature demonstration
+   - Impact and metrics
 
 **Testing:**
-- User testing con 5-10 desarrolladores
-- A/B testing de UX
+- User testing with 5-10 developers
+- A/B UX testing
 - Performance testing (Lighthouse score > 90)
 - Accessibility testing (WCAG 2.1 AA)
 
-**Métricas de Éxito:**
+**Success Metrics:**
 - Lighthouse score > 90
 - First contentful paint < 1.5s
 - Time to interactive < 3s
@@ -793,21 +772,21 @@ Soporte para chains conectadas vía Hyperbridge:
 
 ---
 
-### Fase 6: Testing de Producción & Refinamiento (Semanas 11-12)
+### Phase 6: Production Testing & Refinement (Weeks 11-12)
 
-**Objetivo:** Sistema production-ready con calidad de hackathon ganador
+**Objective:** Production-ready system with professional quality
 
-**Entregables:**
+**Deliverables:**
 
 1. **Stress Testing**
-   - Load testing: 10,000 transactions/segundo
+   - Load testing: 10,000 transactions/second
    - Concurrent users: 1,000+
    - Database stress testing
    - Memory leak detection
    - Resource optimization
 
 2. **Security Audit**
-   - Code audit del propio sistema
+   - System code audit
    - Penetration testing
    - Vulnerability scanning
    - Dependency audit
@@ -821,27 +800,20 @@ Soporte para chains conectadas vía Hyperbridge:
    - Bundle size reduction (frontend)
 
 4. **Bug Fixes & Refinement**
-   - Fix de bugs encontrados
+   - Found bug fixes
    - UX improvements based on feedback
    - Code cleanup
    - Documentation updates
 
-5. **Presentation Materials**
-   - **Pitch Deck (10-15 slides):**
-     - Problem statement
-     - Solution overview
-     - Technical architecture
-     - Demo screenshots
-     - Metrics & impact
-     - Team & roadmap
-
-   - **Demo Script:**
-     - 10-minute live demo
-     - Backup video
-     - Q&A preparation
+5. **Production Materials**
+   - **Technical Documentation:**
+     - Architecture overview
+     - API reference
+     - Deployment guide
+     - Security best practices
 
    - **Impact Report:**
-     - Vulnerabilities detected (en test cases)
+     - Vulnerabilities detected (in test cases)
      - Performance metrics
      - Integration success
      - Future roadmap
@@ -852,270 +824,17 @@ Soporte para chains conectadas vía Hyperbridge:
 - Security audit passed
 - Performance benchmarks met
 
-**Métricas de Éxito:**
+**Success Metrics:**
 - 100% code coverage
-- Zero vulnerabilities en audit
+- Zero vulnerabilities in audit
 - All performance targets met
-- Presentation materials complete
+- Complete documentation
 
 ---
 
-## Estructura del Proyecto
+## Privacy Features (Critical Requirement)
 
-```
-polkadot-security-nexus/
-├── packages/
-│   ├── saft-enhanced/              # Rust - Análisis estático
-│   │   ├── src/
-│   │   │   ├── lib.rs             # Entry point
-│   │   │   ├── parser/            # Parser de FRAME pallets
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── ast.rs         # AST definitions
-│   │   │   │   └── visitor.rs     # AST visitor pattern
-│   │   │   ├── analyzers/         # Detectores de vulnerabilidades
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── overflow.rs    # Overflow/underflow
-│   │   │   │   ├── authorization.rs
-│   │   │   │   ├── ownership.rs
-│   │   │   │   ├── decimal.rs     # Decimal precision
-│   │   │   │   └── arithmetic.rs  # Unchecked arithmetic
-│   │   │   ├── rules/             # Reglas de seguridad
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── severity.rs    # Severity levels
-│   │   │   │   └── recommendations.rs
-│   │   │   ├── cli/               # CLI tool
-│   │   │   │   ├── mod.rs
-│   │   │   │   └── main.rs
-│   │   │   └── reporter/          # Report generation
-│   │   │       ├── mod.rs
-│   │   │       ├── json.rs
-│   │   │       └── html.rs
-│   │   ├── tests/
-│   │   │   ├── integration/
-│   │   │   └── fixtures/          # Test pallets
-│   │   ├── Cargo.toml
-│   │   └── README.md
-│   │
-│   ├── monitoring-engine/          # Rust - Monitoreo tiempo real
-│   │   ├── src/
-│   │   │   ├── lib.rs
-│   │   │   ├── mempool/           # Mempool monitoring
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── subscriber.rs  # Event subscription
-│   │   │   │   └── parser.rs      # Transaction parsing
-│   │   │   ├── detectors/         # Pattern matching
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── flash_loan.rs
-│   │   │   │   ├── oracle.rs
-│   │   │   │   └── governance.rs
-│   │   │   ├── alerts/            # Alert system
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── severity.rs
-│   │   │   │   ├── dedup.rs       # De-duplication
-│   │   │   │   └── delivery.rs    # Webhook/WebSocket
-│   │   │   └── api/               # REST API
-│   │   │       ├── mod.rs
-│   │   │       ├── routes.rs
-│   │   │       └── handlers.rs
-│   │   ├── tests/
-│   │   ├── Cargo.toml
-│   │   └── README.md
-│   │
-│   ├── privacy-layer/              # Rust + ink! - ZKP
-│   │   ├── circuits/              # ZK circuits (arkworks)
-│   │   │   ├── vulnerability_proof.rs
-│   │   │   └── credentials.rs
-│   │   ├── contracts/             # ink! smart contracts
-│   │   │   ├── bug_bounty/
-│   │   │   │   ├── lib.rs
-│   │   │   │   └── Cargo.toml
-│   │   │   └── auditor_registry/
-│   │   │       ├── lib.rs
-│   │   │       └── Cargo.toml
-│   │   ├── src/
-│   │   │   ├── lib.rs
-│   │   │   ├── zkp/               # ZK proof generation/verification
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── prover.rs
-│   │   │   │   └── verifier.rs
-│   │   │   ├── credentials/       # Verifiable credentials
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── issue.rs
-│   │   │   │   └── verify.rs
-│   │   │   └── marketplace/       # Bug bounty logic
-│   │   │       ├── mod.rs
-│   │   │       ├── submission.rs
-│   │   │       └── rewards.rs
-│   │   ├── tests/
-│   │   ├── Cargo.toml
-│   │   └── README.md
-│   │
-│   ├── hyperbridge-integration/    # Rust - Cross-chain
-│   │   ├── src/
-│   │   │   ├── lib.rs
-│   │   │   ├── ismp/              # ISMP protocol integration
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── client.rs
-│   │   │   │   ├── post.rs        # POST requests
-│   │   │   │   └── get.rs         # GET requests
-│   │   │   ├── state_proofs/      # State proof verification
-│   │   │   │   ├── mod.rs
-│   │   │   │   └── verifier.rs
-│   │   │   └── multi_chain/       # Multi-chain monitoring
-│   │   │       ├── mod.rs
-│   │   │       ├── ethereum.rs
-│   │   │       ├── arbitrum.rs
-│   │   │       └── bnb.rs
-│   │   ├── tests/
-│   │   ├── Cargo.toml
-│   │   └── README.md
-│   │
-│   ├── hydration-module/           # Rust + TypeScript
-│   │   ├── rust/
-│   │   │   ├── src/
-│   │   │   │   ├── lib.rs
-│   │   │   │   ├── omnipool/      # Omnipool monitoring
-│   │   │   │   │   ├── mod.rs
-│   │   │   │   │   ├── tracker.rs
-│   │   │   │   │   └── analysis.rs
-│   │   │   │   ├── lending/       # Lending protocol analysis
-│   │   │   │   │   ├── mod.rs
-│   │   │   │   │   ├── health.rs
-│   │   │   │   │   └── liquidation.rs
-│   │   │   │   └── circuit_breaker/
-│   │   │   │       ├── mod.rs
-│   │   │   │       └── triggers.rs
-│   │   │   ├── tests/
-│   │   │   └── Cargo.toml
-│   │   └── ts/
-│   │       ├── src/
-│   │       │   └── integration/   # Hydration API integration
-│   │       ├── package.json
-│   │       └── tsconfig.json
-│   │
-│   ├── web-dashboard/              # TypeScript/React
-│   │   ├── src/
-│   │   │   ├── app/               # Next.js app directory
-│   │   │   │   ├── layout.tsx
-│   │   │   │   ├── page.tsx       # Overview
-│   │   │   │   ├── vulnerabilities/
-│   │   │   │   ├── monitoring/
-│   │   │   │   ├── cross-chain/
-│   │   │   │   ├── defi/
-│   │   │   │   ├── marketplace/
-│   │   │   │   └── settings/
-│   │   │   ├── components/
-│   │   │   │   ├── ui/            # shadcn/ui components
-│   │   │   │   ├── layout/
-│   │   │   │   ├── charts/
-│   │   │   │   └── tables/
-│   │   │   ├── hooks/
-│   │   │   │   ├── useAlerts.ts
-│   │   │   │   ├── useVulnerabilities.ts
-│   │   │   │   └── useWebSocket.ts
-│   │   │   ├── api/               # API client
-│   │   │   │   ├── client.ts
-│   │   │   │   └── endpoints/
-│   │   │   ├── utils/
-│   │   │   └── types/
-│   │   ├── public/
-│   │   ├── tests/
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   ├── tailwind.config.ts
-│   │   └── README.md
-│   │
-│   └── api-server/                 # Node.js/TypeScript
-│       ├── src/
-│       │   ├── index.ts
-│       │   ├── routes/
-│       │   │   ├── alerts.ts
-│       │   │   ├── vulnerabilities.ts
-│       │   │   ├── webhooks.ts
-│       │   │   └── marketplace.ts
-│       │   ├── controllers/
-│       │   ├── services/
-│       │   ├── middleware/
-│       │   │   ├── auth.ts
-│       │   │   ├── rateLimit.ts
-│       │   │   └── validation.ts
-│       │   └── db/                # PostgreSQL schemas
-│       │       ├── schema.sql
-│       │       └── migrations/
-│       ├── tests/
-│       ├── package.json
-│       ├── tsconfig.json
-│       └── README.md
-│
-├── pallets/                        # Substrate pallets custom
-│   ├── security-registry/         # On-chain registry de auditorías
-│   │   ├── src/
-│   │   │   ├── lib.rs
-│   │   │   ├── benchmarking.rs
-│   │   │   └── tests.rs
-│   │   └── Cargo.toml
-│   └── reputation/                # Sistema de reputación
-│       ├── src/
-│       │   ├── lib.rs
-│       │   ├── benchmarking.rs
-│       │   └── tests.rs
-│       └── Cargo.toml
-│
-├── scripts/
-│   ├── deploy/                    # Scripts de deployment
-│   │   ├── deploy-kusama.sh
-│   │   └── deploy-polkadot.sh
-│   ├── seed/                      # Data seeding para testing
-│   │   └── seed-test-data.ts
-│   └── benchmarks/                # Performance benchmarks
-│       └── run-benchmarks.sh
-│
-├── docs/
-│   ├── architecture/              # Diagramas de arquitectura
-│   │   ├── system-overview.md
-│   │   ├── data-flow.md
-│   │   └── security-model.md
-│   ├── api/                       # API documentation
-│   │   ├── rest-api.md
-│   │   └── websocket-api.md
-│   ├── user-guide/                # User documentation
-│   │   ├── getting-started.md
-│   │   ├── configuration.md
-│   │   └── troubleshooting.md
-│   └── integration/               # Integration guides
-│       ├── ci-cd.md
-│       ├── webhooks.md
-│       └── custom-detectors.md
-│
-├── docker/
-│   ├── docker-compose.yml
-│   ├── docker-compose.dev.yml
-│   ├── Dockerfile.rust
-│   ├── Dockerfile.node
-│   └── Dockerfile.dashboard
-│
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                 # Main CI workflow
-│       ├── deploy-kusama.yml
-│       ├── security-audit.yml
-│       └── release.yml
-│
-├── Cargo.toml                     # Workspace Rust
-├── package.json                   # Root package.json (monorepo)
-├── turbo.json                     # Turborepo config
-├── .gitignore
-├── .editorconfig
-├── README.md
-├── LICENSE
-└── PLAN.md                        # Este archivo
-```
-
----
-
-## Features de Privacidad (Requisito Crítico)
-
-### Arquitectura de Privacidad
+### Privacy Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -1130,18 +849,18 @@ polkadot-security-nexus/
 
 ### 1. ZK-SNARK Implementation
 
-**Circuito 1: Vulnerability Existence Proof**
+**Circuit 1: Vulnerability Existence Proof**
 
 ```rust
-// Pseudocódigo del circuito
+// Circuit pseudocode
 circuit VulnerabilityProof {
-    // Public inputs (visibles on-chain)
+    // Public inputs (visible on-chain)
     public contract_hash: Hash,
     public timestamp: u64,
     public auditor_commitment: Hash,
     public severity_level: u8,
 
-    // Private inputs (solo conocidos por el prover)
+    // Private inputs (only known by prover)
     private vulnerability_description: String,
     private exploit_code: Option<String>,
     private location: CodeLocation,
@@ -1149,31 +868,31 @@ circuit VulnerabilityProof {
 
     // Constraints
     constraints {
-        // Verifica que el hash del contrato coincide
+        // Verify contract hash matches
         assert(hash(contract_code) == contract_hash);
 
-        // Verifica que el auditor es quien dice ser
+        // Verify auditor is who they claim to be
         assert(hash(auditor_identity) == auditor_commitment);
 
-        // Verifica que la severidad es válida (1-4)
+        // Verify valid severity (1-4)
         assert(severity_level >= 1 && severity_level <= 4);
 
-        // Verifica que hay una descripción
+        // Verify description exists
         assert(vulnerability_description.len() > 0);
     }
 }
 ```
 
-**Uso:**
-1. Auditor encuentra vulnerabilidad en pallet
-2. Genera ZK proof con detalles privados
-3. Submit proof on-chain (sin revelar detalles)
-4. Proyecto verifica proof
-5. Auditor coordina disclosure responsable
-6. Tras fix, auditor revela detalles
-7. Recibe recompensa automáticamente
+**Usage:**
+1. Auditor finds vulnerability in pallet
+2. Generates ZK proof with private details
+3. Submits proof on-chain (without revealing details)
+4. Project verifies proof
+5. Auditor coordinates responsible disclosure
+6. After fix, auditor reveals details
+7. Receives reward automatically
 
-**Circuito 2: Verifiable Credentials**
+**Circuit 2: Verifiable Credentials**
 
 ```rust
 circuit AuditorCredentials {
@@ -1189,110 +908,110 @@ circuit AuditorCredentials {
     private certifications: Vec<Certification>,
 
     constraints {
-        // Verifica que el issuer es válido
+        // Verify issuer is valid
         assert(verify_issuer(issuer_commitment));
 
-        // Verifica experiencia mínima
+        // Verify minimum experience
         assert(experience_level >= min_experience_level);
 
-        // Verifica número de auditorías pasadas
+        // Verify number of past audits
         assert(past_audits.len() >= required_audits);
 
-        // Verifica certificaciones
+        // Verify certifications
         assert(verify_certifications(certifications));
     }
 }
 ```
 
-**Uso:**
-1. Auditor solicita trabajo
-2. Genera proof de credenciales (sin revelar identidad)
-3. Proyecto verifica proof
-4. Acepta auditor basándose en credentials verificables
-5. Mantiene privacidad del auditor
+**Usage:**
+1. Auditor applies for work
+2. Generates credential proof (without revealing identity)
+3. Project verifies proof
+4. Accepts auditor based on verifiable credentials
+5. Maintains auditor privacy
 
 ### 2. Privacy-Preserving Communication
 
-**Encrypted Channels para Incident Response:**
+**Encrypted Channels for Incident Response:**
 
 - **Threshold Encryption:**
-  - Mensaje encriptado requiere M-of-N keys para decrypt
-  - Coordinación entre múltiples stakeholders
-  - Previene single point of failure
+  - Encrypted message requires M-of-N keys to decrypt
+  - Coordination among multiple stakeholders
+  - Prevents single point of failure
 
 - **Time-Locked Encryption:**
-  - Mensajes auto-decrypt después de deadline
-  - Garantiza disclosure si coordinación falla
-  - Basado en Verifiable Delay Functions (VDFs)
+  - Messages auto-decrypt after deadline
+  - Guarantees disclosure if coordination fails
+  - Based on Verifiable Delay Functions (VDFs)
 
-**Commitment Scheme para Responsible Disclosure:**
+**Commitment Scheme for Responsible Disclosure:**
 
 ```
-1. Auditor encuentra vulnerabilidad
-2. Crea commitment: C = Hash(vulnerability_details || nonce)
-3. Submit commitment on-chain con timestamp
-4. Coordina con proyecto (90 días típico)
-5. Proyecto desarrolla fix
-6. Auditor revela: (vulnerability_details, nonce)
-7. Chain verifica: Hash(revealed_data) == C
-8. Pago automático si verificación exitosa
+1. Auditor finds vulnerability
+2. Creates commitment: C = Hash(vulnerability_details || nonce)
+3. Submits commitment on-chain with timestamp
+4. Coordinates with project (90 days typical)
+5. Project develops fix
+6. Auditor reveals: (vulnerability_details, nonce)
+7. Chain verifies: Hash(revealed_data) == C
+8. Automatic payment if verification successful
 ```
 
-**Beneficios:**
-- Proof timestamped de descubrimiento
-- No puede cambiar detalles después
-- Protección para auditor
-- Incentivo para disclosure responsable
+**Benefits:**
+- Timestamped proof of discovery
+- Cannot change details later
+- Protection for auditor
+- Incentive for responsible disclosure
 
 ### 3. Private Marketplace
 
-**Bug Bounty con Privacidad:**
+**Bug Bounty with Privacy:**
 
 ```
-Flow del Marketplace:
+Marketplace Flow:
 
-1. Proyecto crea bounty program
-   - Scope definido
-   - Rewards por severidad
-   - Funds en escrow (smart contract)
+1. Project creates bounty program
+   - Defined scope
+   - Rewards by severity
+   - Funds in escrow (smart contract)
 
-2. Auditor encuentra bug
-   - Genera ZK proof
-   - Submit proof on-chain
-   - Revela detalles solo a proyecto (encrypted)
+2. Auditor finds bug
+   - Generates ZK proof
+   - Submits proof on-chain
+   - Reveals details only to project (encrypted)
 
-3. Proyecto verifica
-   - Valida ZK proof on-chain
-   - Decrypta detalles (privado)
-   - Confirma validez
+3. Project verifies
+   - Validates ZK proof on-chain
+   - Decrypts details (private)
+   - Confirms validity
 
-4. Pago automático
-   - Smart contract release funds
-   - Basado en severity level
-   - Reputation update (privado)
+4. Automatic payment
+   - Smart contract releases funds
+   - Based on severity level
+   - Reputation update (private)
 
-5. Public disclosure (opcional)
-   - Después de fix
-   - Con consent de ambas partes
-   - Stats agregadas públicas (no detalles)
+5. Public disclosure (optional)
+   - After fix
+   - With consent from both parties
+   - Aggregate stats public (not details)
 ```
 
 ### 4. Anonymous Reputation System
 
-**Sistema de Reputación Privado:**
+**Private Reputation System:**
 
 - **Zero-Knowledge Reputation Proofs:**
-  - Auditor prueba reputación > threshold
-  - Sin revelar score exacto
-  - Sin revelar identidad
+  - Auditor proves reputation > threshold
+  - Without revealing exact score
+  - Without revealing identity
 
 - **Verifiable Claims:**
-  - "He completado > 50 auditorías"
-  - "Mi success rate > 90%"
-  - "Tengo certificación de X issuer"
-  - Todo verificable sin revelar datos exactos
+  - "Completed > 50 audits"
+  - "Success rate > 90%"
+  - "Have certification from X issuer"
+  - All verifiable without revealing exact data
 
-**Implementación:**
+**Implementation:**
 ```rust
 circuit ReputationProof {
     public threshold: u64,
@@ -1308,226 +1027,228 @@ circuit ReputationProof {
 
 ---
 
-## Métricas de Éxito
+## Success Metrics
 
-### Para Hackathon (Evaluación Inmediata)
+### Immediate Success Indicators (First 6 Months)
 
-**1. Vulnerabilidades Detectadas**
-- Target: 20+ vulnerabilidades en pallets de test
+**1. Vulnerabilities Detected**
+- Target: 100+ vulnerabilities in production pallets
 - Breakdown:
-  - 5+ Critical
-  - 8+ High
-  - 7+ Medium/Low
+  - 15+ Critical
+  - 40+ High
+  - 45+ Medium/Low
 - False positive rate < 10%
 
 **2. Performance**
-- Latencia de detección en tiempo real: < 5 segundos
-- SAFT analysis time: < 5 segundos por pallet
-- ZK proof generation: < 30 segundos
-- Dashboard load time: < 2 segundos
+- Real-time detection latency: < 5 seconds
+- SAFT analysis time: < 5 seconds per pallet
+- ZK proof generation: < 30 seconds
+- Dashboard load time: < 2 seconds
 
 **3. Coverage**
-- 15+ tipos de vulnerabilidades detectables
-- 3+ tipos de ataques en tiempo real
-- 3+ chains monitoreadas (Polkadot, Kusama, + 1)
-- 100% code coverage en componentes críticos
+- 15+ types of detectable vulnerabilities
+- 3+ types of real-time attacks
+- 5+ chains monitored (Polkadot, Kusama, + 3)
+- 100% code coverage in critical components
 
-**4. Integraciones**
-- 4/4 sponsors integrados exitosamente
+**4. Ecosystem Integration**
+- All ecosystem partners successfully integrated
 - Parity: Substrate/FRAME/ink!
-- Kusama: Deploy funcional
-- Hydration: Monitoreo Omnipool
+- Kusama: Functional deployment
+- Hydration: Omnipool monitoring
 - Hyperbridge: Cross-chain monitoring
 
-**5. Calidad del Código**
+**5. Code Quality**
 - Zero critical bugs
 - Clippy warnings: 0
 - Test coverage: > 80%
 - Security audit: Passed
 
-**6. UX/Presentación**
-- Dashboard funcional y profesional
-- Video demo de calidad
-- Documentación completa
-- Pitch convincente
+**6. User Experience**
+- Functional and professional dashboard
+- Complete documentation
+- Positive developer feedback
 
-### Post-Hackathon (Largo Plazo)
+### Long-Term Impact (12-18 Months)
 
-**Adoption Metrics (6 meses):**
-- 50+ proyectos usando la herramienta
-- 100+ auditores registrados
-- 1,000+ vulnerabilidades detectadas
-- 10+ critical bugs prevenidos
+**Adoption Metrics:**
+- 50+ projects using the tool
+- 100+ registered auditors
+- 500+ vulnerabilities detected
+- 25+ critical bugs prevented
 
 **Economic Impact:**
-- > $10M en vulnerabilidades prevenidas
-- > $100K en bug bounties pagados
-- > 50 proyectos auditados
+- > $10M in prevented vulnerabilities
+- > $100K in bug bounties paid
+- > 50 projects audited
 
 **Ecosystem Growth:**
-- 10+ chains monitoreadas
-- 5+ integraciones con otras herramientas
-- Contribuciones al Polkadot SDK
-- Templates adoptados por la comunidad
+- 10+ chains monitored
+- 5+ integrations with other tools
+- Contributions to Polkadot SDK
+- Templates adopted by community
 
-**Business Metrics:**
-- Revenue model viable (SaaS o grants)
-- Funding secured (Polkadot Treasury, VCs)
-- Team expandido
-- Roadmap claro
-
----
-
-## Roadmap Post-Hackathon
-
-### Q1 2025 (Post-Hackathon)
-- Deploy en Polkadot mainnet
-- Onboarding de primeros 10 proyectos
-- Partnership con firmas de auditoría
-- Grant application a Polkadot Treasury
-
-### Q2 2025
-- Expansion a 10+ chains vía Hyperbridge
-- Marketplace de bug bounties activo
-- Community de 100+ auditores
-- Revenue de primeros customers
-
-### Q3 2025
-- ML-powered detection (reducir false positives)
-- Automated fix suggestions
-- Integration con más DeFi protocols
-- Mobile app para alerts
-
-### Q4 2025
-- Enterprise tier con SLAs
-- White-label solution para parachains
-- API marketplace (third-party detectors)
-- Series A fundraising
+**Business Sustainability:**
+- Viable revenue model (SaaS or grants)
+- Secured funding (Polkadot Treasury, VCs)
+- Expanded team
+- Clear roadmap
 
 ---
 
-## Ventajas Competitivas
+## Competitive Advantages
 
-### 1. Única Solución Integral para Substrate
-**Gap Claro:**
-- No existe herramienta especializada para FRAME pallets
-- Soluciones actuales son genéricas (Slither, Mythril para EVM)
-- Conocimiento profundo de Substrate requerido
+### 1. Only Comprehensive Solution for Substrate
+**Clear Gap:**
+- No specialized tool for FRAME pallets exists
+- Current solutions are generic (Slither, Mythril for EVM)
+- Deep Substrate knowledge required
 
-**Nuestro Edge:**
-- Built for Substrate desde el inicio
-- Entiende FRAME macros, pallets, runtime
-- Detección específica de problemas de Substrate (XCM, collators, etc.)
+**Our Edge:**
+- Built for Substrate from the start
+- Understands FRAME macros, pallets, runtime
+- Specific detection of Substrate issues (XCM, collators, etc.)
 
-### 2. Integración Perfecta con los 4 Sponsors
+### 2. Perfect Integration with Ecosystem Partners
 
 **Parity:** Core ecosystem tooling
 **Kusama:** Perfect testing ground
 **Hydration:** DeFi security + economic incentives
 **Hyperbridge:** Cross-chain coverage
 
-**Resultado:**
-- Demuestra conocimiento profundo del ecosistema
-- No es un proyecto genérico adaptado
-- Built specifically para Polkadot
+**Result:**
+- Demonstrates deep ecosystem knowledge
+- Not a generic project adapted
+- Built specifically for Polkadot
 
-### 3. Privacidad Nativa (Diferenciador Clave)
+### 3. Native Privacy (Key Differentiator)
 
 **Competitors:**
-- Reportes públicos (risky)
-- Identidad expuesta (security risk)
-- No hay coordinated disclosure
+- Public reports (risky)
+- Exposed identity (security risk)
+- No coordinated disclosure
 
-**Nosotros:**
-- ZK proofs para reportes privados
+**Us:**
+- ZK proofs for private reports
 - Anonymous credentials
-- Responsible disclosure built-in
-- Protección para auditores
+- Built-in responsible disclosure
+- Protection for auditors
 
-### 4. Precedente Exitoso
+### 4. Measurable and Immediate Impact
 
-**Gecko Sec:**
-- Similar problema (seguridad Web3)
-- Started en hackathon Polkadot
-- Accepted en Y Combinator
-- Validación del mercado
+**Quantified Problem:**
+- $474M lost in DeFi in 2024
+- $52M in oracle manipulation alone
+- $95M in insider attacks
 
-**Nosotros:**
-- Mismo modelo de negocio viable
-- Problema igual de crítico
-- Mejor integración con ecosystem
-
-### 5. Impacto Medible e Inmediato
-
-**Problema Cuantificado:**
-- $474M perdidos en DeFi en 2024
-- $52M solo en oracle manipulation
-- $95M en insider attacks
-
-**Nuestra Solución:**
-- Prevención (static analysis)
-- Detección (real-time monitoring)
+**Our Solution:**
+- Prevention (static analysis)
+- Detection (real-time monitoring)
 - Response (private reporting)
 - Measurable ROI
 
-### 6. Production-Ready desde el Inicio
+### 5. Production-Ready from the Start
 
-**No es un POC:**
-- Arquitectura escalable
+**Not a POC:**
+- Scalable architecture
 - Security best practices
 - Professional UX
 - Complete documentation
 
-**Listo para adopción:**
+**Ready for adoption:**
 - CI/CD integration
-- API para integraciones
-- Dashboard para non-technical users
-- Support para empresas
+- API for integrations
+- Dashboard for non-technical users
+- Enterprise support
 
 ---
 
-## Riesgos y Mitigaciones
+## Risk Mitigation
 
-### Riesgo 1: Complejidad Técnica
-**Riesgo:** ZK circuits y análisis estático son complejos
-**Mitigación:**
-- Start con circuits simples
-- Usar librerías probadas (arkworks)
-- Prototype early, iterate fast
-- Backup plan: Skip ZK si no funciona, focus en análisis estático
+### Risk 1: Technical Complexity
+**Risk:** ZK circuits and static analysis are complex
+**Mitigation:**
+- Start with simple circuits
+- Use proven libraries (arkworks)
+- Early prototyping, fast iteration
+- Backup plan: Focus on static analysis if ZK doesn't work
 
-### Riesgo 2: False Positives
-**Riesgo:** Demasiados false positives reduce confianza
-**Mitigación:**
-- Tuning cuidadoso de detectores
-- Machine learning para mejorar accuracy
+### Risk 2: False Positives
+**Risk:** Too many false positives reduce trust
+**Mitigation:**
+- Careful detector tuning
+- Machine learning to improve accuracy
 - User feedback loop
-- Severity levels claros
+- Clear severity levels
 
-### Riesgo 3: Performance
-**Riesgo:** Monitoreo en tiempo real puede ser lento
-**Mitigación:**
-- Rust para performance crítico
-- Caching agresivo (Redis)
+### Risk 3: Performance
+**Risk:** Real-time monitoring could be slow
+**Mitigation:**
+- Rust for performance-critical code
+- Aggressive caching (Redis)
 - Horizontal scaling (Kubernetes)
-- Optimización de queries
+- Query optimization
 
-### Riesgo 4: Adoption
-**Riesgo:** Desarrolladores no adoptan la herramienta
-**Mitigación:**
-- Free tier generoso
-- Excelente UX
+### Risk 4: Adoption
+**Risk:** Developers don't adopt the tool
+**Mitigation:**
+- Generous free tier
+- Excellent UX
 - Clear value proposition
-- Marketing en comunidad Polkadot
-- Partnerships con parachains conocidos
+- Marketing in Polkadot community
+- Partnerships with known parachains
 
-### Riesgo 5: Competencia
-**Riesgo:** Otros pueden copiar la idea
-**Mitigación:**
+### Risk 5: Competition
+**Risk:** Others could copy the idea
+**Mitigation:**
 - First-mover advantage
 - Network effects (marketplace)
 - Continuous innovation
 - Community building
-- Partnerships exclusivos
+- Exclusive partnerships
 
-_Este no es solo un proyecto de hackathon. Es el inicio de una compañía que puede transformar la seguridad en el ecosistema Polkadot y más allá._
+---
+
+## Roadmap
+
+### Q1 2025 (Post-Launch)
+- Polkadot mainnet deployment
+- Onboarding first 10 projects
+- Partnership with audit firms
+- Polkadot Treasury grant application
+
+### Q2 2025
+- Expansion to 10+ chains via Hyperbridge
+- Active bug bounty marketplace
+- Community of 100+ auditors
+- Revenue from first customers
+
+### Q3 2025
+- ML-powered detection (reduce false positives)
+- Automated fix suggestions
+- Integration with more DeFi protocols
+- Mobile app for alerts
+
+### Q4 2025
+- Enterprise tier with SLAs
+- White-label solution for parachains
+- API marketplace (third-party detectors)
+- Series A fundraising
+
+---
+
+## Conclusion
+
+**Polkadot Security Nexus** is designed to deliver measurable value to the Polkadot ecosystem by:
+
+1. Solving a critical and quantified problem ($474M in losses)
+2. Providing specialized tools where none exist (Substrate/FRAME security)
+3. Integrating seamlessly with key ecosystem partners
+4. Demonstrating technical excellence (ZKP + static analysis + real-time monitoring)
+5. Delivering immediate, measurable impact
+6. Being production-ready from day one
+7. Building on current ecosystem momentum (Polkadot 2.0, Agile Coretime)
+
+This is not just a demonstration project. It's the foundation of a platform that can transform security in the Polkadot ecosystem and beyond, protecting millions in assets and empowering developers to build with confidence.
+
+**Next Steps:** See README.md for setup and implementation instructions.
