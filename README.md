@@ -224,13 +224,14 @@ pnpm build
 
 See [PLAN.md](./PLAN.md) for the complete 12-week implementation plan with detailed phases, user stories, and success metrics.
 
+## Team Members
+
+- Juan Ignacio Raggio
+- Victoria Helena Park
+
 ## License
 
 MIT License - see [LICENSE](./LICENSE)
-
-## Team
-
-Built by a team passionate about blockchain security and the Polkadot ecosystem.
 
 ## Acknowledgments
 
@@ -238,4 +239,4 @@ Special thanks to Polkadot/Web3 Foundation, Parity Technologies, Hydration, Hype
 
 ---
 
-Built for the Polkadot ecosystem
+*Built for the Polkadot ecosystem*
