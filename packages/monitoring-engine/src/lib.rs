@@ -184,16 +184,11 @@ impl MonitoringEngine {
 
     /// Initialize attack pattern detectors
     fn initialize_detectors(&self) -> Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>> {
-        let mut detectors: Vec<Box<dyn detectors::Detector + Send + Sync>> = Vec::new();
-
-        // Add flash loan detector
-        detectors.push(Box::new(detectors::FlashLoanDetector::new()));
-
-        // Add MEV detector
-        detectors.push(Box::new(detectors::MevDetector::new()));
-
-        // Add unusual volume detector
-        detectors.push(Box::new(detectors::VolumeAnomalyDetector::new()));
+        let detectors: Vec<Box<dyn detectors::Detector + Send + Sync>> = vec![
+            Box::new(detectors::FlashLoanDetector::new()),
+            Box::new(detectors::MevDetector::new()),
+            Box::new(detectors::VolumeAnomalyDetector::new()),
+        ];
 
         Arc::new(detectors)
     }
