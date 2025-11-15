@@ -38,7 +38,7 @@ export async function checkSAFTBinary(): Promise<{ exists: boolean; path: string
     }
 
     // Try to execute version command
-    const { stdout } = await execAsync(`${SAFT_BINARY_PATH} --version`);
+    await execAsync(`${SAFT_BINARY_PATH} --version`);
 
     return {
       exists: true,
@@ -73,7 +73,7 @@ export async function analyzePallet(
     // Execute SAFT binary with JSON output
     const command = `${SAFT_BINARY_PATH} analyze "${tempFilePath}" --format json`;
 
-    const { stdout, stderr } = await execAsync(command, {
+    const { stdout } = await execAsync(command, {
       maxBuffer: 10 * 1024 * 1024, // 10MB buffer
       timeout: 30000, // 30 second timeout
     });

@@ -73,7 +73,7 @@ export function useAnalyzePallet() {
 
   return useMutation({
     mutationFn: analyzePallet,
-    onSuccess: (data: AnalyzeResponse) => {
+    onSuccess: (_data: AnalyzeResponse) => {
       // Invalidate and refetch stats and history after successful analysis
       queryClient.invalidateQueries({ queryKey: analysisKeys.stats() });
       queryClient.invalidateQueries({ queryKey: analysisKeys.all });

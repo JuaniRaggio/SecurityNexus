@@ -9,11 +9,6 @@ import type { AnalyzeResponse } from '@/types/api';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Increase body size limit for file uploads (10MB)
-export const bodyParser = {
-  sizeLimit: '10mb',
-};
-
 export async function POST(request: NextRequest) {
   try {
     // Check if SAFT binary is available
