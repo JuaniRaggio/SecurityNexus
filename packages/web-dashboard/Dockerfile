@@ -1,12 +1,19 @@
-# Stage: build saft (Rust)
-FROM rust:1.85 as saft-builder
-WORKDIR /saft
-COPY packages/saft-enhanced ./saft-enhanced
-WORKDIR /saft/saft-enhanced
-RUN cargo build --release --bin saft || true
-# If binary name differs adjust path
+# Stage 1: Build SAFT (Rust static analyzer)
+FROM rust:1.85 AS saft-builder
+WORKDIR /build
 
-# Stage: build next app
+# Copy workspace files
+COPY Cargo.toml Cargo.lock ./
+COPY packages ./packages
+COPY pallets ./pallets
+COPY runtime ./runtime
+COPY node ./node
+
+# Build SAFT binary
+WORKDIR /build/packages/saft-enhanced
+RUN cargo build --release --bin saft
+
+# Stage 2: Build Next.js app
 FROM node:18-alpine AS node-builder
 WORKDIR /app
 COPY packages/web-dashboard/package.json packages/web-dashboard/pnpm-lock.yaml ./
@@ -24,8 +31,8 @@ COPY --from=node-builder /app/public ./public
 COPY --from=node-builder /app/package.json ./
 COPY --from=node-builder /app/node_modules ./node_modules
 
-# copy saft binary
-COPY --from=saft-builder /saft/saft-enhanced/target/release/saft /usr/local/bin/saft
+# Copy SAFT binary for static analysis
+COPY --from=saft-builder /build/target/release/saft /usr/local/bin/saft
 
 ENV NODE_ENV=production
 ENV PORT=3000
