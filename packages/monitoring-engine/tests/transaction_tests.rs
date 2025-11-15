@@ -3,11 +3,11 @@
 //! These tests verify that we can correctly extract and parse transactions
 //! from Substrate blocks.
 
-use monitoring_engine::{MonitorConfig, MonitoringEngine, AlertSeverity};
+use monitoring_engine::MonitoringEngine;
 use std::sync::Arc;
 
 mod common;
-use common::skip_if_no_chain;
+use common::test_config;
 
 #[tokio::test]
 async fn test_extract_transactions_from_block() {

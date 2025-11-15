@@ -60,9 +60,9 @@ pub async fn is_chain_running() -> bool {
 #[macro_export]
 macro_rules! skip_if_no_chain {
     () => {
-        if !is_chain_running().await {
+        if !common::is_chain_running().await {
             eprintln!("⚠️  Skipping test: Local chain not running at ws://127.0.0.1:9944");
-            eprintln!("   Start chain with: ./target/release/security-nexus-node --dev");
+            eprintln!("   Start chain with: substrate-contracts-node --dev");
             return;
         }
     };

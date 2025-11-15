@@ -9,6 +9,7 @@ license.workspace = true
 # Async runtime
 tokio.workspace = true
 async-trait.workspace = true
+futures = "0.3"
 
 # HTTP client
 reqwest.workspace = true
@@ -49,6 +50,12 @@ governor = "0.6"
 # UUID generation
 uuid = { version = "1.0", features = ["v4", "serde"] }
 
+# Hex encoding/decoding
+hex = "0.4"
+
+# Hashing
+blake3 = "1.5"
+
 [dev-dependencies]
 mockall.workspace = true
 pretty_assertions.workspace = true
@@ -56,6 +63,10 @@ tokio-test = "0.4"
 proptest = "1.0"
 # wiremock = "0.6" - Temporarily removed due to Rust version compatibility
 # Will re-add when needed for HTTP mocking tests
+
+[[test]]
+name = "transaction_tests"
+path = "tests/transaction_tests.rs"
 
 [[bench]]
 name = "detection_benchmarks"
