@@ -5,8 +5,12 @@ import StatsCard from '@/components/StatsCard'
 import AlertsPanel from '@/components/AlertsPanel'
 import RecentAnalysis from '@/components/RecentAnalysis'
 import ChainStatus from '@/components/ChainStatus'
+import { useStats } from '@/hooks/useAnalysis'
 
 export default function Home() {
+  const { data: statsData, isLoading, error } = useStats();
+  const stats = statsData?.stats;
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,23 +24,23 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Active Alerts"
-          value="3"
-          change="+2 from yesterday"
+          value={isLoading ? '-' : String(stats?.activeAlerts || 0)}
+          change={stats?.activeAlerts === 0 ? 'All clear' : 'Attention required'}
           icon={AlertTriangle}
-          trend="up"
+          trend={stats?.activeAlerts === 0 ? 'neutral' : 'up'}
           color="red"
         />
         <StatsCard
           title="Pallets Analyzed"
-          value="127"
-          change="+12 this week"
+          value={isLoading ? '-' : String(stats?.totalPalletsAnalyzed || 0)}
+          change={stats?.totalPalletsAnalyzed === 0 ? 'Upload a pallet to get started' : 'Total analyzed'}
           icon={FileSearch}
-          trend="up"
+          trend="neutral"
           color="blue"
         />
         <StatsCard
           title="Chains Monitored"
-          value="5"
+          value={isLoading ? '-' : String(stats?.chainsMonitored || 0)}
           change="All operational"
           icon={Activity}
           trend="neutral"
@@ -44,13 +48,19 @@ export default function Home() {
         />
         <StatsCard
           title="Security Score"
-          value="94%"
-          change="+3% from last month"
+          value={isLoading ? '-' : `${stats?.securityScore || 0}%`}
+          change={(stats?.securityScore ?? 0) >= 90 ? 'Excellent' : (stats?.securityScore ?? 0) >= 70 ? 'Good' : 'Needs attention'}
           icon={Shield}
-          trend="up"
+          trend={(stats?.securityScore ?? 0) >= 90 ? 'up' : (stats?.securityScore ?? 0) >= 70 ? 'neutral' : 'down'}
           color="green"
         />
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          Failed to load dashboard stats. Make sure the SAFT binary is built and configured correctly.
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

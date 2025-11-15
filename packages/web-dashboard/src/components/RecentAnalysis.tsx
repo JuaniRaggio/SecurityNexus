@@ -2,50 +2,21 @@
 
 import { FileSearch, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import clsx from 'clsx'
+import { useHistory } from '@/hooks/useAnalysis'
+import { formatDistanceToNow } from 'date-fns'
 
-interface Analysis {
+type AnalysisStatus = 'passed' | 'failed' | 'warning'
+
+interface AnalysisDisplay {
   id: string
   pallet: string
-  status: 'passed' | 'failed' | 'warning'
+  status: AnalysisStatus
   vulnerabilities: number
   critical: number
   high: number
   medium: number
   timestamp: string
 }
-
-const analyses: Analysis[] = [
-  {
-    id: '1',
-    pallet: 'pallet_balances',
-    status: 'passed',
-    vulnerabilities: 0,
-    critical: 0,
-    high: 0,
-    medium: 0,
-    timestamp: '5 minutes ago',
-  },
-  {
-    id: '2',
-    pallet: 'pallet_dex',
-    status: 'failed',
-    vulnerabilities: 5,
-    critical: 1,
-    high: 2,
-    medium: 2,
-    timestamp: '12 minutes ago',
-  },
-  {
-    id: '3',
-    pallet: 'pallet_staking',
-    status: 'warning',
-    vulnerabilities: 2,
-    critical: 0,
-    high: 0,
-    medium: 2,
-    timestamp: '23 minutes ago',
-  },
-]
 
 const statusConfig = {
   passed: {
@@ -69,6 +40,41 @@ const statusConfig = {
 }
 
 export default function RecentAnalysis() {
+  const { data: historyData, isLoading } = useHistory(10);
+
+  const analyses: AnalysisDisplay[] = (historyData?.history || []).map((item) => {
+    const severityCounts = item.result.vulnerabilities.reduce(
+      (acc, vuln) => {
+        acc[vuln.severity] = (acc[vuln.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    const critical = severityCounts.critical || 0;
+    const high = severityCounts.high || 0;
+    const medium = severityCounts.medium || 0;
+    const total = item.result.vulnerabilities.length;
+
+    let status: AnalysisStatus = 'passed';
+    if (critical > 0 || high > 0) {
+      status = 'failed';
+    } else if (medium > 0) {
+      status = 'warning';
+    }
+
+    return {
+      id: item.id,
+      pallet: item.filename,
+      status,
+      vulnerabilities: total,
+      critical,
+      high,
+      medium,
+      timestamp: formatDistanceToNow(new Date(item.uploadedAt), { addSuffix: true }),
+    };
+  });
+
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-6 border-b border-gray-200">
@@ -98,65 +104,79 @@ export default function RecentAnalysis() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {analyses.map((analysis) => {
-              const config = statusConfig[analysis.status]
-              const Icon = config.icon
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  Loading analysis history...
+                </td>
+              </tr>
+            ) : analyses.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  No analyses yet. Upload a pallet file to get started.
+                </td>
+              </tr>
+            ) : (
+              analyses.map((analysis) => {
+                const config = statusConfig[analysis.status]
+                const Icon = config.icon
 
-              return (
-                <tr key={analysis.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <FileSearch className="w-5 h-5 text-gray-400" />
-                      <span className="font-medium text-gray-900">
-                        {analysis.pallet}
+                return (
+                  <tr key={analysis.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <FileSearch className="w-5 h-5 text-gray-400" />
+                        <span className="font-medium text-gray-900">
+                          {analysis.pallet}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={clsx(
+                          'inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
+                          config.bg,
+                          config.color
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {config.label}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={clsx(
-                        'inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
-                        config.bg,
-                        config.color
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {config.label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-4 text-sm">
-                      {analysis.critical > 0 && (
-                        <span className="text-red-600 font-medium">
-                          {analysis.critical} Critical
-                        </span>
-                      )}
-                      {analysis.high > 0 && (
-                        <span className="text-orange-600 font-medium">
-                          {analysis.high} High
-                        </span>
-                      )}
-                      {analysis.medium > 0 && (
-                        <span className="text-yellow-600 font-medium">
-                          {analysis.medium} Medium
-                        </span>
-                      )}
-                      {analysis.vulnerabilities === 0 && (
-                        <span className="text-gray-500">None</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {analysis.timestamp}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <button className="text-blue-600 hover:text-blue-700 font-medium">
-                      View Report
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-4 text-sm">
+                        {analysis.critical > 0 && (
+                          <span className="text-red-600 font-medium">
+                            {analysis.critical} Critical
+                          </span>
+                        )}
+                        {analysis.high > 0 && (
+                          <span className="text-orange-600 font-medium">
+                            {analysis.high} High
+                          </span>
+                        )}
+                        {analysis.medium > 0 && (
+                          <span className="text-yellow-600 font-medium">
+                            {analysis.medium} Medium
+                          </span>
+                        )}
+                        {analysis.vulnerabilities === 0 && (
+                          <span className="text-gray-500">None</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {analysis.timestamp}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      <button className="text-blue-600 hover:text-blue-700 font-medium">
+                        View Report
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
           </tbody>
         </table>
       </div>
