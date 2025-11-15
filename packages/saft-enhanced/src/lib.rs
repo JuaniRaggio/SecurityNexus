@@ -121,6 +121,8 @@ pub enum VulnerabilityCategory {
     DenialOfService,
     /// Best practices violations
     BestPractice,
+    /// XCM decimal precision issues
+    XcmDecimalPrecision,
 }
 
 /// A detected vulnerability
