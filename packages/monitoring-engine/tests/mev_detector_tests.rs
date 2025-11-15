@@ -518,7 +518,7 @@ async fn test_mev_confidence_scoring() {
 
     // When: We analyze all scenarios
     let sandwich_results = detector.analyze_batch(&sandwich_contexts).await;
-    let frontrun_results = detector.analyze_batch(&frontrun_contexts).await;
+    let _frontrun_results = detector.analyze_batch(&frontrun_contexts).await;
     let normal_results = detector.analyze_batch(&normal_contexts).await;
 
     // Then: Confidence should correlate with attack likelihood
