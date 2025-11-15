@@ -3,7 +3,7 @@
 //! Provides HTTP endpoints to access monitoring statistics and status
 
 use crate::{MonitoringEngine, Result};
-use actix_web::{web, App, HttpResponse, HttpServer, middleware};
+use actix_web::{http::header, web, App, HttpResponse, HttpServer, middleware};
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
