@@ -63,6 +63,13 @@ pub struct MonitorConfig {
     pub min_alert_severity: AlertSeverity,
     /// Buffer size for event processing
     pub buffer_size: usize,
+    /// Maximum reconnection attempts (0 = no retry, use connect_with_retry)
+    #[serde(default = "default_max_reconnect_attempts")]
+    pub max_reconnect_attempts: u32,
+}
+
+fn default_max_reconnect_attempts() -> u32 {
+    5
 }
 
 impl Default for MonitorConfig {
@@ -76,6 +83,7 @@ impl Default for MonitorConfig {
             alert_webhook: None,
             min_alert_severity: AlertSeverity::Medium,
             buffer_size: 1000,
+            max_reconnect_attempts: 5,
         }
     }
 }
@@ -128,8 +136,14 @@ impl MonitoringEngine {
         state.is_running = true;
         drop(state);
 
-        // Connect to the Substrate node
-        if let Err(e) = self.connection.connect().await {
+        // Connect to the Substrate node with automatic retry
+        let connect_result = if self.config.max_reconnect_attempts > 0 {
+            self.connection.connect_with_retry(self.config.max_reconnect_attempts).await
+        } else {
+            self.connection.connect().await
+        };
+
+        if let Err(e) = connect_result {
             // Reset is_running flag on connection failure
             let mut state = self.state.write().await;
             state.is_running = false;

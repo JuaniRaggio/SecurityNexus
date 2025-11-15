@@ -15,6 +15,7 @@ pub fn test_config() -> MonitorConfig {
         alert_webhook: None,
         min_alert_severity: AlertSeverity::Low,
         buffer_size: 100,
+        max_reconnect_attempts: 3,
     }
 }
 
