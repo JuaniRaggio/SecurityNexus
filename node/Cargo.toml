@@ -1,0 +1,92 @@
+[package]
+name = "security-nexus-node"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+build = "build.rs"
+
+[dependencies]
+clap = { workspace = true }
+log = { workspace = true }
+codec = { package = "parity-scale-codec", version = "3.6.1" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+futures = "0.3.28"
+hex-literal = "0.4.1"
+
+# Local
+security-nexus-runtime = { path = "../runtime" }
+
+# Substrate
+frame-benchmarking = { workspace = true }
+frame-benchmarking-cli = "42.0.0"
+pallet-transaction-payment-rpc = "40.0.0"
+sc-basic-authorship = { workspace = true }
+sc-chain-spec = { workspace = true }
+sc-cli = { workspace = true }
+sc-client-api = { workspace = true }
+sc-consensus = { workspace = true }
+sc-executor = { workspace = true }
+sc-network = { workspace = true }
+sc-network-sync = "0.43.0"
+sc-offchain = { workspace = true }
+sc-rpc = { workspace = true }
+sc-service = { workspace = true }
+sc-sysinfo = { workspace = true }
+sc-telemetry = { workspace = true }
+sc-tracing = { workspace = true }
+sc-transaction-pool = { workspace = true }
+sc-transaction-pool-api = { workspace = true }
+sp-api = { workspace = true }
+sp-block-builder = { workspace = true }
+sp-blockchain = "37.0.0"
+sp-consensus-aura = { workspace = true }
+sp-core = { workspace = true }
+sp-keystore = "0.40.0"
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-timestamp = "34.0.0"
+substrate-frame-rpc-system = "38.0.0"
+substrate-prometheus-endpoint = "0.17.0"
+
+# Polkadot
+polkadot-cli = { workspace = true }
+polkadot-primitives = { workspace = true }
+polkadot-service = { workspace = true }
+staging-xcm = { workspace = true }
+
+# Cumulus
+cumulus-client-cli = { workspace = true }
+cumulus-client-collator = { workspace = true }
+cumulus-client-consensus-aura = { workspace = true }
+cumulus-client-consensus-common = { workspace = true }
+cumulus-client-consensus-proposer = { workspace = true }
+cumulus-client-service = { workspace = true }
+cumulus-primitives-core = { workspace = true }
+cumulus-primitives-parachain-inherent = { workspace = true }
+cumulus-relay-chain-interface = { workspace = true }
+color-print = "0.3.4"
+
+[build-dependencies]
+substrate-build-script-utils = { workspace = true }
+
+[features]
+default = []
+runtime-benchmarks = [
+    "frame-benchmarking/runtime-benchmarks",
+    "frame-benchmarking-cli/runtime-benchmarks",
+    "polkadot-cli/runtime-benchmarks",
+    "polkadot-primitives/runtime-benchmarks",
+    "polkadot-service/runtime-benchmarks",
+    "sc-service/runtime-benchmarks",
+    "security-nexus-runtime/runtime-benchmarks",
+    "sp-runtime/runtime-benchmarks",
+]
+try-runtime = [
+    "polkadot-cli/try-runtime",
+    "polkadot-service/try-runtime",
+    "security-nexus-runtime/try-runtime",
+    "sp-runtime/try-runtime",
+]
