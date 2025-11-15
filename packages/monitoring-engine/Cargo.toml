@@ -72,6 +72,10 @@ path = "tests/transaction_tests.rs"
 name = "flash_loan_detector_tests"
 path = "tests/flash_loan_detector_tests.rs"
 
+[[test]]
+name = "mev_detector_tests"
+path = "tests/mev_detector_tests.rs"
+
 [[bench]]
 name = "detection_benchmarks"
 harness = false
