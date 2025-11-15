@@ -1,0 +1,286 @@
+# Monitoring Engine
+> Real-time security monitoring for Polkadot parachains
+
+**Status:** Phase 2 - Core Feature Enhancement (In Progress)
+**Test Coverage:** TDD Approach with 90%+ target
+**Progress:** 15% (Story 3.1 in progress)
+
+---
+
+## Overview
+
+The Monitoring Engine provides real-time detection of security threats and attack patterns in Polkadot/Substrate-based blockchains. It monitors transactions, blocks, and events to identify suspicious activities before they cause damage.
+
+## Features
+
+### ✅ Implemented
+- [x] Core types and data structures
+- [x] AlertManager framework
+- [x] Detector trait system
+- [x] Engine lifecycle management (start/stop)
+- [x] Basic unit tests
+- [x] Test infrastructure with integration tests
+- [x] Benchmarking setup
+
+### 🚧 In Progress
+- [ ] Substrate node connection via subxt
+- [ ] Block subscription
+- [ ] Event monitoring
+- [ ] Automatic reconnection logic
+
+### ⏳ Planned
+- [ ] Mempool monitoring
+- [ ] Flash loan detector
+- [ ] MEV detector
+- [ ] Volume anomaly detector
+- [ ] Oracle manipulation detector
+- [ ] Governance attack detector
+- [ ] Alert webhook delivery
+- [ ] REST API server
+- [ ] PostgreSQL persistence
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│         Monitoring Engine               │
+├─────────────────────────────────────────┤
+│                                         │
+│  ┌──────────┐    ┌──────────┐          │
+│  │  subxt   │    │  REST    │          │
+│  │Connection│    │   API    │          │
+│  └────┬─────┘    └────┬─────┘          │
+│       │               │                 │
+│  ┌────▼───────────────▼─────┐          │
+│  │   Monitoring Engine       │          │
+│  │   - Block subscription    │          │
+│  │   - Event monitoring      │          │
+│  │   - Mempool tracking      │          │
+│  └────┬──────────────────────┘          │
+│       │                                 │
+│  ┌────▼─────────────────────┐          │
+│  │   Detector System         │          │
+│  │   - Flash Loan            │          │
+│  │   - MEV                   │          │
+│  │   - Oracle Manipulation   │          │
+│  │   - Governance Attack     │          │
+│  └────┬──────────────────────┘          │
+│       │                                 │
+│  ┌────▼──────────────────────┐         │
+│  │   Alert Manager            │         │
+│  │   - De-duplication         │         │
+│  │   - Webhook delivery       │         │
+│  │   - Retry logic            │         │
+│  └────────────────────────────┘         │
+└─────────────────────────────────────────┘
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Rust 1.85+
+- A running Substrate node (for integration tests)
+
+### Build
+
+```bash
+# Build the library
+cargo build --release
+
+# Run unit tests
+cargo test
+
+# Run integration tests (requires local chain)
+./target/release/security-nexus-node --dev  # In another terminal
+cargo test --test integration -- --ignored --test-threads=1
+
+# Run benchmarks
+cargo bench
+```
+
+### Usage Example
+
+```rust
+use monitoring_engine::*;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Configure the engine
+    let config = MonitorConfig {
+        ws_endpoint: "ws://localhost:9944".to_string(),
+        chain_name: "local-dev".to_string(),
+        enable_mempool: true,
+        enable_blocks: true,
+        enable_events: true,
+        alert_webhook: Some("https://your-webhook.com/alerts".to_string()),
+        min_alert_severity: AlertSeverity::Medium,
+        buffer_size: 1000,
+    };
+
+    // Create and start the engine
+    let engine = MonitoringEngine::new(config);
+    engine.start().await?;
+
+    // Engine runs in background, monitoring the chain
+
+    // Get statistics
+    let stats = engine.get_stats().await;
+    println!("Blocks processed: {}", stats.blocks_processed);
+    println!("Alerts triggered: {}", stats.alerts_triggered);
+
+    // Stop when done
+    engine.stop().await?;
+
+    Ok(())
+}
+```
+
+## Testing Strategy
+
+### Test Pyramid
+
+```
+     /\
+    /E2E\     - Full system tests (slow, few)
+   /------\
+  /  Int   \  - Integration tests (medium speed, some)
+ /----------\
+/  Unit      \ - Unit tests (fast, many)
+--------------
+```
+
+### Running Tests
+
+```bash
+# Unit tests (fast, no chain needed)
+cargo test --lib
+
+# Integration tests (requires local chain)
+cargo test --test integration -- --ignored
+
+# All tests
+cargo test --workspace
+
+# With coverage
+cargo tarpaulin --out Html
+```
+
+### Test Organization
+
+```
+tests/
+├── common/
+│   └── mod.rs           # Shared test utilities
+├── integration/
+│   ├── connection_tests.rs
+│   ├── mempool_tests.rs
+│   ├── detector_tests.rs
+│   └── alert_tests.rs
+└── e2e/
+    └── full_system_tests.rs
+
+benches/
+└── detection_benchmarks.rs
+```
+
+## Development Workflow
+
+### 1. TDD Approach
+```bash
+# Write tests first
+vim tests/integration/new_feature_tests.rs
+
+# Run tests (they should fail)
+cargo test new_feature -- --ignored
+
+# Implement feature
+vim src/new_feature.rs
+
+# Tests pass
+cargo test new_feature
+```
+
+### 2. Code Quality
+```bash
+# Format code
+cargo fmt
+
+# Run linter
+cargo clippy -- -D warnings
+
+# Check docs
+cargo doc --no-deps --open
+```
+
+### 3. Performance
+```bash
+# Run benchmarks
+cargo bench
+
+# Profile with flamegraph
+cargo flamegraph --bench detection_benchmarks
+```
+
+## User Stories (EPIC 3)
+
+### ✅ Story 3.1: Parachain Node Connection (3 pts) - IN PROGRESS
+**Status:** Test infrastructure complete, implementation in progress
+
+**Acceptance Criteria:**
+- [x] Test infrastructure setup
+- [x] Integration test suite
+- [ ] WebSocket connection to Substrate node via subxt
+- [ ] New blocks subscription
+- [ ] Pending transactions subscription
+- [ ] Automatic reconnection if connection lost
+- [ ] Connection event logging
+- [ ] Support for multiple chains simultaneously
+
+**Tests:** `tests/integration/connection_tests.rs`
+
+### ⏳ Story 3.2: Mempool Monitoring (4 pts)
+**Status:** Planned
+
+### ⏳ Story 3.3: Flash Loan Attack Detector (5 pts)
+**Status:** Planned
+
+### ⏳ Story 3.6: Alert System with Webhooks (3 pts)
+**Status:** Basic framework exists
+
+### ⏳ Story 3.7: Monitoring REST API (3 pts)
+**Status:** Dependencies added, implementation pending
+
+## Performance Goals
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Transaction Processing | 100+ tx/sec | TBD |
+| Detection Latency | < 3 seconds | TBD |
+| False Positive Rate | < 5% | TBD |
+| Memory Usage | < 500MB | TBD |
+| CPU Usage | < 20% (1 core) | TBD |
+
+## Contributing
+
+See [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) for detailed development roadmap.
+
+### Definition of Done
+- [x] All acceptance criteria met
+- [x] Unit tests pass (90%+ coverage)
+- [x] Integration tests pass
+- [x] Benchmarks within acceptable range
+- [x] Documentation updated
+- [x] No clippy warnings
+- [x] Code reviewed
+
+## References
+
+- [Substrate Documentation](https://docs.substrate.io/)
+- [subxt Documentation](https://docs.rs/subxt/)
+- [Polkadot SDK](https://github.com/paritytech/polkadot-sdk)
+
+---
+
+**Last Updated:** 2025-11-15
+**Contributors:** Juan Ignacio Raggio, Victoria Helena Park
