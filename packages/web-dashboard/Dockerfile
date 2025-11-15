@@ -1,7 +1,7 @@
 # Stage: build saft (Rust)
 FROM rust:1.85 as saft-builder
 WORKDIR /saft
-COPY ../saft-enhanced ./saft-enhanced
+COPY packages/saft-enhanced ./saft-enhanced
 WORKDIR /saft/saft-enhanced
 RUN cargo build --release --bin saft || true
 # If binary name differs adjust path
@@ -9,9 +9,9 @@ RUN cargo build --release --bin saft || true
 # Stage: build next app
 FROM node:18-alpine AS node-builder
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
-COPY . .
+COPY packages/web-dashboard/package.json packages/web-dashboard/pnpm-lock.yaml ./
+RUN npm install -g pnpm@8 && pnpm install --frozen-lockfile
+COPY packages/web-dashboard .
 RUN pnpm build
 
 # Final image

@@ -1,6 +1,4 @@
 # docker-compose.yml
-version: '3.8'
-
 services:
   monitoring-engine:
     build:
@@ -18,8 +16,8 @@ services:
 
   dashboard:
     build:
-      context: ./packages/web-dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./packages/web-dashboard/Dockerfile
     environment:
       - MONITORING_ENGINE_URL=http://monitoring-engine:8080
       - NEXT_PUBLIC_API_URL=https://security-nexus.io

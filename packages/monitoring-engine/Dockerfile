@@ -16,7 +16,7 @@ COPY node ./node
 WORKDIR /app/packages/monitoring-engine
 
 # Build del binario real
-RUN cargo build --release --example api_server
+RUN cargo build --release --bin monitoring-engine
 
 # -----------------------------------------------------------
 # Runtime image
@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 WORKDIR /app
 
 # Copiamos el binario final
-COPY --from=builder /app/packages/monitoring-engine/target/release/examples/api_server /app/api_server
+COPY --from=builder /app/target/release/monitoring-engine /app/monitoring-engine
 
 EXPOSE 8080
-CMD ["./api_server"]
+CMD ["./monitoring-engine"]
