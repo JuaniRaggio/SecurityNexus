@@ -52,8 +52,9 @@ Professional interface with real-time updates and comprehensive API
 
 #### Requisitos del Sistema
 - **Rust toolchain via rustup** (NO usar Homebrew)
-  - Rust 1.75+ (recomendado 1.91.1)
+  - **Rust 1.81** (REQUERIDO - versiones más nuevas causan errores de compilación)
   - Target `wasm32-unknown-unknown` (requerido para runtime)
+  - Componente `rust-src` (requerido para compilación WASM)
 - Node.js 18+
 - pnpm 8+
 - Git
@@ -73,6 +74,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # Cargar el entorno
 source "$HOME/.cargo/env"
 
+# IMPORTANTE: Instalar Rust 1.81 específicamente
+rustup install 1.81
+rustup default 1.81
+
 # Instalar target WASM (REQUERIDO para compilar runtime)
 rustup target add wasm32-unknown-unknown
 
@@ -82,9 +87,9 @@ rustup component add rust-src
 
 Verifica la instalación:
 ```bash
-rustc --version  # Debería mostrar rustc 1.75+ o superior
+rustc --version  # Debe mostrar rustc 1.81.0
 cargo --version
-rustup show      # Debe incluir wasm32-unknown-unknown en la lista de targets
+rustup show      # Debe mostrar 1.81 como default y wasm32-unknown-unknown en targets
 ```
 
 ### Instalación del Proyecto

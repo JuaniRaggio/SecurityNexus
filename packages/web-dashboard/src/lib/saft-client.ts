@@ -73,16 +73,35 @@ export async function analyzePallet(
     // Execute SAFT binary with JSON output
     const command = `${SAFT_BINARY_PATH} analyze "${tempFilePath}" --format json`;
 
-    const { stdout } = await execAsync(command, {
-      maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-      timeout: 30000, // 30 second timeout
-    });
+    let stdout: string;
+
+    try {
+      const result = await execAsync(command, {
+        maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+        timeout: 30000, // 30 second timeout
+      });
+      stdout = result.stdout;
+    } catch (execError: any) {
+      // SAFT returns exit code 1 when vulnerabilities are found
+      // This is expected behavior, not an error
+      if (execError.code === 1 && execError.stdout) {
+        stdout = execError.stdout;
+      } else {
+        throw execError;
+      }
+    }
 
     // Parse JSON output
     let analysisResult: SAFTAnalysisResult[];
 
     try {
-      analysisResult = JSON.parse(stdout);
+      // Extract JSON from stdout (skip any log lines before the JSON)
+      const jsonMatch = stdout.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (!jsonMatch) {
+        console.error('No JSON found in SAFT output:', stdout);
+        throw new Error('Failed to find JSON in SAFT output');
+      }
+      analysisResult = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
       console.error('Failed to parse SAFT output:', stdout);
       throw new Error('Failed to parse SAFT analysis output');

@@ -70,3 +70,4 @@ target/ink/
 
 # Redis
 dump.rdb
+test-samples/
