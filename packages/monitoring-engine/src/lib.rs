@@ -209,7 +209,65 @@ impl MonitoringEngine {
         _detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
     ) -> Result<()> {
         tracing::info!("Starting block monitoring");
-        // TODO: Implement block monitoring using subxt
+
+        let client = self.connection.get_client().await
+            .ok_or_else(|| Error::ConnectionError("Not connected to node".to_string()))?;
+
+        let state = self.state.clone();
+        let chain_name = self.config.chain_name.clone();
+
+        // Spawn background task for block subscription
+        tokio::spawn(async move {
+            match Self::subscribe_to_blocks(client, state, chain_name).await {
+                Ok(_) => tracing::info!("Block subscription ended"),
+                Err(e) => tracing::error!("Block subscription error: {}", e),
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Subscribe to finalized blocks
+    async fn subscribe_to_blocks(
+        client: subxt::OnlineClient<subxt::PolkadotConfig>,
+        state: Arc<RwLock<EngineState>>,
+        chain_name: String,
+    ) -> Result<()> {
+        tracing::info!("Subscribing to finalized blocks on {}", chain_name);
+
+        let mut blocks_sub = client
+            .blocks()
+            .subscribe_finalized()
+            .await
+            .map_err(|e| Error::SubscriptionError(format!("Failed to subscribe to blocks: {}", e)))?;
+
+        while let Some(block_result) = blocks_sub.next().await {
+            match block_result {
+                Ok(block) => {
+                    let block_number = block.number();
+                    let block_hash = block.hash();
+
+                    tracing::debug!(
+                        "Received block #{} (hash: {:?}) on {}",
+                        block_number,
+                        block_hash,
+                        chain_name
+                    );
+
+                    // Update statistics
+                    let mut state_lock = state.write().await;
+                    state_lock.blocks_processed += 1;
+                    drop(state_lock);
+
+                    // TODO: Process block transactions and pass to detectors
+                }
+                Err(e) => {
+                    tracing::error!("Error receiving block: {}", e);
+                    return Err(Error::SubscriptionError(format!("Block stream error: {}", e)));
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -219,7 +277,79 @@ impl MonitoringEngine {
         _detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
     ) -> Result<()> {
         tracing::info!("Starting event monitoring");
-        // TODO: Implement event monitoring using subxt
+
+        let client = self.connection.get_client().await
+            .ok_or_else(|| Error::ConnectionError("Not connected to node".to_string()))?;
+
+        let chain_name = self.config.chain_name.clone();
+
+        // Spawn background task for event subscription
+        tokio::spawn(async move {
+            match Self::subscribe_to_events(client, chain_name).await {
+                Ok(_) => tracing::info!("Event subscription ended"),
+                Err(e) => tracing::error!("Event subscription error: {}", e),
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Subscribe to runtime events
+    async fn subscribe_to_events(
+        client: subxt::OnlineClient<subxt::PolkadotConfig>,
+        chain_name: String,
+    ) -> Result<()> {
+        tracing::info!("Subscribing to runtime events on {}", chain_name);
+
+        let mut blocks_sub = client
+            .blocks()
+            .subscribe_finalized()
+            .await
+            .map_err(|e| Error::SubscriptionError(format!("Failed to subscribe to blocks for events: {}", e)))?;
+
+        while let Some(block_result) = blocks_sub.next().await {
+            match block_result {
+                Ok(block) => {
+                    let block_number = block.number();
+
+                    // Get events from this block
+                    match block.events().await {
+                        Ok(events) => {
+                            let event_count = events.iter().count();
+
+                            if event_count > 0 {
+                                tracing::debug!(
+                                    "Block #{} on {} contains {} events",
+                                    block_number,
+                                    chain_name,
+                                    event_count
+                                );
+                            }
+
+                            // TODO: Process events and pass to detectors
+                            // for event in events.iter() {
+                            //     match event {
+                            //         Ok(event_details) => {
+                            //             // Process event
+                            //         }
+                            //         Err(e) => {
+                            //             tracing::warn!("Error decoding event: {}", e);
+                            //         }
+                            //     }
+                            // }
+                        }
+                        Err(e) => {
+                            tracing::error!("Error fetching events for block #{}: {}", block_number, e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Error receiving block for events: {}", e);
+                    return Err(Error::SubscriptionError(format!("Event stream error: {}", e)));
+                }
+            }
+        }
+
         Ok(())
     }
 }
