@@ -7,6 +7,8 @@ members = [
     "packages/hydration-module/rust",
     "pallets/security-registry",
     "pallets/reputation",
+    "runtime",
+    "node",
 ]
 resolver = "2"
 
@@ -18,17 +20,96 @@ license = "MIT"
 repository = "https://github.com/JuaniRaggio/SecurityNexus.git"
 
 [workspace.dependencies]
-# Substrate & Polkadot
-frame-support = { version = "36.0.0", default-features = false }
-frame-system = { version = "36.0.0", default-features = false }
+# Polkadot SDK stable2509 - Runtime dependencies
+sp-api = { version = "34.0.0", default-features = false }
+sp-block-builder = { version = "34.0.0", default-features = false }
+sp-consensus-aura = { version = "0.40.0", default-features = false }
 sp-core = { version = "34.0.0", default-features = false }
+sp-inherents = { version = "34.0.0", default-features = false }
 sp-io = { version = "38.0.0", default-features = false }
+sp-offchain = { version = "34.0.0", default-features = false }
 sp-runtime = { version = "39.0.0", default-features = false }
+sp-session = { version = "35.0.0", default-features = false }
 sp-std = { version = "14.0.0", default-features = false }
-pallet-balances = { version = "37.0.0", default-features = false }
+sp-transaction-pool = { version = "34.0.0", default-features = false }
+sp-version = { version = "37.0.0", default-features = false }
+sp-genesis-builder = { version = "0.15.0", default-features = false }
+
+# FRAME dependencies
+frame-executive = { version = "37.0.0", default-features = false }
+frame-support = { version = "37.0.0", default-features = false }
+frame-system = { version = "37.0.0", default-features = false }
+frame-try-runtime = { version = "0.43.0", default-features = false }
+frame-system-rpc-runtime-api = { version = "34.0.0", default-features = false }
+frame-benchmarking = { version = "37.0.0", default-features = false }
+frame-system-benchmarking = { version = "37.0.0", default-features = false }
+
+# FRAME pallets
+pallet-aura = { version = "36.0.0", default-features = false }
+pallet-balances = { version = "38.0.0", default-features = false }
+pallet-sudo = { version = "37.0.0", default-features = false }
+pallet-timestamp = { version = "36.0.0", default-features = false }
+pallet-transaction-payment = { version = "37.0.0", default-features = false }
+pallet-transaction-payment-rpc-runtime-api = { version = "37.0.0", default-features = false }
+
+# Cumulus dependencies
+cumulus-pallet-aura-ext = { version = "0.16.0", default-features = false }
+cumulus-pallet-parachain-system = { version = "0.16.0", default-features = false }
+cumulus-pallet-session-benchmarking = { version = "18.0.0", default-features = false }
+cumulus-pallet-xcm = { version = "0.16.0", default-features = false }
+cumulus-pallet-xcmp-queue = { version = "0.16.0", default-features = false }
+cumulus-primitives-aura = { version = "0.15.0", default-features = false }
+cumulus-primitives-core = { version = "0.15.0", default-features = false }
+cumulus-primitives-utility = { version = "0.16.0", default-features = false }
+cumulus-primitives-timestamp = { version = "0.15.0", default-features = false }
+parachain-info = { package = "staging-parachain-info", version = "0.16.0", default-features = false }
+parachains-common = { version = "17.0.0", default-features = false }
+
+# Polkadot dependencies
+polkadot-parachain-primitives = { version = "15.0.0", default-features = false }
+polkadot-runtime-common = { version = "17.0.0", default-features = false }
+staging-xcm = { version = "18.0.0", default-features = false }
+staging-xcm-builder = { version = "17.0.0", default-features = false }
+staging-xcm-executor = { version = "17.0.0", default-features = false }
 
 # Polkadot API
 subxt = "0.35"
+
+# Substrate client dependencies (for node)
+sc-basic-authorship = "0.44.0"
+sc-chain-spec = "37.0.0"
+sc-cli = "0.46.0"
+sc-client-api = "37.0.0"
+sc-consensus = "0.43.0"
+sc-executor = "0.40.0"
+sc-network = "0.44.0"
+sc-offchain = "39.0.0"
+sc-rpc = "39.0.0"
+sc-service = "0.45.0"
+sc-sysinfo = "37.0.0"
+sc-telemetry = "24.0.0"
+sc-tracing = "37.0.0"
+sc-transaction-pool = "37.0.0"
+sc-transaction-pool-api = "37.0.0"
+
+# Cumulus client dependencies
+cumulus-client-cli = "0.17.0"
+cumulus-client-collator = "0.17.0"
+cumulus-client-consensus-aura = "0.17.0"
+cumulus-client-consensus-common = "0.17.0"
+cumulus-client-consensus-proposer = "0.15.0"
+cumulus-client-service = "0.17.0"
+cumulus-primitives-parachain-inherent = "0.15.0"
+cumulus-relay-chain-interface = "0.17.0"
+
+# Polkadot client dependencies
+polkadot-cli = "17.0.0"
+polkadot-primitives = "15.0.0"
+polkadot-service = "17.0.0"
+
+# Build dependencies
+substrate-build-script-utils = "11.0.0"
+substrate-wasm-builder = "24.0.0"
 
 # Async runtime
 tokio = { version = "1.35", features = ["full"] }
