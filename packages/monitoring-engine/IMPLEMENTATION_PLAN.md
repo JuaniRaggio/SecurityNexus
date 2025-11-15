@@ -3,7 +3,8 @@
 
 **Status:** Phase 2 - Core Feature Enhancement
 **Approach:** Test-Driven Development (TDD)
-**Timeline:** 4-6 weeks
+**Timeline:** 2 days (hackathon development)
+**Competition Duration:** 3 days total
 
 ---
 
@@ -31,7 +32,7 @@
 
 ## 🎯 Implementation Phases
 
-### Phase 1: Foundation & Testing Infrastructure (Week 1)
+### Phase 1: Foundation & Testing Infrastructure (Day 1 - 6 hours)
 **Story 3.1 Enhanced + Testing Setup**
 
 #### Tasks:
@@ -60,7 +61,7 @@
 
 ---
 
-### Phase 2: Mempool Monitoring (Week 2)
+### Phase 2: Mempool Monitoring (Day 1-2 - 4 hours)
 **Story 3.2: Mempool Monitoring**
 
 #### Tasks:
@@ -87,7 +88,7 @@
 
 ---
 
-### Phase 3: Flash Loan Detector (Week 2-3)
+### Phase 3: Flash Loan Detector (Day 2 - 3 hours)
 **Story 3.3: Flash Loan Attack Detector**
 
 #### Tasks:
@@ -119,7 +120,7 @@
 
 ---
 
-### Phase 4: Alert System with Webhooks (Week 3)
+### Phase 4: Alert System with Webhooks (Day 2 - 2 hours)
 **Story 3.6: Alert System with Webhooks**
 
 #### Tasks:
@@ -146,7 +147,7 @@
 
 ---
 
-### Phase 5: Monitoring REST API (Week 4)
+### Phase 5: Monitoring REST API (Day 1 - 4 hours)
 **Story 3.7: Monitoring REST API**
 
 #### Tasks:
@@ -181,7 +182,7 @@ POST   /webhooks/:id/test - Test webhook
 
 ---
 
-### Phase 6: Additional Detectors (Week 5-6)
+### Phase 6: Additional Detectors (Day 3 - 4 hours)
 **Stories 3.4 & 3.5: Oracle & Governance Detectors**
 
 #### Oracle Manipulation Detector (Story 3.4):
@@ -331,7 +332,7 @@ For each story to be marked as COMPLETED:
 - [ ] Story 3.6: Alert System (3 pts)
 - [ ] Story 3.7: REST API (3 pts)
 
-### Velocity Target: 5-8 points/week
+### Development Speed: 27 story points in 2 days (hackathon pace)
 
 ---
 

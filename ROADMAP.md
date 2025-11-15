@@ -1,9 +1,12 @@
 # Security Nexus Parachain - Roadmap de Desarrollo
 
+**IMPORTANTE:** Este roadmap es para el trabajo futuro del **parachain**. El trabajo principal del hackathon (SAFT Enhanced + Monitoring Engine + Dashboard) se completó en **2 días**.
+
 **Proyecto**: Security Nexus - Plataforma de Seguridad Blockchain en Polkadot
 **Autores**: Juan Ignacio Raggio & Victoria Helena Park
 **Repositorio**: https://github.com/JuaniRaggio/SecurityNexus
 **Última actualización**: 2025-11-15
+**Hackathon**: 3 días | Trabajo completado en 2 días
 
 ## Estado Actual del Proyecto
 
@@ -18,16 +21,20 @@
 
 ## RESUMEN DE MILESTONES
 
+**NOTA:** La mayoría del trabajo de seguridad (SAFT Enhanced + Monitoring Engine + Dashboard) se completó en **2 días durante el hackathon de 3 días**. El roadmap del parachain a continuación es trabajo futuro post-hackathon.
+
 | Milestone | Objetivo | Duración | Estado | Progreso |
 |-----------|----------|----------|--------|----------|
-| **M1: Fundación** | Infraestructura base del parachain | 1 sesión | Completado | 100% ✓ |
-| **M2: Pallets** | Lógica de negocio core | 1-2 semanas | En progreso | 0% |
-| **M3: XCM Avanzado** | Comunicación cross-chain | 2-3 días | Planificado | 30% |
-| **M4: Testing** | Validación en entorno local | 1 semana | Planificado | 0% |
-| **M5: Testnet** | Deploy Rococo + testing público | 2-3 semanas | Planificado | 0% |
-| **M6: Kusama** | Mainnet launch | 2-3 meses | Futuro | 0% |
+| **Hackathon (2 días)** | SAFT + Monitoring Engine + Dashboard | 2 días | Completado | 100% ✓ |
+| **M1: Fundación Parachain** | Infraestructura base del parachain | 1 día | Completado | 100% ✓ |
+| **M2: Pallets** | Lógica de negocio core | Post-hackathon | Planificado | 0% |
+| **M3: XCM Avanzado** | Comunicación cross-chain | Post-hackathon | Planificado | 30% |
+| **M4: Testing** | Validación en entorno local | Post-hackathon | Planificado | 0% |
+| **M5: Testnet** | Deploy Rococo + testing público | Post-hackathon | Planificado | 0% |
+| **M6: Kusama** | Mainnet launch | Futuro (meses) | Futuro | 0% |
 
-**Progreso General**: 16.7% (1/6 milestones completados)
+**Hackathon Achievement**: SAFT Enhanced + Monitoring Engine + Dashboard completados en 2 días
+**Progreso Parachain**: 16.7% (1/6 milestones completados)
 
 ---
 
