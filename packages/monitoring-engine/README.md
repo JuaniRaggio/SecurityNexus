@@ -3,7 +3,7 @@
 
 **Status:** Phase 2 - Core Feature Enhancement (In Progress)
 **Test Coverage:** TDD Approach with 90%+ target
-**Progress:** 15% (Story 3.1 in progress)
+**Progress:** 25% (Story 3.1 connection layer complete)
 
 ---
 
@@ -18,14 +18,17 @@ The Monitoring Engine provides real-time detection of security threats and attac
 - [x] AlertManager framework
 - [x] Detector trait system
 - [x] Engine lifecycle management (start/stop)
-- [x] Basic unit tests
-- [x] Test infrastructure with integration tests
-- [x] Benchmarking setup
+- [x] Basic unit tests (17 passing)
+- [x] Test infrastructure with integration tests (6 tests, 4 passing)
+- [x] Benchmarking setup (criterion configured)
+- [x] Connection manager with subxt integration
+- [x] Connection error handling and timeout logic
+- [x] Basic WebSocket connection to Substrate nodes
 
 ### 🚧 In Progress
-- [ ] Substrate node connection via subxt
-- [ ] Block subscription
-- [ ] Event monitoring
+- [x] Substrate node connection via subxt (basic implementation complete)
+- [ ] Block subscription with real-time processing
+- [ ] Event monitoring and parsing
 - [ ] Automatic reconnection logic
 
 ### ⏳ Planned
@@ -224,20 +227,23 @@ cargo flamegraph --bench detection_benchmarks
 
 ## User Stories (EPIC 3)
 
-### ✅ Story 3.1: Parachain Node Connection (3 pts) - IN PROGRESS
-**Status:** Test infrastructure complete, implementation in progress
+### 🚧 Story 3.1: Parachain Node Connection (3 pts) - 60% COMPLETE
+**Status:** Connection layer implemented, block subscription next
 
 **Acceptance Criteria:**
 - [x] Test infrastructure setup
-- [x] Integration test suite
-- [ ] WebSocket connection to Substrate node via subxt
+- [x] Integration test suite (6 tests: 4 passing, 2 require chain)
+- [x] WebSocket connection to Substrate node via subxt
+- [x] Connection error handling with timeouts
+- [x] Connection lifecycle management (connect/disconnect)
 - [ ] New blocks subscription
 - [ ] Pending transactions subscription
 - [ ] Automatic reconnection if connection lost
-- [ ] Connection event logging
+- [ ] Connection event logging (using tracing)
 - [ ] Support for multiple chains simultaneously
 
-**Tests:** `tests/integration/connection_tests.rs`
+**Tests:** `tests/connection_tests.rs`
+**Implementation:** `src/connection.rs`, `src/lib.rs:120-171`
 
 ### ⏳ Story 3.2: Mempool Monitoring (4 pts)
 **Status:** Planned
