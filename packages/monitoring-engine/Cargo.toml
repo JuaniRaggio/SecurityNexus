@@ -68,6 +68,10 @@ proptest = "1.0"
 name = "transaction_tests"
 path = "tests/transaction_tests.rs"
 
+[[test]]
+name = "flash_loan_detector_tests"
+path = "tests/flash_loan_detector_tests.rs"
+
 [[bench]]
 name = "detection_benchmarks"
 harness = false
