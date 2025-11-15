@@ -7,6 +7,7 @@ import {
   calculateBlocksPerSecond,
   formatUptime,
 } from '@/hooks/useMonitoring'
+import AlertsPanel from '@/components/AlertsPanel'
 
 const detectorStats = [
   { name: 'Flash Loan Detector', active: true, detections: 0, lastAlert: 'Never' },
@@ -211,6 +212,9 @@ export default function MonitoringPage() {
           </div>
         </div>
       </div>
+
+      {/* Security Alerts Panel */}
+      <AlertsPanel />
 
       {/* Debug Info (only in development) */}
       {process.env.NODE_ENV === 'development' && (
