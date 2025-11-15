@@ -85,30 +85,32 @@ Rather than competition-focused metrics, we measure success through ecosystem im
 
 ### System Overview
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Polkadot Security Nexus                      │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┼───────────────────┐
-          │                   │                   │
-    ┌─────▼─────┐      ┌─────▼─────┐      ┌─────▼─────┐
-    │  Prevention│      │ Detection │      │  Response │
-    │   Layer    │      │   Layer   │      │   Layer   │
-    └─────┬─────┘      └─────┬─────┘      └─────┬─────┘
-          │                   │                   │
-    ┌─────▼─────┐      ┌─────▼─────┐      ┌─────▼─────┐
-    │   SAFT    │      │ Real-Time │      │ Private   │
-    │ Enhanced  │      │Monitoring │      │Reporting  │
-    │ (Static)  │      │ (Runtime) │      │  (ZKP)    │
-    └───────────┘      └─────┬─────┘      └───────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-        ┌─────▼─────┐  ┌────▼────┐  ┌─────▼─────┐
-        │Hyperbridge│  │Hydration│  │  Kusama   │
-        │Cross-Chain│  │  DeFi   │  │  Testing  │
-        └───────────┘  └─────────┘  └───────────┘
+```mermaid
+graph TD
+    subgraph "Polkadot Security Nexus"
+        direction LR
+        A["Prevention Layer"]
+        B["Detection Layer"]
+        C["Response Layer"]
+    end
+
+    subgraph " "
+        direction TB
+        A --> A1["SAFT Enhanced<br>(Static Analysis)"]
+        B --> B1["Real-Time Monitoring<br>(Runtime)"]
+        C --> C1["Private Reporting<br>(ZKP)"]
+    end
+
+    subgraph "Ecosystem Integrations"
+        direction TB
+        B1 --> D["Hyperbridge<br>(Cross-Chain Security)"]
+        B1 --> E["Hydration<br>(DeFi Security)"]
+        B1 --> F["Kusama<br>(Canary Testing)"]
+    end
+
+    style A fill:#cde4ff
+    style B fill:#cde4ff
+    style C fill:#cde4ff
 ```
 
 ### Core Components (6 Modules)
@@ -448,6 +450,45 @@ Supported chains via Hyperbridge:
 - Interoperability trust
 
 ---
+
+## Development Timeline (Gantt Chart)
+
+```mermaid
+gantt
+    title Development Phases - 12 Week Plan
+    dateFormat W
+    axisFormat Week %U
+
+    section Phase 1: Core Foundation
+    Project Setup & Config : 1, 1
+    SAFT Enhanced MVP : 1, 2
+    Substrate Node & CI/CD : 2, 1
+
+    section Phase 2: Real-Time Monitoring
+    Monitoring Engine Base : 3, 2
+    Attack Pattern Detectors : 3, 2
+    Alert System & API : 4, 1
+
+    section Phase 3: Privacy Layer (ZKP)
+    ZK Circuits (arkworks) : 5, 2
+    ink! Smart Contracts : 6, 1
+    Integration Layer : 6, 1
+
+    section Phase 4: Ecosystem Integrations
+    Hyperbridge & Hydration Modules : 7, 2
+    Kusama Deployment : 8, 1
+    Multi-Chain Dashboard MVP : 8, 1
+
+    section Phase 5: Dashboard & UX
+    Complete Web Dashboard : 9, 2
+    API Server & Full Docs : 10, 1
+    Create Video Demo : 10, 1
+
+    section Phase 6: Production & Refinement
+    Stress Testing & Audit : 11, 2
+    Optimization & Bug Fixes : 11, 2
+    Final Report & Materials : 12, 1
+```
 
 ## Development Phases
 
@@ -836,15 +877,27 @@ Supported chains via Hyperbridge:
 
 ### Privacy Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Privacy Layer                             │
-└─────────────────────────────────────────────────────────────┘
-           │                    │                    │
-    ┌──────▼──────┐      ┌─────▼─────┐      ┌──────▼──────┐
-    │ ZK Circuits │      │ Encrypted │      │ Commitments │
-    │             │      │  Channels  │      │             │
-    └─────────────┘      └───────────┘      └─────────────┘
+```mermaid
+graph TD
+    A["Privacy Layer"] --> B["ZK Circuits"];
+    A --> C["Encrypted Communication"];
+    A --> D["Commitment Schemes"];
+
+    subgraph "Zero-Knowledge Primitives"
+        B --> B1["Vulnerability<br>Existence Proofs"];
+        B --> B2["Auditor<br>Verifiable Credentials"];
+    end
+
+    subgraph "Secure Channels"
+        C --> C1["Threshold Encryption<br>(M-of-N Key Sharing)"];
+        C --> C2["Time-Locked Encryption<br>(Verifiable Delay Functions)"];
+    end
+
+    subgraph "Disclosure Mechanisms"
+        D --> D1["Hash-Based Commitments<br>for Responsible Disclosure"];
+    end
+
+    style A fill:#d4edda
 ```
 
 ### 1. ZK-SNARK Implementation
@@ -946,15 +999,26 @@ circuit AuditorCredentials {
 
 **Commitment Scheme for Responsible Disclosure:**
 
-```
-1. Auditor finds vulnerability
-2. Creates commitment: C = Hash(vulnerability_details || nonce)
-3. Submits commitment on-chain with timestamp
-4. Coordinates with project (90 days typical)
-5. Project develops fix
-6. Auditor reveals: (vulnerability_details, nonce)
-7. Chain verifies: Hash(revealed_data) == C
-8. Automatic payment if verification successful
+This flow ensures the auditor can prove when they found a vulnerability without revealing it prematurely.
+
+```mermaid
+sequenceDiagram
+    participant A as Auditor
+    participant B as Blockchain
+    participant P as Project Team
+
+    A->>B: 1. Finds vulnerability, creates C = Hash(details, nonce)
+    A->>B: 2. Submits Commitment (C) on-chain
+    B-->>A: Confirms commitment & timestamp
+    Note over A,P: 3. Auditor coordinates responsible disclosure with the project (e.g., 90 days)
+    P->>P: 4. Develops and deploys fix
+    A->>B: 5. Reveals `details` and `nonce` on-chain
+    B->>B: 6. Verifies Hash(revealed_data) == C
+    alt Verification Successful
+        B-->>A: 7. Releases bounty payment automatically
+    else Verification Fails
+        B-->>A: Rejects reveal, no payment
+    end
 ```
 
 **Benefits:**
@@ -967,33 +1031,24 @@ circuit AuditorCredentials {
 
 **Bug Bounty with Privacy:**
 
-```
-Marketplace Flow:
+The marketplace uses ZK proofs to connect projects with auditors privately and efficiently.
 
-1. Project creates bounty program
-   - Defined scope
-   - Rewards by severity
-   - Funds in escrow (smart contract)
+```mermaid
+sequenceDiagram
+    participant P as Project
+    participant M as Marketplace (Smart Contract)
+    participant A as Auditor
 
-2. Auditor finds bug
-   - Generates ZK proof
-   - Submits proof on-chain
-   - Reveals details only to project (encrypted)
-
-3. Project verifies
-   - Validates ZK proof on-chain
-   - Decrypts details (private)
-   - Confirms validity
-
-4. Automatic payment
-   - Smart contract releases funds
-   - Based on severity level
-   - Reputation update (private)
-
-5. Public disclosure (optional)
-   - After fix
-   - With consent from both parties
-   - Aggregate stats public (not details)
+    P->>M: 1. Creates bounty program (defines scope, rewards, escrows funds)
+    A->>A: 2. Finds bug in scope
+    A->>M: 3. Submits ZK proof of vulnerability (details are not revealed)
+    M->>M: 4. Verifies ZK proof on-chain
+    M-->>P: 5. Notifies project of valid submission
+    A-)+P: 6. Reveals vulnerability details privately to project (off-chain or encrypted)
+    P->>P: 7. Confirms validity and severity
+    P->>M: 8. Approves payment for confirmed severity
+    M-->>A: 9. Releases funds from escrow to Auditor
+    M->>M: 10. Updates Auditor's (private) reputation score
 ```
 
 ### 4. Anonymous Reputation System

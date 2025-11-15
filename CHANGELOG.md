@@ -1,4 +1,9 @@
-# b11cf753 (commit hash)
+*Key checkpoint in our project*
+
+## c292f7a0
+Web dashboard
+
+## b11cf753 (commit hash)
 
 SAFT Enhanced - Static Analysis Tool
 
