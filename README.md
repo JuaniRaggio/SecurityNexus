@@ -48,33 +48,161 @@ Professional interface with real-time updates and comprehensive API
 
 ### Prerequisites
 
-- Rust 1.75+
+**IMPORTANTE: Debes usar rustup, NO Homebrew para instalar Rust**
+
+#### Requisitos del Sistema
+- **Rust toolchain via rustup** (NO usar Homebrew)
+  - Rust 1.75+ (recomendado 1.91.1)
+  - Target `wasm32-unknown-unknown` (requerido para runtime)
 - Node.js 18+
 - pnpm 8+
-- Docker & Docker Compose
-- PostgreSQL 16+ and Redis 7+
+- Git
 
-### Installation
+#### Instalación de Rust (si no lo tienes)
 
+Si tienes Rust instalado via Homebrew, primero desinstálalo:
 ```bash
-git clone https://github.com/your-org/polkadot-security-nexus.git
-cd polkadot-security-nexus
-
-pnpm install
-cargo build --workspace
-
-docker-compose up -d
-pnpm run dev
+brew uninstall rust
 ```
 
-### Quick Test
+Instala Rust via rustup:
+```bash
+# Instalar rustup
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Cargar el entorno
+source "$HOME/.cargo/env"
+
+# Instalar target WASM (REQUERIDO para compilar runtime)
+rustup target add wasm32-unknown-unknown
+
+# Instalar código fuente de Rust (REQUERIDO para compilar runtime a WASM)
+rustup component add rust-src
+```
+
+Verifica la instalación:
+```bash
+rustc --version  # Debería mostrar rustc 1.75+ o superior
+cargo --version
+rustup show      # Debe incluir wasm32-unknown-unknown en la lista de targets
+```
+
+### Instalación del Proyecto
 
 ```bash
-# Analyze a FRAME pallet
-cargo run --bin saft -- analyze path/to/your/pallet
+git clone https://github.com/JuaniRaggio/SecurityNexus.git
+cd polkadot-security-nexus
 
-# Start monitoring
-cargo run --bin monitoring-engine -- --ws-url ws://localhost:9944
+# Instalar dependencias de Node.js (para web dashboard)
+pnpm install
+```
+
+### Compilación
+
+#### Opción 1: Compilar todo el workspace
+```bash
+cargo build --release --workspace
+```
+
+#### Opción 2: Compilar solo el runtime (parachain)
+```bash
+cargo build --release --package security-nexus-runtime
+```
+
+#### Opción 3: Compilar solo el node (collator)
+```bash
+cargo build --release --package security-nexus-node
+```
+
+#### Opción 4: Compilar herramientas individuales
+```bash
+# SAFT Enhanced (análisis estático)
+cargo build --release --package saft-enhanced
+
+# Monitoring Engine
+cargo build --release --package monitoring-engine
+```
+
+**Nota:** La primera compilación puede tardar 30-60 minutos ya que compila todas las dependencias del Polkadot SDK desde el código fuente.
+
+### Ejecución
+
+#### 1. Ejecutar el Runtime en modo Development
+
+```bash
+# Compilar y ejecutar el collator node
+cargo run --release --package security-nexus-node -- --dev
+
+# O si ya compilaste:
+./target/release/security-nexus-node --dev
+```
+
+El nodo estará disponible en:
+- WebSocket: `ws://127.0.0.1:9944`
+- HTTP RPC: `http://127.0.0.1:9933`
+
+Puedes conectarte con Polkadot.js Apps: https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:9944
+
+#### 2. Ejecutar SAFT Enhanced (Análisis Estático)
+
+```bash
+# Analizar un pallet
+cargo run --release --package saft-enhanced -- analyze ./pallets/security-registry
+
+# Con output en JSON
+cargo run --release --package saft-enhanced -- analyze ./pallets/security-registry --format json
+
+# Con output en HTML
+cargo run --release --package saft-enhanced -- analyze ./pallets/security-registry --format html -o report.html
+```
+
+#### 3. Ejecutar Web Dashboard
+
+```bash
+cd packages/web-dashboard
+pnpm dev
+```
+
+El dashboard estará disponible en http://localhost:3000
+
+### Estado Actual del Proyecto
+
+#### Completado (Listo para usar)
+- Runtime de parachain con Cumulus
+- Collator node binary
+- Estructura completa de pallets (security-registry, reputation)
+- SAFT Enhanced - Análisis estático funcional
+- Web Dashboard UI (con datos mock)
+- Integración XCM básica
+
+#### En Progreso
+- Implementación de lógica en pallets personalizados
+- Monitoring Engine (framework listo, detectores en desarrollo)
+- Privacy Layer con ZK proofs (estructura básica)
+
+#### Pendiente
+- Deployment a Rococo testnet
+- Integración con Hyperbridge
+- Integración con Hydration
+- Deployment a Kusama mainnet
+
+### Comandos Útiles
+
+```bash
+# Limpiar build artifacts
+cargo clean
+
+# Actualizar dependencias
+cargo update
+
+# Ejecutar tests
+cargo test --workspace
+
+# Ejecutar clippy (linter)
+cargo clippy --workspace -- -D warnings
+
+# Verificar que el runtime compila para WASM
+cargo check --package security-nexus-runtime --target wasm32-unknown-unknown
 ```
 
 <!-- ## Project Structure -->
