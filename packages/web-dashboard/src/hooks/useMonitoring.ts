@@ -91,3 +91,101 @@ export function formatUptime(seconds: number): string {
   }
   return `${secs}s`
 }
+
+// Fetch all alerts
+async function fetchAlerts(): Promise<Alert[]> {
+  const response = await fetch('/api/monitoring?endpoint=alerts')
+  if (!response.ok) {
+    throw new Error('Failed to fetch alerts')
+  }
+  return response.json()
+}
+
+// Fetch unacknowledged alerts only
+async function fetchUnacknowledgedAlerts(): Promise<Alert[]> {
+  const response = await fetch('/api/monitoring?endpoint=alerts/unacknowledged')
+  if (!response.ok) {
+    throw new Error('Failed to fetch unacknowledged alerts')
+  }
+  return response.json()
+}
+
+// Acknowledge an alert
+async function acknowledgeAlert(alertId: string): Promise<void> {
+  const response = await fetch(`/api/monitoring/acknowledge/${alertId}`, {
+    method: 'POST',
+  })
+  if (!response.ok) {
+    throw new Error('Failed to acknowledge alert')
+  }
+}
+
+// Hook to fetch all alerts with auto-refresh
+export function useAlerts(refreshInterval = 5000) {
+  return useQuery<Alert[]>({
+    queryKey: ['monitoring', 'alerts'],
+    queryFn: fetchAlerts,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
+  })
+}
+
+// Hook to fetch unacknowledged alerts
+export function useUnacknowledgedAlerts(refreshInterval = 5000) {
+  return useQuery<Alert[]>({
+    queryKey: ['monitoring', 'alerts', 'unacknowledged'],
+    queryFn: fetchUnacknowledgedAlerts,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
+  })
+}
+
+// Hook to acknowledge an alert
+export function useAcknowledgeAlert() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: acknowledgeAlert,
+    onSuccess: () => {
+      // Invalidate queries to refetch alerts
+      queryClient.invalidateQueries({ queryKey: ['monitoring', 'alerts'] })
+    },
+  })
+}
+
+// Format timestamp to readable date
+export function formatAlertTime(timestamp: number): string {
+  const date = new Date(timestamp * 1000)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString()
+}
+
+// Get severity color
+export function getSeverityColor(severity: Alert['severity']): string {
+  switch (severity) {
+    case 'critical':
+      return 'red'
+    case 'high':
+      return 'orange'
+    case 'medium':
+      return 'yellow'
+    case 'low':
+      return 'blue'
+    default:
+      return 'gray'
+  }
+}
