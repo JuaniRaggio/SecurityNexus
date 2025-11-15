@@ -11,7 +11,7 @@
 
 use monitoring_engine::detectors::{Detector, FlashLoanDetector};
 use monitoring_engine::types::{
-    AlertSeverity, AttackPattern, ChainEvent, ParsedTransaction, StateChange, TransactionContext,
+    AttackPattern, ChainEvent, ParsedTransaction, StateChange, TransactionContext,
 };
 
 /// Helper: Create a transaction context for flash loan scenario
