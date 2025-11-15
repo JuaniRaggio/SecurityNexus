@@ -6,6 +6,7 @@
 **Team:** Juan Ignacio Raggio, Victoria Helena Park
 **Timeline:** 12 weeks (Started: Jan 2025)
 **Status:** Phase 1 Complete - SAFT Enhanced + Dashboard Integration ✅
+**Last Review:** 2025-11-15 - Updated story statuses before Sub0 Hackathon
 
 ---
 
@@ -21,15 +22,15 @@
 
 | Epic | Status | Completed | In Progress | Pending | Total Points |
 |------|--------|-----------|-------------|---------|--------------|
-| 1. Infrastructure | 75% | 3 | 1 | 0 | 8 pts |
-| 2. SAFT Enhanced | 85% | 5 | 1 | 1 | 24 pts |
+| 1. Infrastructure | 75% | 3 | 0 | 1 | 8 pts |
+| 2. SAFT Enhanced | 83% | 5 | 0 | 2 | 24 pts |
 | 3. Monitoring Engine | 15% | 1 | 1 | 5 | 27 pts |
 | 4. Privacy Layer (ZKP) | 10% | 0 | 1 | 5 | 32 pts |
 | 5. Hyperbridge Integration | 0% | 0 | 0 | 5 | 21 pts |
 | 6. Hydration Integration | 0% | 0 | 0 | 5 | 19 pts |
-| 7. Web Dashboard | 65% | 4 | 1 | 3 | 38 pts |
-| 8. API Server | 50% | 2 | 1 | 5 | 23 pts |
-| **TOTAL** | **40%** | **15** | **6** | **29** | **192 pts** |
+| 7. Web Dashboard | 79% | 5 | 0 | 3 | 38 pts |
+| 8. API Server | 52% | 2 | 1 | 5 | 23 pts |
+| **TOTAL** | **42.7%** | **16** | **3** | **30** | **192 pts** |
 
 ---
 
@@ -42,7 +43,7 @@
 
 ---
 
-## ✅ EPIC 1: Infrastructure & Setup (6/8 points completed)
+## ✅ EPIC 1: Infrastructure & Setup (6/8 points completed - 75%)
 
 ### ✅ Story 1.1: Configure Monorepo
 **Type:** Feature | **Points:** 2 | **Status:** COMPLETED
@@ -72,13 +73,15 @@
 
 ---
 
-### 🚧 Story 1.3: Configure CI/CD Pipeline
-**Type:** Feature | **Points:** 3 | **Status:** IN PROGRESS
+### ⏳ Story 1.3: Configure CI/CD Pipeline
+**Type:** Feature | **Points:** 3 | **Status:** PLANNED
 
 **Pending:**
-- ⏳ GitHub Actions workflow
+- ⏳ GitHub Actions workflow (no .github/workflows/ exists)
 - ⏳ Automated tests
 - ⏳ Clippy + eslint automation
+
+**Note:** Marked as PLANNED after review - no CI/CD infrastructure exists yet
 
 ---
 
@@ -93,7 +96,7 @@
 
 ---
 
-## ✅ EPIC 2: SAFT Enhanced - Static Analysis (20/24 points completed)
+## ✅ EPIC 2: SAFT Enhanced - Static Analysis (20/24 points completed - 83%)
 
 ### ✅ Story 2.1: FRAME Pallet Parser
 **Type:** Feature | **Points:** 5 | **Status:** COMPLETED
@@ -137,12 +140,15 @@
 
 ---
 
-### 🚧 Story 2.4: Ownership Problems Detector
-**Type:** Feature | **Points:** 3 | **Status:** IN PROGRESS
+### ⏳ Story 2.4: Ownership Problems Detector
+**Type:** Feature | **Points:** 3 | **Status:** PLANNED
 
-**Partially completed:**
-- ✅ Basic transfer detection
+**Pending:**
+- ⏳ Create ownership.rs analyzer
+- ⏳ Basic transfer detection
 - ⏳ Advanced ownership verification patterns
+
+**Note:** Marked as PLANNED after review - ownership.rs does not exist yet
 
 ---
 
@@ -181,7 +187,7 @@
 
 ---
 
-## 🚧 EPIC 3: Real-Time Monitoring Engine (4/27 points completed)
+## 🚧 EPIC 3: Real-Time Monitoring Engine (4/27 points completed - 15%)
 
 ### ✅ Story 3.1: Parachain Node Connection
 **Type:** Feature | **Points:** 3 | **Status:** COMPLETED
@@ -198,7 +204,14 @@
 ### 🚧 Story 3.2: Mempool Monitoring
 **Type:** Feature | **Points:** 4 | **Status:** IN PROGRESS
 
-**Framework ready, detectors pending**
+**Completed:**
+- ✅ MempoolMonitor structure (src/mempool/mod.rs)
+- ✅ add_transaction, get_pending_transactions methods
+- ✅ Basic transaction tracking
+
+**Pending:**
+- ⏳ Integration with real-time detectors
+- ⏳ Mempool-specific attack patterns
 
 ---
 
@@ -207,17 +220,25 @@
 
 ---
 
-## 🚧 EPIC 4: Privacy Layer - ZKP (3/32 points)
+## 🚧 EPIC 4: Privacy Layer - ZKP (3/32 points - 10%)
 
 ### 🚧 Story 4.1: Basic ZKP Structure
 **Type:** Feature | **Points:** 3 | **Status:** IN PROGRESS
 
 **Completed:**
-- ✅ Package structure
-- ✅ Dependencies configured
-- ⏳ Circuit implementation pending
+- ✅ Package structure (circuits/, credentials/, proofs/)
+- ✅ Dependencies configured (ark-bn254, ark-groth16)
+- ✅ PrivacyLayer API defined
+- ✅ Error types and Result patterns
+- ✅ Basic tests
 
-**Location:** `packages/privacy-layer/`
+**Pending:**
+- ⏳ Actual circuit implementation (currently TODOs)
+- ⏳ Trusted setup ceremony
+- ⏳ Proof generation logic
+- ⏳ Proof verification logic
+
+**Location:** `packages/privacy-layer/src/lib.rs`
 
 ---
 
@@ -242,7 +263,7 @@ All stories 6.1-6.5 are pending.
 
 ---
 
-## ✅ EPIC 7: Web Dashboard (25/38 points completed)
+## ✅ EPIC 7: Web Dashboard (30/38 points completed - 79%)
 
 ### ✅ Story 7.1: Next.js Dashboard Setup
 **Type:** Feature | **Points:** 2 | **Status:** COMPLETED
@@ -301,14 +322,24 @@ All stories 6.1-6.5 are pending.
 
 ---
 
-### 🚧 Story 7.5: Dashboard - Monitoring Page
-**Type:** Feature | **Points:** 5 | **Status:** IN PROGRESS
+### ✅ Story 7.5: Dashboard - Monitoring Page
+**Type:** Feature | **Points:** 5 | **Status:** COMPLETED
 
-**Partially completed:**
-- ✅ Page structure and UI
-- ⏳ Real-time data integration
+**Completed:**
+- ✅ Page structure and responsive UI
+- ✅ Real-time stats integration (blocks, transactions, alerts)
+- ✅ Health status monitoring (uptime, version, connection)
+- ✅ Chain information display (endpoint, chain name)
+- ✅ Detector status panel (Flash Loan, MEV, Volume Anomaly)
+- ✅ AlertsPanel integration with auto-refresh
+- ✅ Demo mode for presentations (development only)
+- ✅ Connection status indicators (Connected/Disconnected)
+- ✅ Loading states and error handling
+- ✅ Auto-refresh with React Query (2-5 second intervals)
 
 **Location:** `packages/web-dashboard/src/app/monitoring/page.tsx`
+
+**Verified:** Screenshots confirm full functionality with Polkadot mainnet connection
 
 ---
 
@@ -317,7 +348,7 @@ All stories 6.1-6.5 are pending.
 
 ---
 
-## ✅ EPIC 8: API Server (12/23 points completed)
+## ✅ EPIC 8: API Server (12/23 points completed - 52%)
 
 ### ✅ Story 8.1: API Routes Setup
 **Type:** Feature | **Points:** 3 | **Status:** COMPLETED (Modified to Next.js API Routes)
@@ -367,9 +398,19 @@ All stories 6.1-6.5 are pending.
 ### 🚧 Story 8.4: Data Persistence Layer
 **Type:** Feature | **Points:** 5 | **Status:** IN PROGRESS
 
-**Current state:**
+**Completed:**
 - ✅ In-memory storage (demo-ready)
+- ✅ AnalysisStorage class with full CRUD
+- ✅ History tracking (last 50 analyses)
+- ✅ Dashboard stats calculation
+- ✅ Functional for MVP and hackathon demo
+
+**Pending:**
 - ⏳ PostgreSQL integration (planned for production)
+- ⏳ Database migrations
+- ⏳ Data export features
+
+**Location:** `packages/web-dashboard/src/lib/storage.ts`
 
 ---
 
@@ -441,26 +482,27 @@ All stories 6.1-6.5 are pending.
 
 ## 📈 Progress Tracking
 
-### Completed Features (77 points)
+### Completed Features (82 points - +5 from last update)
 - ✅ Monorepo infrastructure
-- ✅ SAFT Enhanced CLI with 3 detectors
+- ✅ SAFT Enhanced CLI with 3 detectors (overflow, access control, reentrancy)
 - ✅ Web Dashboard with real-time integration
+- ✅ **Monitoring Page fully functional** (NEW - Story 7.5)
 - ✅ File upload and analysis
 - ✅ Next.js API routes for SAFT
 - ✅ Dashboard statistics and alerts
 - ✅ Analysis history tracking
+- ✅ Demo mode for presentations (development only)
 
-### Current Sprint (In Progress - 21 points)
-- 🚧 CI/CD pipeline
-- 🚧 Additional SAFT detectors
-- 🚧 Monitoring engine foundation
-- 🚧 Privacy layer structure
-- 🚧 Real-time monitoring UI
+### Current Sprint (In Progress - 12 points)
+- 🚧 Mempool monitoring integration (Story 3.2 - 4 pts)
+- 🚧 Privacy layer ZKP circuits (Story 4.1 - 3 pts)
+- 🚧 PostgreSQL database migration (Story 8.4 - 5 pts)
 
-### Backlog (94 points remaining for MVP)
-- ⏳ Complete monitoring engine
-- ⏳ ZKP implementation
-- ⏳ Database integration
+### Backlog (98 points remaining for MVP)
+- ⏳ CI/CD pipeline (Story 1.3 - 3 pts)
+- ⏳ Ownership detector (Story 2.4 - 3 pts)
+- ⏳ XCM decimal precision detector (Story 2.5 - 4 pts)
+- ⏳ Complete monitoring engine detectors
 - ⏳ Advanced dashboard features
 - ⏳ Testing infrastructure
 
@@ -471,12 +513,14 @@ All stories 6.1-6.5 are pending.
 **Current Velocity:** ~25-30 points/week (team of 2)
 
 **Estimated Timeline:**
-- **Phase 1 (MVP Core):** ✅ COMPLETED (4 weeks) - 77 points
-- **Phase 2 (Enhancement):** 🚧 IN PROGRESS (4-6 weeks) - 36 points
+- **Phase 1 (MVP Core):** ✅ COMPLETED (4 weeks) - 82 points (+5 from review)
+- **Phase 2 (Enhancement):** 🚧 IN PROGRESS (4-6 weeks) - 31 points remaining
 - **Phase 3 (Advanced):** ⏳ PLANNED (6-8 weeks) - 69 points
 - **Phase 4 (Production):** ⏳ PLANNED (2-3 weeks) - 33 points
 
 **Total Estimated:** 16-21 weeks for complete production system
+
+**Recent Progress:** Story 7.5 (Monitoring Page) completed - dashboard now production-ready for hackathon demo
 
 ---
 
@@ -508,7 +552,15 @@ All stories 6.1-6.5 are pending.
 
 ---
 
-**Last Updated:** 2025-11-15
-**Version:** 2.0 (Reorganized after Phase 1 completion)
+**Last Updated:** 2025-11-15 23:30
+**Version:** 2.1 (Updated after comprehensive story review for Sub0 Hackathon)
 **Contributors:** Juan Ignacio Raggio, Victoria Helena Park
+
+**Changelog v2.1:**
+- Story 1.3 (CI/CD): IN PROGRESS → PLANNED (no workflows exist)
+- Story 2.4 (Ownership): IN PROGRESS → PLANNED (no ownership.rs exists)
+- Story 7.5 (Monitoring Page): IN PROGRESS → COMPLETED (+5 points)
+- Updated Story 3.2, 4.1, 8.4 with detailed completion status
+- Total progress: 40% → 42.7% (82/192 points)
+- EPIC 7 (Dashboard): 65% → 79% (ready for hackathon demo)
 
