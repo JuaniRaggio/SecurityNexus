@@ -24,6 +24,7 @@ pub async fn wait_for_engine_start() {
 }
 
 /// Create a test alert
+#[allow(dead_code)]
 pub fn create_test_alert(severity: AlertSeverity, pattern: AttackPattern) -> Alert {
     use std::collections::HashMap;
 

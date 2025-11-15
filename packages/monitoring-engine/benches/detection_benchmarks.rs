@@ -1,6 +1,6 @@
 // Performance benchmarks for monitoring engine
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use monitoring_engine::*;
 
 fn bench_alert_creation(c: &mut Criterion) {
