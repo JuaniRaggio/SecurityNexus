@@ -42,6 +42,7 @@ pub fn create_test_alert(severity: AlertSeverity, pattern: AttackPattern) -> Ale
         block_number: Some(100),
         metadata: HashMap::new(),
         recommended_actions: vec!["Review transaction".to_string()],
+        acknowledged: false,
     }
 }
 
