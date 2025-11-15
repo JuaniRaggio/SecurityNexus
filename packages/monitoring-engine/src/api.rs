@@ -61,11 +61,46 @@ async fn health_check(data: web::Data<ApiState>) -> HttpResponse {
     })
 }
 
+/// GET /api/alerts - Get recent alerts
+async fn get_alerts(data: web::Data<ApiState>) -> HttpResponse {
+    let alerts = data.engine.alert_manager.get_recent_alerts(50).await;
+    HttpResponse::Ok().json(alerts)
+}
+
+/// GET /api/alerts/unacknowledged - Get unacknowledged alerts
+async fn get_unacknowledged_alerts(data: web::Data<ApiState>) -> HttpResponse {
+    let alerts = data.engine.alert_manager.get_unacknowledged_alerts().await;
+    HttpResponse::Ok().json(alerts)
+}
+
+/// POST /api/alerts/{id}/acknowledge - Acknowledge an alert
+async fn acknowledge_alert(
+    path: web::Path<String>,
+    data: web::Data<ApiState>,
+) -> HttpResponse {
+    let alert_id = path.into_inner();
+
+    if data.engine.alert_manager.acknowledge_alert(&alert_id).await {
+        HttpResponse::Ok().json(serde_json::json!({
+            "success": true,
+            "message": "Alert acknowledged"
+        }))
+    } else {
+        HttpResponse::NotFound().json(serde_json::json!({
+            "success": false,
+            "message": "Alert not found"
+        }))
+    }
+}
+
 /// Configure API routes
 fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg
         .route("/health", web::get().to(health_check))
-        .route("/stats", web::get().to(get_stats));
+        .route("/stats", web::get().to(get_stats))
+        .route("/alerts", web::get().to(get_alerts))
+        .route("/alerts/unacknowledged", web::get().to(get_unacknowledged_alerts))
+        .route("/alerts/{id}/acknowledge", web::post().to(acknowledge_alert));
 }
 
 /// Start the API server
@@ -81,9 +116,18 @@ pub async fn start_api_server(
     });
 
     HttpServer::new(move || {
+        // SECURITY NOTE: In production, replace allow_any_origin() with specific origins
+        // Example for production:
+        //   let cors = Cors::default()
+        //       .allowed_origin("https://your-dashboard.com")
+        //       .allowed_origin("https://your-monitoring-app.com")
+        //       .allowed_methods(vec!["GET", "POST"])
+        //       .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
+        //       .max_age(3600);
+        //
+        // For development/testing, we allow any origin
         let cors = Cors::default()
-            // Restrict this configuration for production
-            .allow_any_origin()
+            .allow_any_origin() // TODO: Restrict in production
             .allow_any_method()
             .allow_any_header();
 

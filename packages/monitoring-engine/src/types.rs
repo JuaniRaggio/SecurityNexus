@@ -90,6 +90,9 @@ pub struct Alert {
     pub metadata: HashMap<String, String>,
     /// Suggested actions
     pub recommended_actions: Vec<String>,
+    /// Whether this alert has been acknowledged
+    #[serde(default)]
+    pub acknowledged: bool,
 }
 
 /// A blockchain transaction
