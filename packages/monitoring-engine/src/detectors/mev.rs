@@ -1,7 +1,7 @@
 //! MEV (Maximal Extractable Value) attack detector
 
 use crate::detectors::Detector;
-use crate::types::{AttackPattern, DetectionResult, Transaction};
+use crate::types::{DetectionResult, Transaction};
 use async_trait::async_trait;
 
 /// Detector for MEV attacks (front-running, sandwich attacks, etc.)

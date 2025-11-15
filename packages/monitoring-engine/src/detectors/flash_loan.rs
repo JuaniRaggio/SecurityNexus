@@ -1,7 +1,7 @@
 //! Flash loan attack detector
 
 use crate::detectors::Detector;
-use crate::types::{AttackPattern, DetectionResult, Transaction};
+use crate::types::{DetectionResult, Transaction};
 use async_trait::async_trait;
 
 /// Detector for flash loan attacks

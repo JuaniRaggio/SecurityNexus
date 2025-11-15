@@ -84,7 +84,7 @@ impl Default for MonitorConfig {
 pub struct MonitoringEngine {
     config: MonitorConfig,
     state: Arc<RwLock<EngineState>>,
-    alert_manager: Arc<alerts::AlertManager>,
+    _alert_manager: Arc<alerts::AlertManager>,
     connection: Arc<connection::ConnectionManager>,
 }
 
@@ -112,7 +112,7 @@ impl MonitoringEngine {
         Self {
             config,
             state: Arc::new(RwLock::new(EngineState::default())),
-            alert_manager,
+            _alert_manager: alert_manager,
             connection,
         }
     }
