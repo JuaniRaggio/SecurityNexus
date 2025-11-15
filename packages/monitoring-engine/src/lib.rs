@@ -8,6 +8,7 @@ pub mod mempool;
 pub mod alerts;
 pub mod types;
 pub mod connection;
+pub mod api;
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -90,10 +91,10 @@ impl Default for MonitorConfig {
 
 /// Main monitoring engine
 pub struct MonitoringEngine {
-    config: MonitorConfig,
+    pub config: MonitorConfig,
     state: Arc<RwLock<EngineState>>,
     _alert_manager: Arc<alerts::AlertManager>,
-    connection: Arc<connection::ConnectionManager>,
+    pub connection: Arc<connection::ConnectionManager>,
 }
 
 /// Internal engine state
