@@ -7,13 +7,14 @@ pub mod detectors;
 pub mod mempool;
 pub mod alerts;
 pub mod types;
+pub mod connection;
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::RwLock;
 
-pub use types::{Alert, AlertSeverity, AttackPattern, ChainEvent, Transaction};
+pub use types::{Alert, AlertSeverity, AttackPattern, ChainEvent, DetectionResult, Transaction};
 
 /// Main error type for the monitoring engine
 #[derive(Error, Debug)]
@@ -84,6 +85,7 @@ pub struct MonitoringEngine {
     config: MonitorConfig,
     state: Arc<RwLock<EngineState>>,
     alert_manager: Arc<alerts::AlertManager>,
+    connection: Arc<connection::ConnectionManager>,
 }
 
 /// Internal engine state
@@ -103,10 +105,15 @@ impl MonitoringEngine {
             config.alert_webhook.clone(),
         ));
 
+        let connection = Arc::new(connection::ConnectionManager::new(
+            config.ws_endpoint.clone(),
+        ));
+
         Self {
             config,
             state: Arc::new(RwLock::new(EngineState::default())),
             alert_manager,
+            connection,
         }
     }
 
@@ -120,6 +127,14 @@ impl MonitoringEngine {
         }
         state.is_running = true;
         drop(state);
+
+        // Connect to the Substrate node
+        if let Err(e) = self.connection.connect().await {
+            // Reset is_running flag on connection failure
+            let mut state = self.state.write().await;
+            state.is_running = false;
+            return Err(e);
+        }
 
         // Initialize detectors
         let detectors = self.initialize_detectors();
@@ -147,6 +162,10 @@ impl MonitoringEngine {
 
         let mut state = self.state.write().await;
         state.is_running = false;
+        drop(state);
+
+        // Disconnect from the node
+        self.connection.disconnect().await;
 
         tracing::info!("Monitoring engine stopped");
         Ok(())
