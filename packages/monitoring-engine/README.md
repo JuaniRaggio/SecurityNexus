@@ -3,7 +3,7 @@
 
 **Status:** Phase 2 - Core Feature Enhancement (In Progress)
 **Test Coverage:** TDD Approach with 90%+ target
-**Progress:** 25% (Story 3.1 connection layer complete)
+**Progress:** 80% Story 3.1 (block & event monitoring implemented)
 
 ---
 
@@ -23,13 +23,16 @@ The Monitoring Engine provides real-time detection of security threats and attac
 - [x] Benchmarking setup (criterion configured)
 - [x] Connection manager with subxt integration
 - [x] Connection error handling and timeout logic
-- [x] Basic WebSocket connection to Substrate nodes
+- [x] WebSocket connection to Substrate nodes
+- [x] Block subscription with finalized blocks
+- [x] Real-time block processing and statistics
+- [x] Event monitoring from blocks
+- [x] Background task spawning for subscriptions
 
 ### 🚧 In Progress
-- [x] Substrate node connection via subxt (basic implementation complete)
-- [ ] Block subscription with real-time processing
-- [ ] Event monitoring and parsing
 - [ ] Automatic reconnection logic
+- [ ] Transaction extraction from blocks
+- [ ] Event processing pipeline with detectors
 
 ### ⏳ Planned
 - [ ] Mempool monitoring
@@ -227,8 +230,8 @@ cargo flamegraph --bench detection_benchmarks
 
 ## User Stories (EPIC 3)
 
-### 🚧 Story 3.1: Parachain Node Connection (3 pts) - 60% COMPLETE
-**Status:** Connection layer implemented, block subscription next
+### 🚧 Story 3.1: Parachain Node Connection (3 pts) - 80% COMPLETE
+**Status:** Block subscription & event monitoring implemented, reconnection logic pending
 
 **Acceptance Criteria:**
 - [x] Test infrastructure setup
@@ -236,14 +239,18 @@ cargo flamegraph --bench detection_benchmarks
 - [x] WebSocket connection to Substrate node via subxt
 - [x] Connection error handling with timeouts
 - [x] Connection lifecycle management (connect/disconnect)
-- [ ] New blocks subscription
-- [ ] Pending transactions subscription
+- [x] New blocks subscription (finalized blocks)
+- [x] Block processing with statistics tracking
+- [x] Event monitoring from blocks
+- [x] Connection event logging (using tracing)
+- [ ] Pending transactions subscription (mempool - Story 3.2)
 - [ ] Automatic reconnection if connection lost
-- [ ] Connection event logging (using tracing)
 - [ ] Support for multiple chains simultaneously
 
 **Tests:** `tests/connection_tests.rs`
-**Implementation:** `src/connection.rs`, `src/lib.rs:120-171`
+**Implementation:**
+- `src/connection.rs` - Connection manager
+- `src/lib.rs:206-354` - Block & event subscription
 
 ### ⏳ Story 3.2: Mempool Monitoring (4 pts)
 **Status:** Planned
