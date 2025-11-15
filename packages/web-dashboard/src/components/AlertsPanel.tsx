@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react'
+import { AlertTriangle, CheckCircle, ExternalLink, Sparkles } from 'lucide-react'
 import {
   useUnacknowledgedAlerts,
   useAcknowledgeAlert,
@@ -11,7 +11,8 @@ import {
 } from '@/hooks/useMonitoring'
 
 export default function AlertsPanel() {
-  const { data: alerts = [], isLoading } = useUnacknowledgedAlerts(5000)
+  const [demoMode, setDemoMode] = useState(false)
+  const { data: alerts = [], isLoading } = useUnacknowledgedAlerts(5000, demoMode)
   const acknowledgeMutation = useAcknowledgeAlert()
   const [filter, setFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all')
 
@@ -48,12 +49,30 @@ export default function AlertsPanel() {
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-600" />
               Security Alerts
+              {demoMode && (
+                <span className="px-2 py-1 text-xs font-semibold bg-purple-100 text-purple-800 rounded border border-purple-200">
+                  DEMO MODE
+                </span>
+              )}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
               Real-time security threat notifications
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                onClick={() => setDemoMode(!demoMode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  demoMode
+                    ? 'bg-purple-600 text-white hover:bg-purple-700'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                {demoMode ? 'Disable Demo' : 'Demo Mode'}
+              </button>
+            )}
             <span className="text-sm text-gray-600">
               {filteredAlerts.length} unacknowledged
             </span>
@@ -125,6 +144,13 @@ export default function AlertsPanel() {
             <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-500" />
             <p className="font-medium">No {filter !== 'all' && filter} alerts</p>
             <p className="text-sm mt-1">All systems operating normally</p>
+            {process.env.NODE_ENV === 'development' && !demoMode && (
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <p className="text-sm text-purple-700">
+                  Click "Demo Mode" to see example security alerts for your presentation
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           filteredAlerts.map((alert) => (

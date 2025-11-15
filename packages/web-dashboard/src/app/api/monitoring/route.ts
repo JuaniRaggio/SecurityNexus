@@ -22,6 +22,7 @@ export interface HealthStatus {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const endpoint = searchParams.get('endpoint') || 'stats'
+  const useDemoAlerts = searchParams.get('demo') === 'true' || process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
   try {
     const response = await fetch(`${MONITORING_ENGINE_URL}/api/${endpoint}`, {
@@ -40,7 +41,22 @@ export async function GET(request: Request) {
       )
     }
 
-    const data = await response.json()
+    let data = await response.json()
+
+    // In development mode, merge demo alerts with real alerts
+    if (process.env.NODE_ENV === 'development' && useDemoAlerts &&
+        (endpoint === 'alerts' || endpoint === 'alerts/unacknowledged')) {
+      try {
+        const demoResponse = await fetch('http://localhost:3000/api/demo-alerts')
+        if (demoResponse.ok) {
+          const demoAlerts = await demoResponse.json()
+          // Merge demo alerts with real alerts
+          data = Array.isArray(data) ? [...demoAlerts, ...data] : demoAlerts
+        }
+      } catch (demoError) {
+        console.error('Error fetching demo alerts:', demoError)
+      }
+    }
 
     return NextResponse.json(data, {
       headers: {
@@ -62,6 +78,20 @@ export async function GET(request: Request) {
         reconnect_attempts: 0,
         error: 'Monitoring engine not available',
       })
+    }
+
+    // In development, return demo alerts if monitoring engine is down
+    if (process.env.NODE_ENV === 'development' &&
+        (endpoint === 'alerts' || endpoint === 'alerts/unacknowledged')) {
+      try {
+        const demoResponse = await fetch('http://localhost:3000/api/demo-alerts')
+        if (demoResponse.ok) {
+          const demoAlerts = await demoResponse.json()
+          return NextResponse.json(demoAlerts)
+        }
+      } catch (demoError) {
+        console.error('Error fetching demo alerts:', demoError)
+      }
     }
 
     return NextResponse.json(

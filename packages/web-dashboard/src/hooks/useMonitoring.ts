@@ -102,8 +102,11 @@ async function fetchAlerts(): Promise<Alert[]> {
 }
 
 // Fetch unacknowledged alerts only
-async function fetchUnacknowledgedAlerts(): Promise<Alert[]> {
-  const response = await fetch('/api/monitoring?endpoint=alerts/unacknowledged')
+async function fetchUnacknowledgedAlerts(demoMode = false): Promise<Alert[]> {
+  const url = demoMode
+    ? '/api/monitoring?endpoint=alerts/unacknowledged&demo=true'
+    : '/api/monitoring?endpoint=alerts/unacknowledged'
+  const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Failed to fetch unacknowledged alerts')
   }
@@ -133,10 +136,10 @@ export function useAlerts(refreshInterval = 5000) {
 }
 
 // Hook to fetch unacknowledged alerts
-export function useUnacknowledgedAlerts(refreshInterval = 5000) {
+export function useUnacknowledgedAlerts(refreshInterval = 5000, demoMode = false) {
   return useQuery<Alert[]>({
-    queryKey: ['monitoring', 'alerts', 'unacknowledged'],
-    queryFn: fetchUnacknowledgedAlerts,
+    queryKey: ['monitoring', 'alerts', 'unacknowledged', demoMode],
+    queryFn: () => fetchUnacknowledgedAlerts(demoMode),
     refetchInterval: refreshInterval,
     refetchOnWindowFocus: true,
     retry: 3,
