@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export interface MonitoringStats {
   is_running: boolean
@@ -15,6 +15,20 @@ export interface HealthStatus {
   status: string
   version: string
   uptime_seconds: number
+}
+
+export interface Alert {
+  id: string
+  timestamp: number
+  chain: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  pattern: string
+  description: string
+  transaction_hash?: string
+  block_number?: number
+  metadata: Record<string, string>
+  recommended_actions: string[]
+  acknowledged: boolean
 }
 
 async function fetchMonitoringStats(): Promise<MonitoringStats> {
