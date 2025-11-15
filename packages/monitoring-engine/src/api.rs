@@ -82,6 +82,7 @@ pub async fn start_api_server(
 
     HttpServer::new(move || {
         let cors = Cors::default()
+            // Restrict this configuration for production
             .allow_any_origin()
             .allow_any_method()
             .allow_any_header();
