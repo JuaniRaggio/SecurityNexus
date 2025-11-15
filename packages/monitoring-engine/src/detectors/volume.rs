@@ -1,7 +1,7 @@
 //! Volume anomaly detector
 
 use crate::detectors::Detector;
-use crate::types::{DetectionResult, Transaction};
+use crate::types::{DetectionResult, TransactionContext};
 use async_trait::async_trait;
 
 /// Detector for unusual volume spikes
@@ -27,7 +27,7 @@ impl Detector for VolumeAnomalyDetector {
         "VolumeAnomalyDetector"
     }
 
-    async fn analyze_transaction(&self, _tx: &Transaction) -> DetectionResult {
+    async fn analyze_transaction(&self, _ctx: &TransactionContext) -> DetectionResult {
         // TODO: Implement volume anomaly detection
         // Look for:
         // 1. Unusual trading volume spikes

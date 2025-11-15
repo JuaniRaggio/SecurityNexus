@@ -8,7 +8,7 @@ pub use flash_loan::FlashLoanDetector;
 pub use mev::MevDetector;
 pub use volume::VolumeAnomalyDetector;
 
-use crate::types::{DetectionResult, Transaction};
+use crate::types::{DetectionResult, TransactionContext};
 use async_trait::async_trait;
 
 /// Trait for attack pattern detectors
@@ -17,14 +17,17 @@ pub trait Detector: Send + Sync {
     /// Get the name of this detector
     fn name(&self) -> &str;
 
-    /// Analyze a transaction for suspicious patterns
-    async fn analyze_transaction(&self, tx: &Transaction) -> DetectionResult;
+    /// Analyze a transaction context for suspicious patterns
+    ///
+    /// The context includes the transaction itself, associated events,
+    /// and state changes - providing full visibility into the transaction's behavior
+    async fn analyze_transaction(&self, ctx: &TransactionContext) -> DetectionResult;
 
-    /// Analyze a batch of transactions for patterns
-    async fn analyze_batch(&self, transactions: &[Transaction]) -> Vec<DetectionResult> {
+    /// Analyze a batch of transaction contexts for patterns
+    async fn analyze_batch(&self, contexts: &[TransactionContext]) -> Vec<DetectionResult> {
         let mut results = Vec::new();
-        for tx in transactions {
-            results.push(self.analyze_transaction(tx).await);
+        for ctx in contexts {
+            results.push(self.analyze_transaction(ctx).await);
         }
         results
     }
