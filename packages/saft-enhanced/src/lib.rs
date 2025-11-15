@@ -292,6 +292,12 @@ impl Analyzer {
             vulnerabilities.extend(reentrancy_vulns);
         }
 
+        // XCM decimal precision analysis
+        if self.is_category_enabled(&VulnerabilityCategory::XcmDecimalPrecision) {
+            let xcm_vulns = analyzers::xcm_precision::analyze(&ast, path)?;
+            vulnerabilities.extend(xcm_vulns);
+        }
+
         // Filter by minimum severity
         vulnerabilities.retain(|v| v.severity >= self.config.min_severity);
 

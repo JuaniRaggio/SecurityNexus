@@ -3,6 +3,7 @@
 pub mod overflow;
 pub mod access_control;
 pub mod reentrancy;
+pub mod xcm_precision;
 
 use crate::{Result, Vulnerability};
 use std::path::Path;
