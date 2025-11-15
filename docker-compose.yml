@@ -5,8 +5,8 @@ services:
       context: .
       dockerfile: ./packages/monitoring-engine/Dockerfile
     environment:
-      - WS_ENDPOINT=wss://rpc.polkadot.io
-      - CHAIN_NAME=polkadot
+      - WS_ENDPOINT=wss://polkadot.api.onfinality.io/public-ws
+      - CHAIN_NAME=Polkadot
       - API_PORT=8080
       - RUST_LOG=monitoring_engine=info
       - ALLOWED_ORIGIN=https://security-nexus.io # updated for docker deployment
