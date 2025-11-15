@@ -126,10 +126,38 @@ pub async fn start_api_server(
         //       .max_age(3600);
         //
         // For development/testing, we allow any origin
-        let cors = Cors::default()
+        /*let cors = Cors::default()
             .allow_any_origin() // TODO: Restrict in production
             .allow_any_method()
             .allow_any_header();
+
+        App::new()
+            .wrap(cors)
+            .wrap(middleware::Logger::default())
+            .app_data(api_state.clone())
+            .service(web::scope("/api").configure(configure_routes))*/
+
+
+        // Load allowed origin from environment variable - docker version
+        let allowed_origin = std::env::var("ALLOWED_ORIGIN")
+            .ok()
+            .filter(|s| !s.is_empty());
+
+        let mut cors = Cors::default()
+            .allowed_methods(vec!["GET", "POST", "OPTIONS"])
+            .allowed_headers(vec![
+                header::CONTENT_TYPE,
+                header::AUTHORIZATION,
+            ])
+            .max_age(3600);
+
+        if let Some(origin) = allowed_origin {
+            tracing::info!("Using restricted CORS allowed_origin={}", origin);
+            cors = cors.allowed_origin(&origin);
+        } else {
+            tracing::warn!("ALLOWED_ORIGIN not set — falling back to allow_any_origin (dev mode)");
+            cors = cors.allow_any_origin();
+        }
 
         App::new()
             .wrap(cors)
