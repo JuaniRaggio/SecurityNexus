@@ -9,13 +9,15 @@ pub mod alerts;
 pub mod types;
 pub mod connection;
 pub mod api;
+pub mod transaction;
 
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::RwLock;
 
-pub use types::{Alert, AlertSeverity, AttackPattern, ChainEvent, DetectionResult, Transaction};
+pub use types::{Alert, AlertSeverity, AttackPattern, ChainEvent, DetectionResult, Transaction, ParsedTransaction, TransactionContext};
 
 /// Main error type for the monitoring engine
 #[derive(Error, Debug)]
@@ -250,6 +252,9 @@ impl MonitoringEngine {
     ) -> Result<()> {
         tracing::info!("Subscribing to finalized blocks on {}", chain_name);
 
+        // Create transaction extractor
+        let extractor = Arc::new(transaction::TransactionExtractor::new(Arc::new(client.clone())));
+
         let mut blocks_sub = client
             .blocks()
             .subscribe_finalized()
@@ -269,12 +274,40 @@ impl MonitoringEngine {
                         chain_name
                     );
 
-                    // Update statistics
+                    // Update block statistics
                     let mut state_lock = state.write().await;
                     state_lock.blocks_processed += 1;
                     drop(state_lock);
 
-                    // TODO: Process block transactions and pass to detectors
+                    // Extract transactions from block
+                    match extractor.extract_from_block(block_hash, block.number() as u64).await {
+                        Ok(transactions) => {
+                            if !transactions.is_empty() {
+                                tracing::debug!(
+                                    "Extracted {} transactions from block #{}",
+                                    transactions.len(),
+                                    block_number
+                                );
+
+                                // Update transaction statistics
+                                let mut state_lock = state.write().await;
+                                state_lock.transactions_analyzed += transactions.len() as u64;
+                                drop(state_lock);
+
+                                // TODO: Pass transactions to detectors
+                                // for tx in transactions {
+                                //     Self::process_transaction(tx, &detectors).await?;
+                                // }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!(
+                                "Failed to extract transactions from block #{}: {}",
+                                block_number,
+                                e
+                            );
+                        }
+                    }
                 }
                 Err(e) => {
                     tracing::error!("Error receiving block: {}", e);
