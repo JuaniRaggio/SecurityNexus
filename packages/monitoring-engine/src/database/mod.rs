@@ -361,6 +361,151 @@ impl DatabaseClient {
         Ok(stats)
     }
 
+    /// Get ML feature statistics
+    pub async fn get_ml_feature_stats(&self, limit: i64) -> Result<Vec<serde_json::Value>> {
+        let client = self.pool.get().await?;
+
+        let query = "
+            SELECT
+                timestamp,
+                tx_hash,
+                caller,
+                pallet,
+                call_name,
+                features
+            FROM ml_features
+            ORDER BY timestamp DESC
+            LIMIT $1
+        ";
+
+        let rows = client.query(query, &[&limit]).await?;
+
+        let features: Vec<serde_json::Value> = rows
+            .iter()
+            .map(|row| {
+                serde_json::json!({
+                    "timestamp": row.get::<_, chrono::DateTime<chrono::Utc>>(0),
+                    "tx_hash": row.get::<_, String>(1),
+                    "caller": row.get::<_, String>(2),
+                    "pallet": row.get::<_, String>(3),
+                    "call_name": row.get::<_, String>(4),
+                    "features": row.get::<_, serde_json::Value>(5),
+                })
+            })
+            .collect();
+
+        Ok(features)
+    }
+
+    /// Get attack pattern trends over time
+    pub async fn get_attack_trends(&self, hours: i32) -> Result<Vec<serde_json::Value>> {
+        let client = self.pool.get().await?;
+
+        let query = "
+            SELECT
+                date_trunc('hour', timestamp) as hour,
+                attack_pattern,
+                COUNT(*) as count,
+                AVG(confidence) as avg_confidence
+            FROM detections
+            WHERE timestamp >= NOW() - INTERVAL '1 hour' * $1
+            GROUP BY hour, attack_pattern
+            ORDER BY hour DESC, count DESC
+        ";
+
+        let rows = client.query(query, &[&hours]).await?;
+
+        let trends: Vec<serde_json::Value> = rows
+            .iter()
+            .map(|row| {
+                serde_json::json!({
+                    "hour": row.get::<_, chrono::DateTime<chrono::Utc>>(0),
+                    "attack_pattern": row.get::<_, String>(1),
+                    "count": row.get::<_, i64>(2),
+                    "avg_confidence": row.get::<_, f64>(3),
+                })
+            })
+            .collect();
+
+        Ok(trends)
+    }
+
+    /// Get data for export (all detections with details)
+    pub async fn get_export_data(&self, hours: Option<i32>) -> Result<Vec<serde_json::Value>> {
+        let client = self.pool.get().await?;
+
+        let query = if let Some(h) = hours {
+            format!(
+                "SELECT
+                    d.timestamp,
+                    d.detection_id,
+                    d.tx_hash,
+                    d.detector_name,
+                    d.attack_pattern,
+                    d.confidence,
+                    d.severity,
+                    d.description,
+                    d.evidence,
+                    t.caller,
+                    t.pallet,
+                    t.call_name,
+                    t.success,
+                    t.chain
+                FROM detections d
+                LEFT JOIN transactions t ON d.tx_hash = t.tx_hash
+                WHERE d.timestamp >= NOW() - INTERVAL '1 hour' * {}
+                ORDER BY d.timestamp DESC",
+                h
+            )
+        } else {
+            "SELECT
+                d.timestamp,
+                d.detection_id,
+                d.tx_hash,
+                d.detector_name,
+                d.attack_pattern,
+                d.confidence,
+                d.severity,
+                d.description,
+                d.evidence,
+                t.caller,
+                t.pallet,
+                t.call_name,
+                t.success,
+                t.chain
+            FROM detections d
+            LEFT JOIN transactions t ON d.tx_hash = t.tx_hash
+            ORDER BY d.timestamp DESC
+            LIMIT 1000".to_string()
+        };
+
+        let rows = client.query(&query, &[]).await?;
+
+        let data: Vec<serde_json::Value> = rows
+            .iter()
+            .map(|row| {
+                serde_json::json!({
+                    "timestamp": row.get::<_, chrono::DateTime<chrono::Utc>>(0),
+                    "detection_id": row.get::<_, String>(1),
+                    "tx_hash": row.get::<_, String>(2),
+                    "detector_name": row.get::<_, String>(3),
+                    "attack_pattern": row.get::<_, String>(4),
+                    "confidence": row.get::<_, f64>(5),
+                    "severity": row.get::<_, String>(6),
+                    "description": row.get::<_, Option<String>>(7),
+                    "evidence": row.get::<_, Option<serde_json::Value>>(8),
+                    "caller": row.get::<_, Option<String>>(9),
+                    "pallet": row.get::<_, Option<String>>(10),
+                    "call_name": row.get::<_, Option<String>>(11),
+                    "success": row.get::<_, Option<bool>>(12),
+                    "chain": row.get::<_, Option<String>>(13),
+                })
+            })
+            .collect();
+
+        Ok(data)
+    }
+
     /// Health check - verify database connection
     pub async fn health_check(&self) -> Result<bool> {
         match self.pool.get().await {

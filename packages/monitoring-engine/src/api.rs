@@ -174,6 +174,160 @@ async fn switch_chain(
     }
 }
 
+/// GET /api/analytics/ml-features - Get ML feature statistics
+async fn get_ml_features(
+    query: web::Query<std::collections::HashMap<String, String>>,
+    data: web::Data<ApiState>,
+) -> HttpResponse {
+    if let Some(db) = &data.engine.database {
+        let limit = query
+            .get("limit")
+            .and_then(|l| l.parse::<i64>().ok())
+            .unwrap_or(100);
+
+        match db.get_ml_feature_stats(limit).await {
+            Ok(features) => HttpResponse::Ok().json(features),
+            Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to fetch ML features: {}", e)
+            })),
+        }
+    } else {
+        HttpResponse::ServiceUnavailable().json(serde_json::json!({
+            "error": "Database not available"
+        }))
+    }
+}
+
+/// GET /api/analytics/attack-trends - Get attack pattern trends
+async fn get_attack_trends(
+    query: web::Query<std::collections::HashMap<String, String>>,
+    data: web::Data<ApiState>,
+) -> HttpResponse {
+    if let Some(db) = &data.engine.database {
+        let hours = query
+            .get("hours")
+            .and_then(|h| h.parse::<i32>().ok())
+            .unwrap_or(24);
+
+        match db.get_attack_trends(hours).await {
+            Ok(trends) => HttpResponse::Ok().json(trends),
+            Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to fetch attack trends: {}", e)
+            })),
+        }
+    } else {
+        HttpResponse::ServiceUnavailable().json(serde_json::json!({
+            "error": "Database not available"
+        }))
+    }
+}
+
+/// GET /api/analytics/detector-stats - Get detector statistics
+async fn get_detector_stats(
+    query: web::Query<std::collections::HashMap<String, String>>,
+    data: web::Data<ApiState>,
+) -> HttpResponse {
+    if let Some(db) = &data.engine.database {
+        let hours = query
+            .get("hours")
+            .and_then(|h| h.parse::<i32>().ok())
+            .unwrap_or(24);
+
+        match db.get_detector_stats(hours).await {
+            Ok(stats) => HttpResponse::Ok().json(stats),
+            Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to fetch detector stats: {}", e)
+            })),
+        }
+    } else {
+        HttpResponse::ServiceUnavailable().json(serde_json::json!({
+            "error": "Database not available"
+        }))
+    }
+}
+
+/// GET /api/export/json - Export detection data as JSON
+async fn export_json(
+    query: web::Query<std::collections::HashMap<String, String>>,
+    data: web::Data<ApiState>,
+) -> HttpResponse {
+    if let Some(db) = &data.engine.database {
+        let hours = query
+            .get("hours")
+            .and_then(|h| h.parse::<i32>().ok());
+
+        match db.get_export_data(hours).await {
+            Ok(export_data) => HttpResponse::Ok()
+                .insert_header((header::CONTENT_TYPE, "application/json"))
+                .insert_header((
+                    header::CONTENT_DISPOSITION,
+                    "attachment; filename=\"detections.json\"",
+                ))
+                .json(export_data),
+            Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to export data: {}", e)
+            })),
+        }
+    } else {
+        HttpResponse::ServiceUnavailable().json(serde_json::json!({
+            "error": "Database not available"
+        }))
+    }
+}
+
+/// GET /api/export/csv - Export detection data as CSV
+async fn export_csv(
+    query: web::Query<std::collections::HashMap<String, String>>,
+    data: web::Data<ApiState>,
+) -> HttpResponse {
+    if let Some(db) = &data.engine.database {
+        let hours = query
+            .get("hours")
+            .and_then(|h| h.parse::<i32>().ok());
+
+        match db.get_export_data(hours).await {
+            Ok(export_data) => {
+                // Convert JSON to CSV
+                let mut csv_content = String::from("timestamp,detection_id,tx_hash,detector_name,attack_pattern,confidence,severity,description,caller,pallet,call_name,success,chain\n");
+
+                for row in export_data {
+                    csv_content.push_str(&format!(
+                        "\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",{},{},\"{}\",\"{}\",\"{}\",\"{}\",{},\"{}\"\n",
+                        row["timestamp"].as_str().unwrap_or(""),
+                        row["detection_id"].as_str().unwrap_or(""),
+                        row["tx_hash"].as_str().unwrap_or(""),
+                        row["detector_name"].as_str().unwrap_or(""),
+                        row["attack_pattern"].as_str().unwrap_or(""),
+                        row["confidence"].as_f64().unwrap_or(0.0),
+                        row["severity"].as_str().unwrap_or(""),
+                        row["description"].as_str().unwrap_or(""),
+                        row["caller"].as_str().unwrap_or(""),
+                        row["pallet"].as_str().unwrap_or(""),
+                        row["call_name"].as_str().unwrap_or(""),
+                        row["success"].as_bool().unwrap_or(false),
+                        row["chain"].as_str().unwrap_or(""),
+                    ));
+                }
+
+                HttpResponse::Ok()
+                    .insert_header((header::CONTENT_TYPE, "text/csv"))
+                    .insert_header((
+                        header::CONTENT_DISPOSITION,
+                        "attachment; filename=\"detections.csv\"",
+                    ))
+                    .body(csv_content)
+            }
+            Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to export data: {}", e)
+            })),
+        }
+    } else {
+        HttpResponse::ServiceUnavailable().json(serde_json::json!({
+            "error": "Database not available"
+        }))
+    }
+}
+
 /// Configure API routes
 fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg
@@ -185,7 +339,12 @@ fn configure_routes(cfg: &mut web::ServiceConfig) {
         .route("/alerts/{id}/acknowledge", web::post().to(acknowledge_alert))
         .route("/chains", web::get().to(get_available_chains))
         .route("/chains/current", web::get().to(get_current_chain))
-        .route("/chains/switch", web::post().to(switch_chain));
+        .route("/chains/switch", web::post().to(switch_chain))
+        .route("/analytics/ml-features", web::get().to(get_ml_features))
+        .route("/analytics/attack-trends", web::get().to(get_attack_trends))
+        .route("/analytics/detector-stats", web::get().to(get_detector_stats))
+        .route("/export/json", web::get().to(export_json))
+        .route("/export/csv", web::get().to(export_csv));
 }
 
 /// Start the API server
