@@ -225,6 +225,50 @@ The node will be available at:
 
 You can connect with Polkadot.js Apps: https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:9944
 
+#### 4. Run Monitoring Engine (Real-time Security Monitoring)
+
+**IMPORTANT:** The monitoring engine REQUIRES environment variables for configuration. This is the CORRECT way to run it.
+
+```bash
+# STEP 1: Export environment variables (required)
+export WS_ENDPOINT="wss://westend-rpc.polkadot.io"
+export CHAIN_NAME="westend"
+export RUST_LOG=monitoring_engine=info
+
+# Optional: Enable database support (omit to run in memory-only mode)
+# export DATABASE_URL="postgresql://user:password@localhost:5432/security_nexus"
+
+# STEP 2: Run the monitoring engine
+./target/release/monitoring-engine
+
+# Alternative: Run with cargo (slower startup)
+# cargo run --release --package monitoring-engine
+```
+
+**What it does:**
+- Connects to Westend testnet in real-time
+- Monitors finalized blocks and transactions
+- Runs attack pattern detectors (Flash Loan, MEV, Front-running, etc.)
+- Exposes REST API at `http://localhost:8080`
+- Displays processing logs for each block
+
+**Example output:**
+```
+INFO  monitoring_engine: Starting Polkadot Security Nexus - Monitoring Engine
+INFO  monitoring_engine: Configuration:
+INFO  monitoring_engine:   WebSocket: wss://westend-rpc.polkadot.io
+INFO  monitoring_engine:   Chain: westend
+INFO  monitoring_engine: Successfully connected to Substrate node
+INFO  monitoring_engine: Processing block #28518471 (hash: 0x28d1d954e1ae1539) on westend
+INFO  monitoring_engine: Extracted 1 transactions from block #28518471
+```
+
+**API Endpoints:**
+- `GET http://localhost:8080/health` - Health check
+- `GET http://localhost:8080/stats` - Engine statistics
+- `GET http://localhost:8080/alerts` - Recent security alerts
+- `GET http://localhost:8080/detectors` - Detector status
+
 ### Current Project Status
 
 #### ✅ Completed (Production Ready)

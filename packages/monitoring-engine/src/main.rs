@@ -1,6 +1,6 @@
 //! Monitoring Engine Binary
 
-use monitoring_engine::{MonitorConfig, MonitoringEngine, api::start_api_server, config, database::DatabaseClient};
+use monitoring_engine::{MonitoringEngine, api::start_api_server, config, database::DatabaseClient};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use std::sync::Arc;

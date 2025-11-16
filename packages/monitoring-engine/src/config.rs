@@ -3,7 +3,7 @@
 //! Handles saving and loading chain configuration from disk
 
 use crate::{MonitorConfig, Result, Error};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::fs;
 use serde::{Deserialize, Serialize};
 
