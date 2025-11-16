@@ -230,6 +230,9 @@ impl Default for EngineState {
         detector_stats.insert("FrontRunning Detector".to_string(), DetectorStatsInternal::default());
         detector_stats.insert("Cross-Chain Bridge Detector".to_string(), DetectorStatsInternal::default());
         detector_stats.insert("State Proof Verification Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Omnipool Manipulation Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Liquidity Drain Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Collateral Manipulation Detector".to_string(), DetectorStatsInternal::default());
 
         Self {
             is_running: false,
@@ -425,6 +428,9 @@ impl MonitoringEngine {
             Box::new(detectors::FrontRunningDetector::new()),
             Box::new(detectors::CrossChainBridgeDetector::new()),
             Box::new(detectors::StateProofVerificationDetector::new()),
+            Box::new(detectors::OmnipoolManipulationDetector::new()),
+            Box::new(detectors::LiquidityDrainDetector::new()),
+            Box::new(detectors::CollateralManipulationDetector::new()),
         ];
 
         Arc::new(detectors)
