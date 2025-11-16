@@ -56,6 +56,11 @@ hex = "0.4"
 # Hashing
 blake3 = "1.5"
 
+# Database (TimescaleDB / PostgreSQL)
+tokio-postgres = { version = "0.7", features = ["with-chrono-0_4", "with-serde_json-1", "with-uuid-1"] }
+deadpool-postgres = "0.14"
+refinery = { version = "0.8", features = ["tokio-postgres"] }
+
 [dev-dependencies]
 mockall.workspace = true
 pretty_assertions.workspace = true
