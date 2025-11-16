@@ -10,47 +10,47 @@
 ## MILESTONE 1 ACHIEVEMENTS (Hackathon Deliverable)
 
 ### What We Built
-Durante la hackathon construimos un sistema funcional de monitoreo de seguridad con capacidades avanzadas:
+During the hackathon, we built a functional security monitoring system with advanced capabilities:
 
 #### Core Infrastructure
 - **Monitoring Engine (Rust)**: Real-time blockchain transaction analysis
   - Asynchronous architecture with tokio
-  - Connection pooling para alta performance
-  - Graceful error handling y logging comprehensivo
+  - Connection pooling for high performance
+  - Graceful error handling and comprehensive logging
 
-- **TimescaleDB Integration**: Time-series database optimizado
-  - 6 tablas especializadas (transactions, detections, hyperbridge_messages, hydration_pool_state, etc.)
-  - Continuous aggregates para analytics en tiempo real
-  - Hypertable partitioning para escalabilidad
+- **TimescaleDB Integration**: Optimized time-series database
+  - 6 specialized tables (transactions, detections, hyperbridge_messages, hydration_pool_state, etc.)
+  - Continuous aggregates for real-time analytics
+  - Hypertable partitioning for scalability
 
-- **REST API**: 15+ endpoints para analytics y export
+- **REST API**: 15+ endpoints for analytics and export
   - `/api/health`, `/api/detections`, `/api/analytics/*`
-  - Export a CSV y JSON
-  - CORS configurado para cross-origin requests
+  - Export to CSV and JSON
+  - CORS configured for cross-origin requests
 
 #### Specialized Detectors (5 Production-Ready)
 
 1. **CrossChainBridgeDetector** (Hyperbridge)
-   - Detección de duplicate message relay
-   - Spray attacks (múltiples destination chains)
+   - Duplicate message relay detection
+   - Spray attacks (multiple destination chains)
    - Cross-chain drain attacks
-   - **Confidence scoring**: 0.0-1.0 basado en múltiples indicators
+   - **Confidence scoring**: 0.0-1.0 based on multiple indicators
 
 2. **StateProofVerificationDetector** (Hyperbridge)
    - Proof manipulation attempts
    - Verification failures
-   - Multiple proofs para mismo block height
+   - Multiple proofs for same block height
    - Invalid proof structures
 
 3. **OmnipoolManipulationDetector** (Hydration)
    - Large liquidity swings
-   - Sandwich attacks en omnipool
+   - Sandwich attacks on omnipool
    - Flash loan patterns
    - Pool draining attempts
 
 4. **FlashLoanDetector** (Hydration)
    - Flash loan attacks
-   - Borrow/repay en mismo bloque
+   - Borrow/repay in same block
    - MEV exploitation
    - Capital efficiency abuse
 
@@ -58,32 +58,32 @@ Durante la hackathon construimos un sistema funcional de monitoreo de seguridad 
    - Cascading liquidations
    - System-wide risk events
    - Collateral drops
-   - Multiple liquidations en short time
+   - Multiple liquidations in short time
 
 #### Frontend Dashboard (Next.js + TypeScript)
-- **7 páginas especializadas**: Dashboard, Static Analysis, Monitoring, Alerts, Hyperbridge, Hydration, Analytics
-- **Real-time data fetching** desde monitoring engine
-- **Export functionality**: CSV y JSON download
+- **7 specialized pages**: Dashboard, Static Analysis, Monitoring, Alerts, Hyperbridge, Hydration, Analytics
+- **Real-time data fetching** from monitoring engine
+- **Export functionality**: CSV and JSON download
 - **Time-range filtering**: 6h, 12h, 24h, 48h, 168h
 - **Dark mode support**
-- **Responsive design** con Tailwind CSS
+- **Responsive design** with Tailwind CSS
 
 #### ML Pipeline Foundation
-- **Feature extraction**: 33+ features por transaction
+- **Feature extraction**: 33+ features per transaction
   - Transaction metadata (hash, caller, success, block_number)
   - Call analysis (pallet, call_name, num_calls)
   - Temporal features (tx_per_second)
   - Economic features (value_transferred, fees)
   - Cross-chain features (cross_chain_activity)
-- **Storage**: JSONB + vector array en PostgreSQL
-- **API endpoints** para ML feature retrieval
+- **Storage**: JSONB + vector array in PostgreSQL
+- **API endpoints** for ML feature retrieval
 
 #### DevOps & Deployment
-- **Docker Compose**: 4 servicios (timescaledb, monitoring-engine, dashboard, nginx)
-- **Multi-stage builds** con cargo-chef para dependency caching
-- **Health checks** en todos los servicios
-- **Persistent volumes** para database
-- **SAFT integration**: Static analysis tool embedded en dashboard
+- **Docker Compose**: 4 services (timescaledb, monitoring-engine, dashboard, nginx)
+- **Multi-stage builds** with cargo-chef for dependency caching
+- **Health checks** on all services
+- **Persistent volumes** for database
+- **SAFT integration**: Static analysis tool embedded in dashboard
 
 ### Technical Metrics (Current State)
 - **Lines of Code**: ~8,000+ (Rust + TypeScript)
@@ -92,51 +92,52 @@ Durante la hackathon construimos un sistema funcional de monitoreo de seguridad 
 - **Detectors**: 5 production-ready
 - **Dashboard Pages**: 7 specialized views
 - **Docker Images**: 2 optimized multi-stage builds
-- **Test Coverage**: Basic integration tests (expandir en Milestone 2)
+- **Test Coverage**: Basic integration tests (expand in Milestone 2)
 
 ### Key Differentiators
 1. **Polkadot-native**: Built specifically for Substrate/Polkadot ecosystem
-2. **Hyperbridge integration**: FIRST security monitoring for cross-chain messaging
-3. **Hydration DeFi focus**: Deep integration con omnipool específico
-4. **ML-ready**: Feature extraction pipeline lista para modelos avanzados
-5. **Time-series optimized**: TimescaleDB para análisis histórico eficiente
+2. **Hyperbridge integration**: First security monitoring solution for cross-chain messaging via ISMP
+3. **Hydration DeFi focus**: Deep integration with omnipool-specific attack vectors
+4. **ML-ready**: Feature extraction pipeline for advanced anomaly detection models
+5. **Time-series optimized**: TimescaleDB for efficient historical analysis and pattern recognition
 
 ---
 
 ## MILESTONE 2 OBJECTIVES
 
-**Objetivo:** Pasar de MVP a producto beta listo para usuarios reales en el ecosistema Polkadot
+**Objective:** Transform MVP into production-ready beta for real users in the Polkadot ecosystem
 
-**Timeline:** 6 semanas post-hackathon
-**Investment Required:** $8,000 (50% de prize money)
+**Timeline:** 6 weeks post-hackathon
+**Investment Required:** $8,000 (50% of prize money)
 **Expected Outcome:** 3+ parachains monitored, 50+ beta users, grant application submitted
 
 ---
 
 ## COMPETITIVE LANDSCAPE
 
-### Direct Competitors
-Currently, there is **NO direct competitor** offering Polkadot-native security monitoring with Hyperbridge and Hydration integration. However, adjacent competitors exist:
+### Competitive Analysis
 
-#### 1. Forta (Ethereum-focused)
-- **Strengths**: Established network, 1,000+ bots, VC-funded ($23M)
-- **Weaknesses**: EVM-only, no Substrate support, centralized infrastructure
-- **Our Advantage**: Polkadot-native, cross-chain (Hyperbridge), DeFi-specific (Hydration)
+No existing solution offers Polkadot-native security monitoring with Hyperbridge and Hydration integration. Adjacent solutions include:
 
-#### 2. OpenZeppelin Defender
-- **Strengths**: Trusted brand, smart contract focus
-- **Weaknesses**: Ethereum-centric, expensive ($500+/month), no real-time monitoring
-- **Our Advantage**: Real-time detection, affordable, ecosystem-specific
+#### Forta (Ethereum-focused)
+- Established network with 1,000+ detection bots, VC-funded ($23M)
+- Limited to EVM chains, no Substrate/FRAME support
+- Security Nexus differentiator: Polkadot-native architecture with cross-chain ISMP monitoring
 
-#### 3. CertiK Skynet
-- **Strengths**: Comprehensive security suite, well-funded
-- **Weaknesses**: Multi-chain but weak Polkadot support, enterprise-only pricing
-- **Our Advantage**: Polkadot-first, community pricing, open-source components
+#### OpenZeppelin Defender
+- Trusted security brand with smart contract focus
+- Ethereum-centric, enterprise pricing ($500+/month)
+- Security Nexus differentiator: Real-time parachain monitoring with ecosystem-specific pricing
 
-#### 4. In-House Solutions (Acala, Moonbeam teams)
-- **Strengths**: Deep protocol knowledge
-- **Weaknesses**: Not reusable, no cross-protocol visibility
-- **Our Advantage**: Cross-parachain monitoring, standardized API, community-driven
+#### CertiK Skynet
+- Comprehensive multi-chain security suite
+- Weak Polkadot support, enterprise-only pricing model
+- Security Nexus differentiator: Deep Polkadot integration with open-source core
+
+#### In-House Solutions
+- Protocol teams (Acala, Moonbeam) build custom monitoring
+- Not reusable across ecosystem, siloed visibility
+- Security Nexus differentiator: Standardized cross-parachain monitoring with unified API
 
 ### Market Opportunity
 
@@ -170,79 +171,79 @@ Currently, there is **NO direct competitor** offering Polkadot-native security m
 - Launch referral program: 20% commission for first 6 months
 
 **Phase 3 (Months 6-12): Ecosystem Standard**
-- Web3 Foundation grant para expand coverage
+- Web3 Foundation grant for expand coverage
 - Polkadot Treasury proposal: Integrate as public good
 - Marketplace de detectores custom (revenue share con community)
 - Partner con insurance protocols (Tidal, Nexus Mutual style)
 
 ---
 
-## SEMANA 1-2: Estabilización y Testing
+## WEEK 1-2: Stabilization and Testing
 
 ### Deliverables:
-- [ ] **100 horas de uptime** monitoreando Kusama
-  - Prueba de concepto → producción
-  - Docker Compose → Kubernetes para alta disponibilidad
+- [ ] **100 hours of uptime** monitoring Kusama
+  - Proof of concept → production
+  - Docker Compose → Kubernetes for high availability
 
-- [ ] **10,000+ bloques analizados** sin errores
-  - Logging comprehensivo
-  - Monitoreo con Grafana/Loki
-  - Alertas automáticas si engine cae
+- [ ] **10,000+ blocks analyzed** without errors
+  - Comprehensive logging
+  - Monitoring with Grafana/Loki
+  - Automatic alerts if engine crashes
 
-- [ ] **Suite de tests automatizados**
-  - Unit tests: 80% coverage mínimo
-  - Integration tests para cada detector
-  - Simular ataques conocidos (históricos de Kusama)
+- [ ] **Automated test suite**
+  - Unit tests: 80% minimum coverage
+  - Integration tests for each detector
+  - Simulate known attacks (Kusama historical)
 
-### Métricas de Éxito:
+### Success Metrics:
 - 99.9% uptime
-- <100ms latencia promedio de detección
-- 0 crashes críticos
+- <100ms average detection latency
+- 0 critical crashes
 
 ---
 
-## SEMANA 3-4: Expansión Multi-Parachain
+## WEEK 3-4: Multi-Parachain Expansion
 
 ### Deliverables:
-- [ ] **Integración con 3 parachains:**
+- [ ] **Integration with 3 parachains:**
   1. **Moonbeam** (EVM-compatible)
-     - Detectores específicos para Solidity
-     - Ataques típicos de EVM (reentrancy, etc.)
+     - Solidity-specific detectors
+     - Typical EVM attacks (reentrancy, etc.)
 
   2. **Acala** (DeFi hub)
-     - Detectores para AMM exploits
+     - Detectors for AMM exploits
      - Liquidation cascades
 
   3. **Hydration** (Omnipool)
      - Pool manipulation
      - MEV específico de omnipool
 
-- [ ] **Dashboard multi-chain**
-  - Selector de network
-  - Stats por parachain
-  - Alertas consolidadas
+- [ ] **Multi-chain dashboard**
+  - Network selector
+  - Stats per parachain
+  - Consolidated alerts
 
-- [ ] **Arquitectura escalable**
-  - 1 engine por parachain
+- [ ] **Scalable architecture**
+  - 1 engine per parachain
   - Message queue (RabbitMQ/Redis)
-  - Agregador central
+  - Central aggregator
 
-### Métricas de Éxito:
-- 3 parachains monitoreadas simultáneamente
-- <200ms latencia cross-chain
-- Dashboard con datos de todas las chains
+### Success Metrics:
+- 3 parachains monitored simultaneously
+- <200ms cross-chain latency
+- Dashboard with data from all chains
 
 ---
 
-## SEMANA 5: API Pública Beta
+## WEEK 5: Public API Beta
 
 ### Deliverables:
-- [ ] **REST API documentada**
+- [ ] **Documented REST API**
   - OpenAPI/Swagger spec
   - Rate limiting: 100 req/min (free tier)
-  - API keys con JWT auth
+  - API keys with JWT auth
 
-- [ ] **SDK para TypeScript**
+- [ ] **TypeScript SDK**
   ```typescript
   import { SecurityNexus } from '@security-nexus/sdk'
 
@@ -254,75 +255,75 @@ Currently, there is **NO direct competitor** offering Polkadot-native security m
   })
   ```
 
-- [ ] **2-3 protocolos piloto**
-  - Contactar 3 proyectos DeFi de Polkadot
-  - Integrar alertas en sus dashboards
+- [ ] **2-3 pilot protocols**
+  - Contact 3 Polkadot DeFi projects
+  - Integrate alerts in their dashboards
   - Feedback loop
 
 ### Endpoints:
 ```
-GET  /api/v1/alerts              # Lista de alertas
-GET  /api/v1/alerts/:id          # Detalle de alerta
+GET  /api/v1/alerts              # Alert list
+GET  /api/v1/alerts/:id          # Alert detail
 POST /api/v1/alerts/:id/ack      # Acknowledge
-GET  /api/v1/stats               # Stats generales
-POST /api/v1/webhooks            # Configurar webhook
+GET  /api/v1/stats               # General stats
+POST /api/v1/webhooks            # Configure webhook
 ```
 
-### Métricas de Éxito:
-- 3 protocolos usando la API
+### Success Metrics:
+- 3 protocols using the API
 - 1,000+ API calls
 - <500ms P95 latency
 
 ---
 
-## SEMANA 6: Polish y Go-to-Market
+## WEEK 6: Polish and Go-to-Market
 
 ### Deliverables:
-- [ ] **Documentación profesional**
+- [ ] **Professional documentation**
   - docs.security-nexus.io
-  - Guías de integración
+  - Integration guides
   - Video tutorials
-  - API reference completa
+  - Complete API reference
 
 - [ ] **Landing page**
   - security-nexus.io
   - Sign up for beta
-  - Case studies de pilotos
-  - Roadmap público
+  - Pilot case studies
+  - Public roadmap
 
-- [ ] **Marketing inicial**
+- [ ] **Initial marketing**
   - Post en r/Polkadot, r/Kusama
   - Thread en X/Twitter
-  - Presentación en Polkadot Forum
-  - Aplicar a Web3 Foundation grants
+  - Presentation at Polkadot Forum
+  - Apply for Web3 Foundation grants
 
-- [ ] **Analytics y métricas**
-  - Mixpanel/Amplitude integrado
+- [ ] **Analytics and metrics**
+  - Mixpanel/Amplitude integrated
   - User behavior tracking
   - Conversion funnel
 
-### Métricas de Éxito:
-- 50+ signups para beta
-- 10+ protocolos en waitlist
+### Success Metrics:
+- 50+ beta signups
+- 10+ protocols in waitlist
 - Grant application submitted
 
 ---
 
-## RECURSOS NECESARIOS
+## REQUIRED RESOURCES
 
-### Equipo:
+### Team:
 - 1 Full-stack developer (lead) - 40h/semana
 - 1 DevOps engineer - 20h/semana
 - 1 Product/Growth - 15h/semana
 - 1 Technical writer - 10h/semana
 
-### Infraestructura:
+### Infrastructure:
 - Kubernetes cluster: $200/mes
 - Domain + SSL: $20/mes
 - Monitoring (Datadog/New Relic): $100/mes
 - **Total: $320/mes**
 
-### Herramientas:
+### Tools:
 - GitHub Pro: $4/mes
 - Notion/Linear: $10/mes
 - Figma: $15/mes
@@ -335,13 +336,13 @@ POST /api/v1/webhooks            # Configurar webhook
 
 ## MILESTONE 3 PREVIEW (Post-Accelerator)
 
-### 3-6 Meses: Product-Market Fit
+### 3-6 Months: Product-Market Fit
 **Objective:** Establish Security Nexus as the standard for Polkadot security monitoring
 
 **Technical Expansion:**
 - [ ] **10+ parachains monitoreadas**
   - Acala, Moonbeam, Astar, Bifrost, Interlay, Parallel, Centrifuge, HydraDX, Zeitgeist, Phala
-  - Chain-specific detectors para cada parachain
+  - Chain-specific detectors for each parachain
   - Unified dashboard con multi-chain view
 
 - [ ] **20+ detectores de ataques**
@@ -350,9 +351,9 @@ POST /api/v1/webhooks            # Configurar webhook
   - Community-contributed detectors (bounty program)
 
 - [ ] **Advanced ML Models**
-  - Random Forest para classification (attack vs. normal)
+  - Random Forest for classification (attack vs. normal)
   - Anomaly detection con Isolation Forest
-  - LSTM para temporal pattern recognition
+  - LSTM for temporal pattern recognition
   - Real-time model inference (<50ms)
 
 - [ ] **Performance Optimization**
@@ -373,7 +374,7 @@ POST /api/v1/webhooks            # Configurar webhook
 - [ ] 5+ blog posts con case studies
 - [ ] Partnership con 2 insurance protocols
 
-### 6-12 Meses: Ecosystem Infrastructure
+### 6-12 Months: Ecosystem Infrastructure
 **Objective:** Become critical infrastructure for Polkadot ecosystem
 
 **Technical Innovation:**
@@ -384,16 +385,16 @@ POST /api/v1/webhooks            # Configurar webhook
   - State proof verification optimizations
 
 - [ ] **Marketplace de Detectores Custom**
-  - Plugin architecture para custom detectors
+  - Plugin architecture for custom detectors
   - Revenue share: 70% author, 30% platform
   - Detector SDK en Rust + WASM
-  - Community voting para featured detectors
+  - Community voting for featured detectors
 
 - [ ] **Real-Time Alert System**
-  - WebSocket streaming para instant alerts
+  - WebSocket streaming for instant alerts
   - Telegram, Discord, Slack integrations
-  - PagerDuty integration para on-call teams
-  - SMS alerts para critical severity
+  - PagerDuty integration for on-call teams
+  - SMS alerts for critical severity
 
 - [ ] **Incident Response Tools**
   - Automated transaction blocking (via governance proposals)
@@ -404,14 +405,14 @@ POST /api/v1/webhooks            # Configurar webhook
 **Partnerships & Growth:**
 - [ ] **DeFi Insurance Integration**
   - Partner con Tidal Finance, Polkacover
-  - Risk scoring API para premium calculation
+  - Risk scoring API for premium calculation
   - Claim verification support
   - Automated payout triggers
 
 - [ ] **Treasury Proposal**
   - Polkadot Treasury funding ($200K-$500K)
   - Public good infrastructure status
-  - Free monitoring para ecosystem parachains
+  - Free monitoring for ecosystem parachains
   - Open-source core components
 
 - [ ] **Series Seed Funding ($500K-$1M)**
@@ -425,27 +426,27 @@ POST /api/v1/webhooks            # Configurar webhook
 - [ ] 15+ paying protocols
 - [ ] 30% month-over-month growth
 
-### 12-24 Meses: Decentralization & Scale
+### 12-24 Months: Decentralization & Scale
 **Objective:** Establish decentralized security network and token economy
 
 **Decentralization:**
 - [ ] **DAO Governance con $NEXUS Token**
   - Token launch en AssetHub
-  - Staking para watcher nodes
-  - Governance para detector approval
+  - Staking for watcher nodes
+  - Governance for detector approval
   - Fee distribution to token holders
 
 - [ ] **Red Descentralizada de Watchers**
   - 100+ independent watcher nodes
   - Geographic distribution
   - Proof-of-Watch consensus
-  - Slashing para false positives
+  - Slashing for false positives
 
 - [ ] **Security Standards DAO**
-  - Define industry standards para security monitoring
+  - Define industry standards for security monitoring
   - Certify protocols con security score
   - Whitelist/blacklist governance
-  - Bounty program para vulnerability research
+  - Bounty program for vulnerability research
 
 **Technical Maturity:**
 - [ ] **10M+ transactions/day analyzed**
@@ -460,7 +461,7 @@ POST /api/v1/webhooks            # Configurar webhook
 - [ ] Profitability achieved
 
 **Exit Strategy:**
-- [ ] Strategic acquisition target para:
+- [ ] Strategic acquisition target for:
   - Parity Technologies (ecosystem integration)
   - CertiK, Quantstamp (security consolidation)
   - Coinbase, Kraken (exchange risk management)
@@ -468,28 +469,28 @@ POST /api/v1/webhooks            # Configurar webhook
 
 ---
 
-## RIESGOS Y MITIGACIÓN
+## RISKS AND MITIGATION
 
-### Riesgo 1: Competencia
-**Mitigación:**
+### Risk 1: Competition
+**Mitigation:**
 - First-mover advantage en Polkadot
 - Deep integration con ecosystem
 - Patents/IP en detectores únicos
 
-### Riesgo 2: False positives
-**Mitigación:**
-- ML para mejorar precisión
+### Risk 2: False positives
+**Mitigation:**
+- ML for mejorar precisión
 - Community feedback loop
 - Confidence scoring transparente
 
-### Riesgo 3: Escalabilidad técnica
-**Mitigación:**
-- Arquitectura desde día 1 para scale
+### Risk 3: Technical scalability
+**Mitigation:**
+- Arquitectura desde día 1 for scale
 - Load testing continuo
 - Multi-region deployment
 
-### Riesgo 4: Adopción lenta
-**Mitigación:**
+### Risk 4: Slow adoption
+**Mitigation:**
 - Tier gratuito generoso
 - Integraciones fáciles (SDK, webhooks)
 - Co-marketing con parachains
@@ -510,18 +511,18 @@ POST /api/v1/webhooks            # Configurar webhook
 
 ---
 
-## PRESUPUESTO MILESTONE 2
+## MILESTONE 2 BUDGET
 
 **Prize Money: $8,000** (50% de $16K)
 
-### Asignación:
-- Salarios (6 semanas): $5,000
+### Allocation:
+- Salaries (6 weeks): $5,000
   - Lead dev: $2,500
   - DevOps: $1,500
   - Product: $750
   - Writer: $250
 
-- Infraestructura: $500
+- Infrastructure: $500
   - Servers
   - Domains
   - Tools
@@ -539,14 +540,14 @@ POST /api/v1/webhooks            # Configurar webhook
 
 ## COMMITMENT
 
-Nosotros (Juan & Victoria) estamos comprometidos a:
-1. ✅ Trabajar full-time en esto durante el accelerator
-2. ✅ Weekly check-ins con mentores
-3. ✅ Transparencia total en progreso
-4. ✅ Pivotar rápido si algo no funciona
-5. ✅ Construir en público (updates semanales)
+We (Juan Nosotros (Juan & Victoria) estamos comprometidos a: Victoria) are committed to:
+1. ✅ Work full-time on this during the accelerator
+2. ✅ Weekly check-ins with mentors
+3. ✅ Complete transparency in progress
+4. ✅ Pivot quickly if something doesn
+5. ✅ Build in public (weekly updates)
 
-**Objetivo final:** Convertir Security Nexus en infraestructura crítica del ecosistema Polkadot.
+**Final objective:** Transform Security Nexus into critical infrastructure for the Polkadot ecosystem.
 
 ---
 
@@ -556,7 +557,7 @@ Nosotros (Juan & Victoria) estamos comprometidos a:
 
 **Architecture & Code Quality (15 points)**
 - [ ] Clean, well-documented Rust code following best practices
-- [ ] Modular architecture with separation of concerns
+- [ ] Modular architecture with sefortion of concerns
 - [ ] Comprehensive error handling and logging
 - [ ] Optimized database schema with appropriate indexes
 - [ ] Docker/Kubernetes deployment ready
@@ -673,36 +674,33 @@ Evaluators can verify the project through:
 
 ---
 
-## FINAL NOTES
+## TEAM COMMITMENT
 
-**Why Security Nexus deserves Milestone 2 support:**
+**Development Approach:**
+- Full-time development during 6-week accelerator period (both founders)
+- Weekly progress reports with transparent metrics
+- Active community engagement (Discord, Twitter, Polkadot Forum)
+- Iterative development based on ecosystem feedback
 
-1. **First-mover advantage**: No competitor offers Polkadot-native security monitoring with Hyperbridge + Hydration integration
+**Technical Execution:**
+- Functional MVP delivered in 2-day hackathon demonstrates execution capability
+- 5 production-ready detectors with real-world attack pattern coverage
+- Complete infrastructure stack (Rust backend, TimescaleDB, Next.js dashboard)
+- Docker-based deployment ready for production environments
 
-2. **Production-ready MVP**: Not just a concept - we shipped working code with 5 detectors, full-stack dashboard, ML pipeline
+**Ecosystem Integration:**
+- Built specifically for Polkadot/Substrate architecture
+- Hyperbridge ISMP integration for cross-chain security
+- Hydration omnipool-specific monitoring
+- Foundation for expanding to additional parachains
 
-3. **Ecosystem commitment**: Long-term vision (2+ years) with clear path to becoming critical infrastructure
-
-4. **Proven team**: Successfully delivered complex hackathon project in tight timeline, now committed to full-time development
-
-5. **Realistic plan**: Budget allocation, timeline, metrics, risks all clearly defined - not pie-in-the-sky promises
-
-**Post-hackathon commitment:**
-- Full-time work during accelerator (both founders)
-- Weekly public progress updates
-- Transparent metrics sharing
-- Community engagement (Discord, Twitter, Polkadot Forum)
-- Open to pivots based on mentor/community feedback
-
-**Ask for evaluators:**
-- Support our Milestone 2 funding ($8,000)
-- Intro to potential pilot partners (Hydration, Acala teams)
-- Feedback on technical architecture
-- Guidance on Web3 Foundation grant application
+**Long-term Vision:**
+- 2+ year roadmap with clear technical and business milestones
+- Path to becoming critical Polkadot ecosystem infrastructure
+- Sustainable business model with ecosystem-aligned pricing
+- Open-source core components for community contribution
 
 ---
 
-Thank you for considering Security Nexus for Milestone 2 funding. We're committed to building the security infrastructure that the Polkadot ecosystem needs.
-
-**Juan Ignacio Raggio & Victoria Helena Park**
-**SecurityNexus Team**
+**Authors:** Juan Ignacio Raggio & Victoria Helena Park
+**Contact:** https://github.com/JuaniRaggio/SecurityNexus

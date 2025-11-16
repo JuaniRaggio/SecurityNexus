@@ -411,9 +411,35 @@ pnpm build
 
 **Infrastructure:** PostgreSQL, Redis, Docker, GitHub Actions
 
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs) directory:
+
+### Getting Started
+- **[Quick Start Guide](./docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **[Testing Guide](./docs/TESTING.md)** - How to test the complete system
+- **[Implementation Details](./docs/IMPLEMENTATION.md)** - Technical architecture and components
+
+### Deployment
+- **[Deployment Guide](./docs/deployment/DEPLOYMENT.md)** - Production deployment instructions
+- **[Akash Deployment](./docs/deployment/AKASH.md)** - Deploy to Akash Network
+
+### Integration & Guides
+- **[Integration Guide](./docs/guides/INTEGRATION_GUIDE.md)** - How to integrate Security Nexus
+- **[Subsquid Integration](./docs/guides/SUBSQUID.md)** - Indexing with Subsquid
+- **[Demo Mode](./docs/guides/DEMO_MODE_GUIDE.md)** - Demo mode setup
+- **[Technical Demo Script](./docs/guides/TECHNICAL_DEMO_SCRIPT.md)** - Presentation guide
+
+### Planning & Roadmap
+- **[Milestone 2 Plan](./docs/planning/MILESTONE_2.md)** - Post-hackathon roadmap (6 weeks)
+- **[Roadmap](./docs/planning/ROADMAP.md)** - Long-term vision (2+ years)
+- **[Development Plan](./docs/planning/PLAN.md)** - Detailed development milestones
+- **[User Stories](./docs/planning/USER_STORIES.md)** - User personas and requirements
+- **[Endpoint Switcher Roadmap](./docs/planning/ENDPOINT_SWITCHER_ROADMAP.md)** - Multi-chain support plan
+
 ## Roadmap
 
-See [PLAN.md](./PLAN.md) for the complete development plan. Core features (SAFT Enhanced + Monitoring Engine + Dashboard) were built in 2 days during a 3-day hackathon.
+See [docs/planning/MILESTONE_2.md](./docs/planning/MILESTONE_2.md) for the post-hackathon evolution plan and [docs/planning/PLAN.md](./docs/planning/PLAN.md) for the complete development roadmap. Core features (SAFT Enhanced + Monitoring Engine + Dashboard) were built in 2 days during a 3-day hackathon.
 
 ## Team Members
 
