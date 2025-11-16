@@ -9,7 +9,6 @@
 use crate::detectors::Detector;
 use crate::types::{AttackPattern, DetectionResult, ParsedTransaction, TransactionContext};
 use async_trait::async_trait;
-use std::collections::HashMap;
 
 /// Detector for front-running and sandwich attacks
 pub struct FrontRunningDetector {
@@ -251,8 +250,8 @@ impl Detector for FrontRunningDetector {
         // Calculate confidence score
         let confidence = Self::calculate_confidence(&indicators);
 
-        // Only report if we have reasonable confidence (>40%)
-        if confidence >= 0.4 {
+        // Only report if we have reasonable confidence (>30%)
+        if confidence >= 0.3 {
             let evidence = Self::build_evidence(&indicators, ctx);
             let pattern = Self::determine_pattern(&indicators);
 
