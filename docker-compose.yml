@@ -29,6 +29,9 @@ services:
       - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
     ports:
       - "${API_PORT:-8080}:8080"
+    volumes:
+      # Persist chain configuration between restarts
+      - chain-config:/app
     restart: unless-stopped
     networks:
       - nexus-network
@@ -106,8 +109,9 @@ networks:
     name: ${COMPOSE_PROJECT_NAME:-security-nexus}-network
 
 # ============================================
-# Volumes (optional, for future use)
+# Volumes
 # ============================================
-# volumes:
-#   postgres_data:
-#   redis_data:
+volumes:
+  # Persist chain configuration for monitoring engine
+  chain-config:
+    driver: local
