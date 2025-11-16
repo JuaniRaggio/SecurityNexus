@@ -254,6 +254,76 @@ impl DatabaseClient {
         Ok(())
     }
 
+    /// Insert ML features for a transaction
+    pub async fn insert_ml_features(&self, features: &crate::ml::features::TransactionFeatures) -> Result<()> {
+        let client = self.pool.get().await?;
+
+        // Convert features to feature vector
+        let feature_vector = crate::ml::FeatureExtractor::to_vector(features);
+
+        // Convert vector to JSON for storage
+        let features_json = serde_json::json!({
+            "block_number": features.block_number,
+            "tx_index": features.tx_index,
+            "tx_success": features.tx_success,
+            "has_signature": features.has_signature,
+            "nonce": features.nonce,
+            "hour_of_day": features.hour_of_day,
+            "day_of_week": features.day_of_week,
+            "event_count": features.event_count,
+            "unique_event_types": features.unique_event_types,
+            "has_swap_events": features.has_swap_events,
+            "has_transfer_events": features.has_transfer_events,
+            "has_borrow_events": features.has_borrow_events,
+            "has_liquidation_events": features.has_liquidation_events,
+            "has_bridge_events": features.has_bridge_events,
+            "state_change_count": features.state_change_count,
+            "state_change_magnitude": features.state_change_magnitude,
+            "max_state_change": features.max_state_change,
+            "is_dex_interaction": features.is_dex_interaction,
+            "is_lending_interaction": features.is_lending_interaction,
+            "is_bridge_interaction": features.is_bridge_interaction,
+            "is_governance_interaction": features.is_governance_interaction,
+            "is_batch_call": features.is_batch_call,
+            "is_utility_call": features.is_utility_call,
+            "rapid_succession_indicator": features.rapid_succession_indicator,
+            "flash_loan_pattern": features.flash_loan_pattern,
+            "sandwich_risk": features.sandwich_risk,
+            "cross_chain_activity": features.cross_chain_activity,
+            "call_depth": features.call_depth,
+            "data_size": features.data_size,
+            "event_diversity": features.event_diversity,
+            "caller_hash": features.caller_hash,
+            "pallet_category": features.pallet_category,
+        });
+
+        let stmt = client
+            .prepare(
+                "INSERT INTO ml_features
+                (timestamp, tx_hash, caller, pallet, call_name,
+                 features, feature_vector)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            )
+            .await?;
+
+        client
+            .execute(
+                &stmt,
+                &[
+                    &chrono::Utc::now(),
+                    &features.tx_hash,
+                    &features.caller,
+                    &features.pallet,
+                    &features.call,
+                    &features_json,
+                    &feature_vector,
+                ],
+            )
+            .await?;
+
+        Ok(())
+    }
+
     /// Get recent detections for a specific detector
     pub async fn get_detections(
         &self,

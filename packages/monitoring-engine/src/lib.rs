@@ -611,6 +611,19 @@ impl MonitoringEngine {
             state_changes: vec![],
         };
 
+        // Extract ML features and store in database
+        if database.is_some() {
+            let mut state_lock = state.write().await;
+            let features = state_lock.feature_extractor.extract_features(&ctx);
+            drop(state_lock);
+
+            if let Some(db) = database {
+                if let Err(e) = db.insert_ml_features(&features).await {
+                    tracing::warn!("Failed to store ML features in database: {}", e);
+                }
+            }
+        }
+
         // Run all detectors
         for detector in detectors {
             let result = detector.analyze_transaction(&ctx).await;
