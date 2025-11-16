@@ -13,11 +13,10 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /build
 
-# Copy ALL workspace files (workspace requires all members)
-COPY Cargo.toml Cargo.lock ./
-COPY packages ./packages
+# Copy entire repository (needed for cargo workspace)
+COPY . .
 
-# Build release binary
+# Build only monitoring-engine
 RUN cargo build --release --package monitoring-engine
 
 # Runtime stage
@@ -31,9 +30,6 @@ RUN apt-get update && apt-get install -y \
 
 # Copy binary from builder
 COPY --from=builder /build/target/release/monitoring-engine /usr/local/bin/monitoring-engine
-
-# Copy schema for reference
-COPY --from=builder /build/packages/monitoring-engine/schema.sql /schema.sql
 
 EXPOSE 8080
 
