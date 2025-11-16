@@ -91,6 +91,46 @@ export async function GET(request: Request) {
       })
     }
 
+    if (endpoint === 'chains') {
+      return NextResponse.json({
+        chains: [
+          {
+            name: 'westend',
+            display_name: 'Westend Testnet',
+            endpoint: 'wss://westend-rpc.polkadot.io',
+            description: "Polkadot's primary testnet for protocol development",
+          },
+          {
+            name: 'asset-hub',
+            display_name: 'Asset Hub (Westend)',
+            endpoint: 'wss://westend-asset-hub-rpc.polkadot.io',
+            description: 'Asset management parachain on Westend',
+          },
+          {
+            name: 'polkadot',
+            display_name: 'Polkadot Mainnet',
+            endpoint: 'wss://rpc.polkadot.io',
+            description: 'Polkadot relay chain (production network)',
+          },
+          {
+            name: 'kusama',
+            display_name: 'Kusama',
+            endpoint: 'wss://kusama-rpc.polkadot.io',
+            description: "Polkadot's canary network",
+          },
+        ],
+      })
+    }
+
+    if (endpoint === 'chains/current') {
+      return NextResponse.json({
+        name: 'westend',
+        display_name: 'Westend Testnet',
+        endpoint: 'wss://westend-rpc.polkadot.io',
+        description: "Currently monitoring Westend (offline mode)",
+      })
+    }
+
     // In development, return demo alerts if monitoring engine is down
     if (process.env.NODE_ENV === 'development' &&
         (endpoint === 'alerts' || endpoint === 'alerts/unacknowledged')) {

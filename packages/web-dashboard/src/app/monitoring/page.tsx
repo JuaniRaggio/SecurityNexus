@@ -11,6 +11,7 @@ import {
   formatLastDetection,
 } from '@/hooks/useMonitoring'
 import AlertsPanel from '@/components/AlertsPanel'
+import ChainSelector from '@/components/ChainSelector'
 
 interface ActivityData {
   timestamp: number
@@ -57,7 +58,8 @@ export default function MonitoringPage() {
             Monitor blockchain activity and detect security threats in real-time
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <ChainSelector />
           {isConnected ? (
             <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
               <Wifi className="w-4 h-4" />

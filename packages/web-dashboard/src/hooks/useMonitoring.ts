@@ -45,6 +45,17 @@ export interface AllDetectorStats {
   detectors: DetectorStats[]
 }
 
+export interface ChainInfo {
+  name: string
+  display_name: string
+  endpoint: string
+  description: string
+}
+
+export interface AvailableChainsResponse {
+  chains: ChainInfo[]
+}
+
 async function fetchMonitoringStats(): Promise<MonitoringStats> {
   const response = await fetch('/api/monitoring?endpoint=stats')
   if (!response.ok) {
@@ -65,6 +76,22 @@ async function fetchDetectorStats(): Promise<AllDetectorStats> {
   const response = await fetch('/api/monitoring?endpoint=detectors')
   if (!response.ok) {
     throw new Error('Failed to fetch detector stats')
+  }
+  return response.json()
+}
+
+async function fetchAvailableChains(): Promise<AvailableChainsResponse> {
+  const response = await fetch('/api/monitoring?endpoint=chains')
+  if (!response.ok) {
+    throw new Error('Failed to fetch available chains')
+  }
+  return response.json()
+}
+
+async function fetchCurrentChain(): Promise<ChainInfo> {
+  const response = await fetch('/api/monitoring?endpoint=chains/current')
+  if (!response.ok) {
+    throw new Error('Failed to fetch current chain')
   }
   return response.json()
 }
@@ -99,6 +126,23 @@ export function useDetectorStats(refreshInterval = 5000) {
     refetchOnWindowFocus: true,
     retry: 3,
     retryDelay: 1000,
+  })
+}
+
+export function useAvailableChains() {
+  return useQuery<AvailableChainsResponse>({
+    queryKey: ['monitoring', 'chains'],
+    queryFn: fetchAvailableChains,
+    staleTime: 60000, // Chains don't change often, cache for 1 minute
+  })
+}
+
+export function useCurrentChain(refreshInterval = 10000) {
+  return useQuery<ChainInfo>({
+    queryKey: ['monitoring', 'chains', 'current'],
+    queryFn: fetchCurrentChain,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
   })
 }
 
