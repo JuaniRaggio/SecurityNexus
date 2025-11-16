@@ -1,0 +1,31 @@
+# ============================================
+# TimescaleDB Only - For Local Development
+# ============================================
+# Use this to run just the database locally
+# Run: docker-compose -f docker-compose.db.yml up -d
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: security-nexus-timescaledb
+    environment:
+      - POSTGRES_DB=security_nexus
+      - POSTGRES_USER=nexus
+      - POSTGRES_PASSWORD=nexus_dev_password
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale-dev-data:/var/lib/postgresql/data
+      - ./packages/monitoring-engine/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d security_nexus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  timescale-dev-data:
+    driver: local

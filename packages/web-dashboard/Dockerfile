@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+# Set LIBCLANG_PATH for bindgen
+ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+
 RUN cargo install cargo-chef
 WORKDIR /build
 
@@ -16,12 +20,13 @@ WORKDIR /build
 # Stage 2: Prepare Rust dependencies recipe
 # ============================================
 FROM chef AS planner
+# Copy workspace structure (lightweight, just metadata)
 COPY Cargo.toml Cargo.lock ./
-COPY packages ./packages
-COPY pallets ./pallets
-COPY runtime ./runtime
-COPY node ./node
-RUN cargo chef prepare --recipe-path recipe.json
+COPY packages packages
+COPY pallets pallets
+COPY runtime runtime
+COPY node node
+RUN cargo chef prepare --recipe-path recipe.json --bin saft
 
 # ============================================
 # Stage 3: Build Rust dependencies (CACHED)
@@ -34,19 +39,20 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Stage 4: Build SAFT binary
 # ============================================
 FROM chef AS saft-builder
+# Copy workspace structure
 COPY Cargo.toml Cargo.lock ./
-COPY packages ./packages
-COPY pallets ./pallets
-COPY runtime ./runtime
-COPY node ./node
+COPY packages packages
+COPY pallets pallets
+COPY runtime runtime
+COPY node node
 
 # Copy cached dependencies
 COPY --from=rust-deps /build/target target
 COPY --from=rust-deps /usr/local/cargo /usr/local/cargo
 
-# Build only SAFT
-WORKDIR /build/packages/saft-enhanced
-RUN cargo build --release --bin saft
+# Build ONLY saft-enhanced package (not the whole workspace)
+WORKDIR /build
+RUN cargo build --release -p saft-enhanced
 
 # ============================================
 # Stage 5: Install Node.js dependencies (CACHED)
@@ -73,6 +79,9 @@ COPY --from=node-deps /app/package.json ./package.json
 
 # Copy source code
 COPY packages/web-dashboard .
+
+# Ensure public directory exists
+RUN mkdir -p public
 
 # Build Next.js app
 RUN npm install -g pnpm@8 && pnpm build

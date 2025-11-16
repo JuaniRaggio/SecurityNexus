@@ -210,8 +210,11 @@ export function formatUptime(seconds: number): string {
 }
 
 // Fetch all alerts
-async function fetchAlerts(): Promise<Alert[]> {
-  const response = await fetch('/api/monitoring?endpoint=alerts')
+async function fetchAlerts(demoMode = false): Promise<Alert[]> {
+  const url = demoMode
+    ? '/api/demo-alerts'
+    : '/api/monitoring?endpoint=alerts'
+  const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Failed to fetch alerts')
   }
@@ -241,10 +244,10 @@ async function acknowledgeAlert(alertId: string): Promise<void> {
 }
 
 // Hook to fetch all alerts with auto-refresh
-export function useAlerts(refreshInterval = 5000) {
+export function useAlerts(refreshInterval = 5000, demoMode = false) {
   return useQuery<Alert[]>({
-    queryKey: ['monitoring', 'alerts'],
-    queryFn: fetchAlerts,
+    queryKey: ['monitoring', 'alerts', demoMode],
+    queryFn: () => fetchAlerts(demoMode),
     refetchInterval: refreshInterval,
     refetchOnWindowFocus: true,
     retry: 3,

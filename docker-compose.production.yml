@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  monitoring-engine:
+    image: ghcr.io/juaniraggio/securitynexus/monitoring-engine:latest
+    container_name: monitoring-engine
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+      - POLKADOT_RPC_URL=${POLKADOT_RPC_URL:-wss://rpc.polkadot.io}
+      - KUSAMA_RPC_URL=${KUSAMA_RPC_URL:-wss://kusama-rpc.polkadot.io}
+      - WESTEND_RPC_URL=${WESTEND_RPC_URL:-wss://westend-rpc.polkadot.io}
+      - MONITORING_INTERVAL=${MONITORING_INTERVAL:-30}
+    networks:
+      - nexus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  web-dashboard:
+    image: ghcr.io/juaniraggio/securitynexus/web-dashboard:latest
+    container_name: web-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://monitoring-engine:8080}
+      - SAFT_BINARY_PATH=/usr/local/bin/saft
+    depends_on:
+      - monitoring-engine
+    networks:
+      - nexus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - web-dashboard
+      - monitoring-engine
+    networks:
+      - nexus-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+networks:
+  nexus-network:
+    driver: bridge

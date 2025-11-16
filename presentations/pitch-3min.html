@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Nexus - 3 Minute Pitch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .slides {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .subtitle {
+            font-size: 2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+        }
+
+        .stat {
+            font-size: 5rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .feature h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #ffd700;
+            transition: width 0.3s;
+        }
+
+        .counter {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+
+        ul {
+            list-style: none;
+            text-align: left;
+            max-width: 800px;
+        }
+
+        li {
+            font-size: 1.5rem;
+            padding: 0.8rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+        }
+
+        .highlight {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            opacity: 0.8;
+        }
+
+        .demo-box {
+            background: rgba(255,255,255,0.1);
+            padding: 3rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            margin: 2rem 0;
+        }
+
+        .cta {
+            font-size: 2rem;
+            font-weight: 600;
+            background: rgba(255,215,0,0.2);
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            margin-top: 2rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">Security Nexus</div>
+
+    <div class="slides">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1 class="animate">Security Nexus</h1>
+            <p class="subtitle animate">Comprehensive Security Platform for the Polkadot Ecosystem</p>
+            <p class="animate">Built by Juan Ignacio Raggio & Victoria Helena Park</p>
+        </div>
+
+        <!-- Slide 2: The Problem -->
+        <div class="slide">
+            <h2>The Problem</h2>
+            <div class="stat">$474M</div>
+            <p style="font-size: 2rem; margin-bottom: 2rem;">Lost in DeFi exploits in 2024 alone</p>
+            <ul>
+                <li>Zero specialized tools for auditing Substrate/FRAME pallets</li>
+                <li>Scarcity of auditors capable of reviewing Substrate code</li>
+                <li>No real-time monitoring for parachain security</li>
+                <li>Lack of privacy-preserving vulnerability reporting</li>
+            </ul>
+        </div>
+
+        <!-- Slide 3: The Solution -->
+        <div class="slide">
+            <h2>The Solution</h2>
+            <p style="font-size: 1.8rem; margin-bottom: 2rem;">Multi-layer security platform specifically built for Polkadot</p>
+            <div class="features">
+                <div class="feature">
+                    <h3>Prevention</h3>
+                    <p>SAFT Enhanced - Static analysis for FRAME pallets</p>
+                </div>
+                <div class="feature">
+                    <h3>Detection</h3>
+                    <p>Real-time mempool monitoring and attack detection</p>
+                </div>
+                <div class="feature">
+                    <h3>Response</h3>
+                    <p>Privacy-preserving vulnerability reporting with ZK proofs</p>
+                </div>
+                <div class="feature">
+                    <h3>Cross-chain</h3>
+                    <p>Unified security via Hyperbridge ISMP</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Key Features -->
+        <div class="slide">
+            <h2>What We Built</h2>
+            <div class="demo-box">
+                <h3 style="text-align: center; margin-bottom: 1.5rem;">Core Platform Components</h3>
+                <ul style="max-width: 100%;">
+                    <li><span class="highlight">SAFT Enhanced</span> - Detects vulnerabilities before deployment</li>
+                    <li><span class="highlight">Real-Time Monitoring Engine</span> - Analyzes transactions as they happen</li>
+                    <li><span class="highlight">Professional Dashboard</span> - Live vulnerability reports and alerts</li>
+                    <li><span class="highlight">Multi-chain Support</span> - Polkadot, Kusama, Westend, and more</li>
+                    <li><span class="highlight">Production Ready</span> - Docker deployment, TimescaleDB, full API</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Live Demo -->
+        <div class="slide">
+            <h2>Live Demonstration</h2>
+            <div class="demo-box">
+                <h3 style="text-align: center; margin-bottom: 1rem;">Real Vulnerability Detection</h3>
+                <p style="font-size: 1.3rem; margin-bottom: 2rem;">
+                    Upload a vulnerable pallet → SAFT Enhanced detects real exploits from 2024
+                </p>
+                <div class="grid-2">
+                    <div class="metric">
+                        <div class="metric-value">6</div>
+                        <div class="metric-label">Critical Vulnerabilities Detected</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">&lt;2s</div>
+                        <div class="metric-label">Analysis Time</div>
+                    </div>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 2rem; opacity: 0.9;">
+                    Including: Integer overflow, Reentrancy, Access control, Race conditions
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Traction & Achievement -->
+        <div class="slide">
+            <h2>What We Achieved</h2>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="metric">
+                    <div class="metric-value">2 Days</div>
+                    <div class="metric-label">Core Platform Built</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">Functional & Deployed</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4</div>
+                    <div class="metric-label">Sponsor Integrations</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">Real</div>
+                    <div class="metric-label">Live Data, No Mocks</div>
+                </div>
+            </div>
+            <p style="margin-top: 2rem; font-size: 1.3rem;">
+                Parity • Kusama • Hydration • Hyperbridge
+            </p>
+        </div>
+
+        <!-- Slide 7: Business Model & Impact -->
+        <div class="slide">
+            <h2>Impact & Roadmap</h2>
+            <ul>
+                <li><span class="highlight">Immediate Value:</span> Audit tool for parachain developers</li>
+                <li><span class="highlight">Real-time Protection:</span> Detect attacks before they succeed</li>
+                <li><span class="highlight">Ecosystem Growth:</span> Lower barrier to secure development</li>
+                <li><span class="highlight">Cross-chain Security:</span> First unified security platform for Polkadot</li>
+            </ul>
+            <div style="margin-top: 3rem; text-align: center;">
+                <p style="font-size: 1.3rem; opacity: 0.9;">Next: Deploy to Kusama mainnet, expand detector coverage,</p>
+                <p style="font-size: 1.3rem; opacity: 0.9;">integrate with more parachains, launch bug bounty program</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Call to Action -->
+        <div class="slide">
+            <h2>Security Nexus</h2>
+            <p class="subtitle">Making the Polkadot ecosystem the most secure in blockchain</p>
+            <div class="cta">
+                Try it now: docker-compose up -d
+            </div>
+            <p style="margin-top: 3rem; font-size: 1.3rem;">
+                github.com/JuaniRaggio/SecurityNexus
+            </p>
+            <p style="margin-top: 1rem; font-size: 1.2rem; opacity: 0.8;">
+                Built by Juan Ignacio Raggio & Victoria Helena Park
+            </p>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="prevSlide()">← Previous</button>
+        <button class="nav-btn" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <div class="counter">
+        <span id="current">1</span> / <span id="total">8</span>
+    </div>
+
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total').textContent = totalSlides;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            document.getElementById('current').textContent = currentSlide + 1;
+            document.getElementById('progressBar').style.width =
+                ((currentSlide + 1) / totalSlides * 100) + '%';
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>

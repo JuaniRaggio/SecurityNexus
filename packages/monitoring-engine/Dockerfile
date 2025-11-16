@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+# Set LIBCLANG_PATH for bindgen
+ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+
 RUN cargo install cargo-chef
 WORKDIR /app
 
@@ -16,12 +20,13 @@ WORKDIR /app
 # Stage 2: Prepare dependencies recipe
 # ============================================
 FROM chef AS planner
+# Copy workspace structure (lightweight, just metadata)
 COPY Cargo.toml Cargo.lock ./
-COPY packages ./packages
-COPY pallets ./pallets
-COPY runtime ./runtime
-COPY node ./node
-RUN cargo chef prepare --recipe-path recipe.json
+COPY packages packages
+COPY pallets pallets
+COPY runtime runtime
+COPY node node
+RUN cargo chef prepare --recipe-path recipe.json --bin monitoring-engine
 
 # ============================================
 # Stage 3: Build dependencies (CACHED LAYER)
@@ -35,19 +40,20 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Stage 4: Build application
 # ============================================
 FROM chef AS builder
+# Copy workspace structure
 COPY Cargo.toml Cargo.lock ./
-COPY packages ./packages
-COPY pallets ./pallets
-COPY runtime ./runtime
-COPY node ./node
+COPY packages packages
+COPY pallets pallets
+COPY runtime runtime
+COPY node node
 
 # Copy cached dependencies from previous stage
 COPY --from=builder-deps /app/target target
 COPY --from=builder-deps /usr/local/cargo /usr/local/cargo
 
-# Build only the monitoring-engine binary
-WORKDIR /app/packages/monitoring-engine
-RUN cargo build --release --bin monitoring-engine
+# Build ONLY monitoring-engine package (not the whole workspace)
+WORKDIR /app
+RUN cargo build --release -p monitoring-engine
 
 # ============================================
 # Stage 5: Runtime image (minimal)

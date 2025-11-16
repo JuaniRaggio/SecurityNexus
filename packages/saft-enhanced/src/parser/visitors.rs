@@ -1,7 +1,8 @@
 //! Advanced AST visitors for security analysis
 
+use quote::ToTokens;
 use syn::{
-    visit::Visit, Expr, ExprBinary, ExprCall, ExprMethodCall, ItemFn,
+    visit::Visit, Expr, ExprBinary, ExprCall, ExprMethodCall, ItemFn, ItemMod,
 };
 
 /// Visitor for detecting arithmetic operations
@@ -9,6 +10,10 @@ use syn::{
 pub struct ArithmeticVisitor {
     /// Detected arithmetic operations (add, sub, mul, div)
     pub operations: Vec<ArithmeticOp>,
+    /// Track if we're currently in a test module
+    in_test_module: bool,
+    /// Track current function name
+    current_function: Option<String>,
 }
 
 /// An arithmetic operation found in the code
@@ -16,6 +21,9 @@ pub struct ArithmeticVisitor {
 pub struct ArithmeticOp {
     pub operation: ArithmeticKind,
     pub line: Option<usize>,
+    pub in_test_module: bool,
+    pub function_name: Option<String>,
+    pub involves_literals: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -35,6 +43,41 @@ pub enum ArithmeticKind {
 }
 
 impl<'ast> Visit<'ast> for ArithmeticVisitor {
+    fn visit_item_mod(&mut self, node: &'ast ItemMod) {
+        // Check if this is a test module
+        let is_test = node.attrs.iter().any(|attr| {
+            attr.path().is_ident("cfg") &&
+            attr.meta.to_token_stream().to_string().contains("test")
+        });
+
+        let was_in_test = self.in_test_module;
+        if is_test {
+            self.in_test_module = true;
+        }
+
+        syn::visit::visit_item_mod(self, node);
+
+        self.in_test_module = was_in_test;
+    }
+
+    fn visit_item_fn(&mut self, node: &'ast ItemFn) {
+        // Check if this is a test function
+        let is_test = node.attrs.iter().any(|attr| attr.path().is_ident("test"));
+
+        let previous_fn = self.current_function.clone();
+        let was_in_test = self.in_test_module;
+
+        self.current_function = Some(node.sig.ident.to_string());
+        if is_test {
+            self.in_test_module = true;
+        }
+
+        syn::visit::visit_item_fn(self, node);
+
+        self.current_function = previous_fn;
+        self.in_test_module = was_in_test;
+    }
+
     fn visit_expr_binary(&mut self, node: &'ast ExprBinary) {
         let op_kind = match node.op {
             syn::BinOp::Add(_) => Some(ArithmeticKind::Add),
@@ -46,9 +89,15 @@ impl<'ast> Visit<'ast> for ArithmeticVisitor {
         };
 
         if let Some(operation) = op_kind {
+            // Check if either operand is a literal
+            let involves_literals = is_literal_expr(&node.left) || is_literal_expr(&node.right);
+
             self.operations.push(ArithmeticOp {
                 operation,
                 line: None, // TODO: Extract line number from span
+                in_test_module: self.in_test_module,
+                function_name: self.current_function.clone(),
+                involves_literals,
             });
         }
 
@@ -72,11 +121,19 @@ impl<'ast> Visit<'ast> for ArithmeticVisitor {
             self.operations.push(ArithmeticOp {
                 operation,
                 line: None,
+                in_test_module: self.in_test_module,
+                function_name: self.current_function.clone(),
+                involves_literals: false,
             });
         }
 
         syn::visit::visit_expr_method_call(self, node);
     }
+}
+
+/// Helper function to check if an expression is a literal
+fn is_literal_expr(expr: &Expr) -> bool {
+    matches!(expr, Expr::Lit(_))
 }
 
 /// Visitor for detecting external calls
