@@ -20,9 +20,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create configuration
     let config = MonitorConfig {
         ws_endpoint: std::env::var("WS_ENDPOINT")
-            .unwrap_or_else(|_| "ws://localhost:9944".to_string()),
+            .unwrap_or_else(|_| "wss://westend-rpc.polkadot.io".to_string()),
         chain_name: std::env::var("CHAIN_NAME")
-            .unwrap_or_else(|_| "polkadot-local".to_string()),
+            .unwrap_or_else(|_| "westend".to_string()),
         enable_mempool: true,
         enable_blocks: true,
         enable_events: true,

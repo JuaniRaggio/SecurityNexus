@@ -78,8 +78,8 @@ fn default_max_reconnect_attempts() -> u32 {
 impl Default for MonitorConfig {
     fn default() -> Self {
         Self {
-            ws_endpoint: "ws://localhost:9944".to_string(),
-            chain_name: "local".to_string(),
+            ws_endpoint: "wss://westend-rpc.polkadot.io".to_string(),
+            chain_name: "westend".to_string(),
             enable_mempool: true,
             enable_blocks: true,
             enable_events: true,
@@ -100,12 +100,37 @@ pub struct MonitoringEngine {
 }
 
 /// Internal engine state
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct EngineState {
     is_running: bool,
     blocks_processed: u64,
     transactions_analyzed: u64,
     alerts_triggered: u64,
+    detector_stats: std::collections::HashMap<String, DetectorStatsInternal>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct DetectorStatsInternal {
+    detections: u64,
+    last_detection: Option<u64>,
+}
+
+impl Default for EngineState {
+    fn default() -> Self {
+        let mut detector_stats = std::collections::HashMap::new();
+        detector_stats.insert("Flash Loan Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("MEV Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Volume Anomaly Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("FrontRunning Detector".to_string(), DetectorStatsInternal::default());
+
+        Self {
+            is_running: false,
+            blocks_processed: 0,
+            transactions_analyzed: 0,
+            alerts_triggered: 0,
+            detector_stats,
+        }
+    }
 }
 
 impl MonitoringEngine {
@@ -199,6 +224,51 @@ impl MonitoringEngine {
         }
     }
 
+    /// Get statistics for all detectors
+    pub async fn get_detector_stats(&self) -> AllDetectorStats {
+        let state = self.state.read().await;
+        let detectors = vec![
+            DetectorStats {
+                name: "Flash Loan Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("Flash Loan Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("Flash Loan Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "MEV Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("MEV Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("MEV Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "Volume Anomaly Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("Volume Anomaly Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("Volume Anomaly Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "FrontRunning Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("FrontRunning Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("FrontRunning Detector")
+                    .and_then(|s| s.last_detection),
+            },
+        ];
+
+        AllDetectorStats { detectors }
+    }
+
     /// Initialize attack pattern detectors
     fn initialize_detectors(&self) -> Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>> {
         let detectors: Vec<Box<dyn detectors::Detector + Send + Sync>> = vec![
@@ -224,7 +294,7 @@ impl MonitoringEngine {
     /// Start block monitoring
     async fn start_block_monitoring(
         &self,
-        _detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
+        detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
     ) -> Result<()> {
         tracing::info!("Starting block monitoring");
 
@@ -233,10 +303,11 @@ impl MonitoringEngine {
 
         let state = self.state.clone();
         let chain_name = self.config.chain_name.clone();
+        let alert_manager = self.alert_manager.clone();
 
         // Spawn background task for block subscription
         tokio::spawn(async move {
-            match Self::subscribe_to_blocks(client, state, chain_name).await {
+            match Self::subscribe_to_blocks(client, state, chain_name, detectors, alert_manager).await {
                 Ok(_) => tracing::info!("Block subscription ended"),
                 Err(e) => tracing::error!("Block subscription error: {}", e),
             }
@@ -250,6 +321,8 @@ impl MonitoringEngine {
         client: subxt::OnlineClient<subxt::PolkadotConfig>,
         state: Arc<RwLock<EngineState>>,
         chain_name: String,
+        detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
+        alert_manager: Arc<alerts::AlertManager>,
     ) -> Result<()> {
         tracing::info!("Subscribing to finalized blocks on {}", chain_name);
 
@@ -268,10 +341,10 @@ impl MonitoringEngine {
                     let block_number = block.number();
                     let block_hash = block.hash();
 
-                    tracing::debug!(
-                        "Received block #{} (hash: {:?}) on {}",
+                    tracing::info!(
+                        "Processing block #{} (hash: 0x{}) on {}",
                         block_number,
-                        block_hash,
+                        hex::encode(&block_hash.0[..8]),
                         chain_name
                     );
 
@@ -284,7 +357,7 @@ impl MonitoringEngine {
                     match extractor.extract_from_block(block_hash, block.number() as u64).await {
                         Ok(transactions) => {
                             if !transactions.is_empty() {
-                                tracing::debug!(
+                                tracing::info!(
                                     "Extracted {} transactions from block #{}",
                                     transactions.len(),
                                     block_number
@@ -295,10 +368,16 @@ impl MonitoringEngine {
                                 state_lock.transactions_analyzed += transactions.len() as u64;
                                 drop(state_lock);
 
-                                // TODO: Pass transactions to detectors
-                                // for tx in transactions {
-                                //     Self::process_transaction(tx, &detectors).await?;
-                                // }
+                                // Process each transaction through detectors
+                                for tx in transactions {
+                                    Self::process_transaction(
+                                        tx,
+                                        &detectors,
+                                        &state,
+                                        &alert_manager,
+                                        &chain_name
+                                    ).await;
+                                }
                             }
                         }
                         Err(e) => {
@@ -318,6 +397,95 @@ impl MonitoringEngine {
         }
 
         Ok(())
+    }
+
+    /// Process a transaction through all detectors
+    async fn process_transaction(
+        tx: ParsedTransaction,
+        detectors: &[Box<dyn detectors::Detector + Send + Sync>],
+        state: &Arc<RwLock<EngineState>>,
+        alert_manager: &Arc<alerts::AlertManager>,
+        chain_name: &str,
+    ) {
+        // Create transaction context (simplified - no events/state changes for now)
+        let ctx = TransactionContext {
+            transaction: tx.clone(),
+            events: vec![],
+            state_changes: vec![],
+        };
+
+        // Run all detectors
+        for detector in detectors {
+            let result = detector.analyze_transaction(&ctx).await;
+
+            if result.detected && result.confidence > 0.5 {
+                let detector_name = detector.name();
+                tracing::warn!(
+                    "🚨 {} detected suspicious activity in tx {}",
+                    detector_name,
+                    tx.hash
+                );
+                tracing::warn!("   Confidence: {:.2}%", result.confidence * 100.0);
+                tracing::warn!("   Description: {}", result.description);
+                tracing::warn!("   Evidence: {:?}", result.evidence);
+
+                // Determine severity based on confidence
+                let severity = if result.confidence >= 0.9 {
+                    AlertSeverity::Critical
+                } else if result.confidence >= 0.75 {
+                    AlertSeverity::High
+                } else if result.confidence >= 0.6 {
+                    AlertSeverity::Medium
+                } else {
+                    AlertSeverity::Low
+                };
+
+                // Update detector statistics
+                let mut state_lock = state.write().await;
+                if let Some(detector_stat) = state_lock.detector_stats.get_mut(detector_name) {
+                    detector_stat.detections += 1;
+                    detector_stat.last_detection = Some(
+                        std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs()
+                    );
+                }
+                state_lock.alerts_triggered += 1;
+                drop(state_lock);
+
+                // Create recommended actions from evidence
+                let recommended_actions = if !result.evidence.is_empty() {
+                    vec![
+                        "Review transaction details and evidence".to_string(),
+                        format!("Investigate pattern: {}", result.pattern),
+                        "Monitor related transactions from same sender".to_string(),
+                    ]
+                } else {
+                    vec!["Review transaction for suspicious activity".to_string()]
+                };
+
+                // Create and trigger alert
+                let alert = Alert {
+                    id: uuid::Uuid::new_v4().to_string(),
+                    timestamp: std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs(),
+                    severity,
+                    pattern: result.pattern,
+                    description: result.description.clone(),
+                    transaction_hash: Some(tx.hash.clone()),
+                    block_number: Some(tx.block_number),
+                    chain: chain_name.to_string(),
+                    metadata: std::collections::HashMap::new(),
+                    recommended_actions,
+                    acknowledged: false,
+                };
+
+                alert_manager.trigger_alert(alert).await;
+            }
+        }
     }
 
     /// Start event monitoring
@@ -410,6 +578,21 @@ pub struct EngineStats {
     pub blocks_processed: u64,
     pub transactions_analyzed: u64,
     pub alerts_triggered: u64,
+}
+
+/// Statistics for a specific detector
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DetectorStats {
+    pub name: String,
+    pub enabled: bool,
+    pub detections: u64,
+    pub last_detection: Option<u64>, // Unix timestamp
+}
+
+/// Collection of all detector statistics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllDetectorStats {
+    pub detectors: Vec<DetectorStats>,
 }
 
 #[cfg(test)]

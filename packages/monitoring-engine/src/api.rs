@@ -93,11 +93,18 @@ async fn acknowledge_alert(
     }
 }
 
+/// GET /api/detectors - Get detector statistics
+async fn get_detectors(data: web::Data<ApiState>) -> HttpResponse {
+    let detector_stats = data.engine.get_detector_stats().await;
+    HttpResponse::Ok().json(detector_stats)
+}
+
 /// Configure API routes
 fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg
         .route("/health", web::get().to(health_check))
         .route("/stats", web::get().to(get_stats))
+        .route("/detectors", web::get().to(get_detectors))
         .route("/alerts", web::get().to(get_alerts))
         .route("/alerts/unacknowledged", web::get().to(get_unacknowledged_alerts))
         .route("/alerts/{id}/acknowledge", web::post().to(acknowledge_alert));
