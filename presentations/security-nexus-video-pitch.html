@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Nexus - Video Pitch con Audio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .video-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .slides {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        h2 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        h3 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .subtitle {
+            font-size: 2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .stat {
+            font-size: 5rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            animation: scaleIn 0.8s ease-out;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: slideInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .feature:nth-child(1) { animation-delay: 0.1s; }
+        .feature:nth-child(2) { animation-delay: 0.2s; }
+        .feature:nth-child(3) { animation-delay: 0.3s; }
+        .feature:nth-child(4) { animation-delay: 0.4s; }
+
+        .feature h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 30px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn.play-btn {
+            background: #ffd700;
+            color: #000;
+            border-color: #ffd700;
+        }
+
+        .btn.play-btn:hover {
+            background: #ffed4e;
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #ffd700;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .timer {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            text-align: left;
+            max-width: 800px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        li {
+            font-size: 1.5rem;
+            padding: 0.8rem 0;
+            padding-left: 2rem;
+            position: relative;
+            opacity: 0;
+            animation: slideInLeft 0.5s ease-out forwards;
+        }
+
+        li:nth-child(1) { animation-delay: 0.2s; }
+        li:nth-child(2) { animation-delay: 0.4s; }
+        li:nth-child(3) { animation-delay: 0.6s; }
+        li:nth-child(4) { animation-delay: 0.8s; }
+
+        li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+        }
+
+        .highlight {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .demo-box {
+            background: rgba(255,255,255,0.1);
+            padding: 3rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            margin: 2rem 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .cta {
+            font-size: 2rem;
+            font-weight: 600;
+            background: rgba(255,215,0,0.2);
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            margin-top: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .metric {
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .metric-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .audio-indicator {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .audio-indicator.active {
+            display: flex;
+        }
+
+        .wave {
+            width: 4px;
+            height: 20px;
+            background: #ffd700;
+            animation: wave 0.5s ease-in-out infinite;
+        }
+
+        .wave:nth-child(2) { animation-delay: 0.1s; }
+        .wave:nth-child(3) { animation-delay: 0.2s; }
+        .wave:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes wave {
+            0%, 100% { height: 10px; }
+            50% { height: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">Security Nexus</div>
+    
+    <div class="timer">
+        <span id="timeDisplay">0:00</span> / 3:00
+    </div>
+
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="video-container">
+        <div class="slides">
+            <!-- Slide 1: Title (15 seconds) -->
+            <div class="slide active" data-duration="15">
+                <h1>Security Nexus</h1>
+                <p class="subtitle">La primera plataforma de seguridad integral<br>diseñada específicamente para el ecosistema Polkadot</p>
+                <p style="font-size: 1.8rem; margin-top: 2rem;">Construida por Juan Ignacio Raggio<br>& Victoria Helena Park</p>
+            </div>
+
+            <!-- Slide 2: The Problem (25 seconds) -->
+            <div class="slide" data-duration="25">
+                <h2>El Problema</h2>
+                <div class="stat">$474M</div>
+                <p style="font-size: 2rem; margin-bottom: 2rem;">Perdidos solo en 2024 por exploits en DeFi</p>
+                <ul>
+                    <li>Cero herramientas especializadas para auditar Substrate y FRAME</li>
+                    <li>Escasez brutal de auditores que puedan revisar código Substrate</li>
+                    <li>Sin monitoreo en tiempo real para detectar ataques</li>
+                    <li>Sin reportes privados de vulnerabilidades</li>
+                </ul>
+            </div>
+
+            <!-- Slide 3: The Solution (30 seconds) -->
+            <div class="slide" data-duration="30">
+                <h2>La Solución</h2>
+                <p style="font-size: 1.8rem; margin-bottom: 2rem;">Plataforma de seguridad multi-capa que protege en cada etapa</p>
+                <div class="features">
+                    <div class="feature">
+                        <h3>Prevención</h3>
+                        <p>SAFT Enhanced analiza tu código ANTES del deployment</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Detección</h3>
+                        <p>Monitoreo en tiempo real del mempool detectando ataques</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Respuesta</h3>
+                        <p>Sistema de reportes con pruebas zero-knowledge</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Cross-chain</h3>
+                        <p>Seguridad unificada mediante Hyperbridge ISMP</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: What We Built (25 seconds) -->
+            <div class="slide" data-duration="25">
+                <h2>Lo Que Construimos</h2>
+                <div class="demo-box">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem;">Plataforma 100% Funcional</h3>
+                    <ul style="max-width: 100%;">
+                        <li><span class="highlight">SAFT Enhanced</span> detecta vulnerabilidades reales de exploits 2024</li>
+                        <li><span class="highlight">Motor de Monitoreo</span> analiza transacciones en tiempo real</li>
+                        <li><span class="highlight">Dashboard Profesional</span> con reportes en vivo, sin datos simulados</li>
+                        <li><span class="highlight">Soporte Multi-cadena</span> funcionando hoy</li>
+                        <li><span class="highlight">Listo para Producción</span> con Docker, TimescaleDB, API completa</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Slide 5: Live Demo (30 seconds) -->
+            <div class="slide" data-duration="30">
+                <h2>Demostración en Vivo</h2>
+                <div class="demo-box">
+                    <h3 style="text-align: center; margin-bottom: 1rem;">Detección Real de Vulnerabilidades</h3>
+                    <p style="font-size: 1.3rem; margin-bottom: 2rem;">
+                        El mismo código que causó un exploit de $70 millones en Curve Finance
+                    </p>
+                    <div class="grid-2">
+                        <div class="metric">
+                            <div class="metric-value">6</div>
+                            <div class="metric-label">Vulnerabilidades Críticas</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">&lt;2s</div>
+                            <div class="metric-label">Tiempo de Análisis</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 1.2rem; margin-top: 2rem;">
+                        Integer overflow, reentrancy, race conditions<br>
+                        <span class="highlight">Todo con la línea exacta de código y cómo remediarlo</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Slide 6: Achievement (20 seconds) -->
+            <div class="slide" data-duration="20">
+                <h2>Lo Que Logramos</h2>
+                <div class="grid-2" style="margin-top: 2rem;">
+                    <div class="metric">
+                        <div class="metric-value">2 Días</div>
+                        <div class="metric-label">Para construir el core completo</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">19</div>
+                        <div class="metric-label">Tests unitarios pasando</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">4</div>
+                        <div class="metric-label">Tracks de patrocinadores</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">Open Source en GitHub</div>
+                    </div>
+                </div>
+                <p style="margin-top: 2rem; font-size: 1.3rem;">
+                    Parity • Kusama • Hydration • Hyperbridge
+                </p>
+            </div>
+
+            <!-- Slide 7: Impact & Roadmap (25 seconds) -->
+            <div class="slide" data-duration="25">
+                <h2>Impacto y Roadmap</h2>
+                <ul>
+                    <li><span class="highlight">Valor Inmediato:</span> Los desarrolladores pueden auditar su código ANTES del deployment</li>
+                    <li><span class="highlight">Detección en tiempo real:</span> Detectamos ataques ANTES de que tengan éxito</li>
+                    <li><span class="highlight">Bajamos la barrera:</span> Para desarrollo seguro en Polkadot</li>
+                    <li><span class="highlight">Meta:</span> Hacer de Polkadot el ecosistema blockchain más seguro del mundo</li>
+                </ul>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <p style="font-size: 1.3rem;">Próximos pasos: Deploy en Kusama mainnet, expansión de detectores,</p>
+                    <p style="font-size: 1.3rem;">integración con más parachains, programa de bug bounty</p>
+                </div>
+            </div>
+
+            <!-- Slide 8: Call to Action (10 seconds) -->
+            <div class="slide" data-duration="10">
+                <h2>Security Nexus</h2>
+                <p class="subtitle">Seguridad Integral para Polkadot</p>
+                <div class="cta">
+                    Pruébalo ahora: docker-compose up -d
+                </div>
+                <p style="margin-top: 2rem; font-size: 1.5rem;">
+                    <span class="highlight">github.com/JuaniRaggio/SecurityNexus</span>
+                </p>
+                <p style="margin-top: 2rem; font-size: 1.3rem;">
+                    ¡Gracias!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="audio-indicator" id="audioIndicator">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <span style="margin-left: 10px;">Narrando...</span>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="restart()">⟲ Reiniciar</button>
+        <button class="btn play-btn" id="playBtn" onclick="togglePlay()">▶ Iniciar Presentación</button>
+        <button class="btn" onclick="skipSlide()">⏭ Siguiente</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let isPlaying = false;
+        let slideTimer;
+        let totalTime = 0;
+        let elapsedTime = 0;
+        let timerInterval;
+        
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        // Narración para cada slide (en español)
+        const narrations = [
+            // Slide 1 (15s)
+            "Buenos días. Soy Juan Ignacio Raggio y junto a Victoria Helena Park construimos Security Nexus: la primera plataforma de seguridad integral diseñada específicamente para el ecosistema Polkadot. En los próximos 3 minutos les voy a mostrar cómo estamos resolviendo un problema de 474 millones de dólares.",
+            
+            // Slide 2 (25s)
+            "El ecosistema Polkadot tiene un problema crítico de seguridad: 474 millones de dólares perdidos solo en 2024 por exploits en DeFi. Cero herramientas especializadas para auditar Substrate y FRAME. Escasez brutal de auditores que puedan revisar código Substrate. Sin monitoreo en tiempo real para detectar ataques antes de que ocurran. A medida que Polkadot crece, la superficie de ataque crece más rápido que nuestra capacidad de protegerla.",
+            
+            // Slide 3 (30s)
+            "Security Nexus es una plataforma multi-capa que protege en cada etapa. Primero: Prevención. SAFT Enhanced analiza estáticamente tu código ANTES del deployment, detectando vulnerabilidades como integer overflow, reentrancy, problemas de control de acceso. Segundo: Detección. Monitoreo en tiempo real del mempool detectando ataques de flash loan, MEV, manipulación de oráculos mientras ocurren. Tercero: Respuesta. Sistema de reportes con pruebas zero-knowledge para divulgar vulnerabilidades de forma privada. Y cuarto: Cross-chain. Seguridad unificada mediante Hyperbridge ISMP para todas las parachains. Todo construido nativamente para Substrate y FRAME.",
+            
+            // Slide 4 (25s)
+            "Y esto no es un concepto. Tenemos una plataforma 100% funcional. SAFT Enhanced detecta vulnerabilidades reales de exploits que ocurrieron en 2024. Motor de Monitoreo que analiza transacciones en tiempo real desde Polkadot, Kusama y Westend. Dashboard profesional con reportes en vivo, sin datos simulados. Soporte multi-cadena funcionando hoy. Listo para producción con Docker, TimescaleDB y API completa. Todo open source en GitHub.",
+            
+            // Slide 5 (30s)
+            "Déjame mostrarte qué tan rápido funciona esto. Subes un pallet vulnerable, el mismo código que causó un exploit de 70 millones de dólares en Curve Finance, y SAFT Enhanced detecta 6 vulnerabilidades críticas en menos de 2 segundos. Integer overflow, reentrancy, race conditions, todo identificado con la línea exacta de código y cómo remediarlo. Mientras tanto, el motor de monitoreo está procesando bloques en tiempo real, analizando cada transacción, listo para generar alertas sobre cualquier patrón de ataque. Esto funciona ahora. No es un mockup.",
+            
+            // Slide 6 (20s)
+            "¿Cuánto tiempo nos tomó construir esto? 2 días durante este hackathon de 3 días para el core completo: SAFT Enhanced, Motor de Monitoreo, Dashboard Profesional, 19 tests unitarios pasando, documentación completa. Integrando con los 4 tracks de patrocinadores: Parity, Kusama, Hydration y Hyperbridge.",
+            
+            // Slide 7 (25s)
+            "El impacto es inmediato. Los desarrolladores de parachains pueden auditar su código ANTES del deployment. Detección de ataques en tiempo real ANTES de que tengan éxito. Bajamos la barrera para el desarrollo seguro en Polkadot. Próximos pasos: Deploy en Kusama mainnet, expansión de la cobertura de detectores, integración con más parachains y lanzamiento del programa de bug bounty. Nuestra meta: hacer de Polkadot el ecosistema blockchain más seguro del mundo.",
+            
+            // Slide 8 (10s)
+            "Security Nexus. Seguridad integral para Polkadot. Pruébalo ahora mismo: docker-compose up -d. GitHub: JuaniRaggio slash SecurityNexus. Gracias."
+        ];
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function speak(text) {
+            // Web Speech API for narration
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.95;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Show audio indicator
+            document.getElementById('audioIndicator').classList.add('active');
+            
+            utterance.onend = () => {
+                document.getElementById('audioIndicator').classList.remove('active');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+                
+                if (isPlaying) {
+                    const duration = parseInt(slides[currentSlide].dataset.duration) * 1000;
+                    speak(narrations[currentSlide]);
+                    
+                    clearTimeout(slideTimer);
+                    slideTimer = setTimeout(nextSlide, duration);
+                }
+            } else {
+                stopPresentation();
+            }
+        }
+
+        function skipSlide() {
+            window.speechSynthesis.cancel();
+            clearTimeout(slideTimer);
+            nextSlide();
+        }
+
+        function startPresentation() {
+            isPlaying = true;
+            document.getElementById('playBtn').innerHTML = '⏸ Pausar';
+            document.getElementById('audioIndicator').classList.add('active');
+            
+            const duration = parseInt(slides[currentSlide].dataset.duration) * 1000;
+            speak(narrations[currentSlide]);
+            
+            slideTimer = setTimeout(nextSlide, duration);
+            
+            // Start timer
+            elapsedTime = 0;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopPresentation() {
+            isPlaying = false;
+            document.getElementById('playBtn').innerHTML = '▶ Continuar';
+            document.getElementById('audioIndicator').classList.remove('active');
+            window.speechSynthesis.cancel();
+            clearTimeout(slideTimer);
+            clearInterval(timerInterval);
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPresentation();
+            } else {
+                startPresentation();
+            }
+        }
+
+        function restart() {
+            stopPresentation();
+            currentSlide = 0;
+            updateSlide();
+            elapsedTime = 0;
+            updateTimer();
+            document.getElementById('playBtn').innerHTML = '▶ Iniciar Presentación';
+        }
+
+        function updateTimer() {
+            elapsedTime++;
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            document.getElementById('timeDisplay').textContent = 
+                minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.key === 'ArrowRight') {
+                skipSlide();
+            } else if (e.key === 'r' || e.key === 'R') {
+                restart();
+            }
+        });
+
+        // Initialize
+        updateSlide();
+
+        // Auto-start option (uncomment to auto-play)
+        // setTimeout(() => startPresentation(), 1000);
+    </script>
+</body>
+</html>
