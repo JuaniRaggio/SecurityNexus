@@ -77,6 +77,14 @@ fn default_max_reconnect_attempts() -> u32 {
 
 impl Default for MonitorConfig {
     fn default() -> Self {
+        Self::westend()
+    }
+}
+
+/// Chain configuration presets
+impl MonitorConfig {
+    /// Westend testnet configuration
+    pub fn westend() -> Self {
         Self {
             ws_endpoint: "wss://westend-rpc.polkadot.io".to_string(),
             chain_name: "westend".to_string(),
@@ -89,6 +97,101 @@ impl Default for MonitorConfig {
             max_reconnect_attempts: 5,
         }
     }
+
+    /// Asset Hub (Westend) configuration
+    pub fn asset_hub() -> Self {
+        Self {
+            ws_endpoint: "wss://westend-asset-hub-rpc.polkadot.io".to_string(),
+            chain_name: "asset-hub".to_string(),
+            enable_mempool: true,
+            enable_blocks: true,
+            enable_events: true,
+            alert_webhook: None,
+            min_alert_severity: AlertSeverity::Medium,
+            buffer_size: 1000,
+            max_reconnect_attempts: 5,
+        }
+    }
+
+    /// Polkadot mainnet configuration
+    pub fn polkadot() -> Self {
+        Self {
+            ws_endpoint: "wss://rpc.polkadot.io".to_string(),
+            chain_name: "polkadot".to_string(),
+            enable_mempool: true,
+            enable_blocks: true,
+            enable_events: true,
+            alert_webhook: None,
+            min_alert_severity: AlertSeverity::Medium,
+            buffer_size: 1000,
+            max_reconnect_attempts: 5,
+        }
+    }
+
+    /// Kusama configuration
+    pub fn kusama() -> Self {
+        Self {
+            ws_endpoint: "wss://kusama-rpc.polkadot.io".to_string(),
+            chain_name: "kusama".to_string(),
+            enable_mempool: true,
+            enable_blocks: true,
+            enable_events: true,
+            alert_webhook: None,
+            min_alert_severity: AlertSeverity::Medium,
+            buffer_size: 1000,
+            max_reconnect_attempts: 5,
+        }
+    }
+
+    /// Get chain config by name
+    pub fn from_chain_name(name: &str) -> Option<Self> {
+        match name.to_lowercase().as_str() {
+            "westend" => Some(Self::westend()),
+            "asset-hub" | "asset_hub" | "assethub" => Some(Self::asset_hub()),
+            "polkadot" => Some(Self::polkadot()),
+            "kusama" => Some(Self::kusama()),
+            _ => None,
+        }
+    }
+
+    /// Get list of available chain presets
+    pub fn available_chains() -> Vec<ChainInfo> {
+        vec![
+            ChainInfo {
+                name: "westend".to_string(),
+                display_name: "Westend Testnet".to_string(),
+                endpoint: "wss://westend-rpc.polkadot.io".to_string(),
+                description: "Polkadot's primary testnet for protocol development".to_string(),
+            },
+            ChainInfo {
+                name: "asset-hub".to_string(),
+                display_name: "Asset Hub (Westend)".to_string(),
+                endpoint: "wss://westend-asset-hub-rpc.polkadot.io".to_string(),
+                description: "Asset management parachain on Westend".to_string(),
+            },
+            ChainInfo {
+                name: "polkadot".to_string(),
+                display_name: "Polkadot Mainnet".to_string(),
+                endpoint: "wss://rpc.polkadot.io".to_string(),
+                description: "Polkadot relay chain (production network)".to_string(),
+            },
+            ChainInfo {
+                name: "kusama".to_string(),
+                display_name: "Kusama".to_string(),
+                endpoint: "wss://kusama-rpc.polkadot.io".to_string(),
+                description: "Polkadot's canary network".to_string(),
+            },
+        ]
+    }
+}
+
+/// Chain information for API responses
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChainInfo {
+    pub name: String,
+    pub display_name: String,
+    pub endpoint: String,
+    pub description: String,
 }
 
 /// Main monitoring engine

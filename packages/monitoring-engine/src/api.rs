@@ -2,7 +2,7 @@
 //!
 //! Provides HTTP endpoints to access monitoring statistics and status
 
-use crate::{MonitoringEngine, Result};
+use crate::{MonitoringEngine, MonitorConfig, ChainInfo, Result};
 use actix_web::{http::header, web, App, HttpResponse, HttpServer, middleware};
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
@@ -99,6 +99,28 @@ async fn get_detectors(data: web::Data<ApiState>) -> HttpResponse {
     HttpResponse::Ok().json(detector_stats)
 }
 
+/// GET /api/chains - Get available chain presets
+async fn get_available_chains() -> HttpResponse {
+    let chains = MonitorConfig::available_chains();
+    HttpResponse::Ok().json(serde_json::json!({
+        "chains": chains
+    }))
+}
+
+/// GET /api/chains/current - Get current active chain information
+async fn get_current_chain(data: web::Data<ApiState>) -> HttpResponse {
+    let config = &data.engine.config;
+
+    let current_chain = ChainInfo {
+        name: config.chain_name.clone(),
+        display_name: config.chain_name.clone(),
+        endpoint: config.ws_endpoint.clone(),
+        description: format!("Currently monitoring {}", config.chain_name),
+    };
+
+    HttpResponse::Ok().json(current_chain)
+}
+
 /// Configure API routes
 fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg
@@ -107,7 +129,9 @@ fn configure_routes(cfg: &mut web::ServiceConfig) {
         .route("/detectors", web::get().to(get_detectors))
         .route("/alerts", web::get().to(get_alerts))
         .route("/alerts/unacknowledged", web::get().to(get_unacknowledged_alerts))
-        .route("/alerts/{id}/acknowledge", web::post().to(acknowledge_alert));
+        .route("/alerts/{id}/acknowledge", web::post().to(acknowledge_alert))
+        .route("/chains", web::get().to(get_available_chains))
+        .route("/chains/current", web::get().to(get_current_chain));
 }
 
 /// Start the API server
