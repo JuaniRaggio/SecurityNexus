@@ -621,8 +621,8 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = MonitorConfig::default();
-        assert_eq!(config.ws_endpoint, "ws://localhost:9944");
-        assert_eq!(config.chain_name, "local");
+        assert_eq!(config.ws_endpoint, "wss://westend-rpc.polkadot.io");
+        assert_eq!(config.chain_name, "westend");
         assert!(config.enable_mempool);
     }
 }
