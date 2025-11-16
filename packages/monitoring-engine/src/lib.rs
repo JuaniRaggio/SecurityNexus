@@ -11,6 +11,7 @@ pub mod connection;
 pub mod api;
 pub mod transaction;
 pub mod config;
+pub mod database;
 
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
@@ -201,6 +202,7 @@ pub struct MonitoringEngine {
     state: Arc<RwLock<EngineState>>,
     pub alert_manager: Arc<alerts::AlertManager>,
     pub connection: Arc<connection::ConnectionManager>,
+    pub database: Option<Arc<database::DatabaseClient>>,
 }
 
 /// Internal engine state
@@ -254,6 +256,27 @@ impl MonitoringEngine {
             state: Arc::new(RwLock::new(EngineState::default())),
             alert_manager,
             connection,
+            database: None,
+        }
+    }
+
+    /// Create a new monitoring engine with database support
+    pub fn with_database(config: MonitorConfig, database: Arc<database::DatabaseClient>) -> Self {
+        let alert_manager = Arc::new(alerts::AlertManager::new(
+            config.min_alert_severity,
+            config.alert_webhook.clone(),
+        ));
+
+        let connection = Arc::new(connection::ConnectionManager::new(
+            config.ws_endpoint.clone(),
+        ));
+
+        Self {
+            config,
+            state: Arc::new(RwLock::new(EngineState::default())),
+            alert_manager,
+            connection,
+            database: Some(database),
         }
     }
 
@@ -408,10 +431,11 @@ impl MonitoringEngine {
         let state = self.state.clone();
         let chain_name = self.config.chain_name.clone();
         let alert_manager = self.alert_manager.clone();
+        let database = self.database.clone();
 
         // Spawn background task for block subscription
         tokio::spawn(async move {
-            match Self::subscribe_to_blocks(client, state, chain_name, detectors, alert_manager).await {
+            match Self::subscribe_to_blocks(client, state, chain_name, detectors, alert_manager, database).await {
                 Ok(_) => tracing::info!("Block subscription ended"),
                 Err(e) => tracing::error!("Block subscription error: {}", e),
             }
@@ -427,6 +451,7 @@ impl MonitoringEngine {
         chain_name: String,
         detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
         alert_manager: Arc<alerts::AlertManager>,
+        database: Option<Arc<database::DatabaseClient>>,
     ) -> Result<()> {
         tracing::info!("Subscribing to finalized blocks on {}", chain_name);
 
@@ -479,7 +504,8 @@ impl MonitoringEngine {
                                         &detectors,
                                         &state,
                                         &alert_manager,
-                                        &chain_name
+                                        &chain_name,
+                                        &database
                                     ).await;
                                 }
                             }
@@ -510,7 +536,44 @@ impl MonitoringEngine {
         state: &Arc<RwLock<EngineState>>,
         alert_manager: &Arc<alerts::AlertManager>,
         chain_name: &str,
+        database: &Option<Arc<database::DatabaseClient>>,
     ) {
+        // Store transaction in database if available
+        if let Some(db) = database {
+            // Convert args bytes to JSON Value
+            let args_json = if !tx.args.is_empty() {
+                match serde_json::from_slice::<serde_json::Value>(&tx.args) {
+                    Ok(value) => Some(value),
+                    Err(_) => {
+                        // If parsing fails, store as hex string
+                        Some(serde_json::json!({
+                            "raw": hex::encode(&tx.args)
+                        }))
+                    }
+                }
+            } else {
+                None
+            };
+
+            let db_tx = database::models::Transaction {
+                timestamp: chrono::Utc::now(),
+                tx_hash: tx.hash.clone(),
+                block_number: tx.block_number as i64,
+                chain: chain_name.to_string(),
+                pallet: tx.pallet.clone(),
+                call_name: tx.call.clone(),
+                caller: tx.caller.clone(),
+                success: tx.success,
+                args: args_json,
+                gas_used: None,  // TODO: Extract from transaction
+                fee_paid: None,  // TODO: Extract from transaction
+            };
+
+            if let Err(e) = db.insert_transaction(&db_tx).await {
+                tracing::warn!("Failed to store transaction in database: {}", e);
+            }
+        }
+
         // Create transaction context (simplified - no events/state changes for now)
         let ctx = TransactionContext {
             transaction: tx.clone(),
@@ -570,14 +633,15 @@ impl MonitoringEngine {
                 };
 
                 // Create and trigger alert
+                let alert_id = uuid::Uuid::new_v4().to_string();
                 let alert = Alert {
-                    id: uuid::Uuid::new_v4().to_string(),
+                    id: alert_id.clone(),
                     timestamp: std::time::SystemTime::now()
                         .duration_since(std::time::UNIX_EPOCH)
                         .unwrap()
                         .as_secs(),
-                    severity,
-                    pattern: result.pattern,
+                    severity: severity.clone(),
+                    pattern: result.pattern.clone(),
                     description: result.description.clone(),
                     transaction_hash: Some(tx.hash.clone()),
                     block_number: Some(tx.block_number),
@@ -586,6 +650,32 @@ impl MonitoringEngine {
                     recommended_actions,
                     acknowledged: false,
                 };
+
+                // Store detection in database if available
+                if let Some(db) = database {
+                    let detection = database::models::Detection {
+                        timestamp: chrono::Utc::now(),
+                        detection_id: alert_id.clone(),
+                        tx_hash: tx.hash.clone(),
+                        detector_name: detector_name.to_string(),
+                        attack_pattern: result.pattern.clone().to_string(),
+                        confidence: result.confidence,
+                        severity: match severity {
+                            AlertSeverity::Critical => "critical",
+                            AlertSeverity::High => "high",
+                            AlertSeverity::Medium => "medium",
+                            AlertSeverity::Low => "low",
+                        }.to_string(),
+                        description: Some(result.description.clone()),
+                        evidence: Some(serde_json::json!(result.evidence)),
+                        metadata: None,
+                        acknowledged: false,
+                    };
+
+                    if let Err(e) = db.insert_detection(&detection).await {
+                        tracing::warn!("Failed to store detection in database: {}", e);
+                    }
+                }
 
                 alert_manager.trigger_alert(alert).await;
             }
