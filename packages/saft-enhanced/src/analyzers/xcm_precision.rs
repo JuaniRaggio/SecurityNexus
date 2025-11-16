@@ -5,7 +5,6 @@
 //! leading to loss of funds or incorrect amounts if not properly converted.
 
 use crate::{
-    parser::visitors::FunctionCallVisitor,
     Location, Result, Severity, Vulnerability, VulnerabilityCategory,
 };
 use std::path::Path;
@@ -22,6 +21,9 @@ const XCM_PATTERNS: &[&str] = &[
     "xcm_transfer",
     "transfer_to_para",
     "transfer_to_relay",
+    "do_xcm_transfer",
+    "MultiAsset",
+    "MultiLocation",
 ];
 
 /// Patterns that indicate proper decimal conversion

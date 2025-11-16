@@ -223,6 +223,7 @@ impl Default for AnalyzerConfig {
                 VulnerabilityCategory::WeakRandomness,
                 VulnerabilityCategory::DenialOfService,
                 VulnerabilityCategory::BestPractice,
+                VulnerabilityCategory::XcmDecimalPrecision,
             ],
             exclude_paths: vec![],
             max_file_size: 10 * 1024 * 1024, // 10 MB
