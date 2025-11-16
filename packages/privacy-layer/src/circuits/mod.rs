@@ -1,7 +1,9 @@
 //! ZK circuits for vulnerability proofs
 
 use ark_ff::PrimeField;
-use ark_r1cs_std::prelude::*;
+use ark_r1cs_std::prelude::AllocVar;
+use ark_r1cs_std::eq::EqGadget;
+use ark_r1cs_std::fields::{fp::FpVar, FieldVar};
 use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 
 /// Circuit for proving knowledge of a vulnerability without revealing its details

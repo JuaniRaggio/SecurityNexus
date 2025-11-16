@@ -318,4 +318,109 @@ mod tests {
         let result = layer.generate_proof(&report);
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_end_to_end_proof_system() {
+        // Initialize privacy layer
+        let mut layer = PrivacyLayer::new();
+
+        // Setup proving and verifying keys
+        layer.setup().expect("Setup should succeed");
+
+        // Create a vulnerability report
+        let report = VulnerabilityReport {
+            severity: Severity::Critical,
+            category: "reentrancy".to_string(),
+            description: "Re-entrancy vulnerability in withdraw function allows attacker to drain funds".to_string(),
+            affected_code: "fn withdraw(amount: u128) { ... }".to_string(),
+            remediation: Some("Add non-reentrant guard and CEI pattern".to_string()),
+            reporter_id: Some("security_researcher_001".to_string()),
+        };
+
+        // Generate proof
+        let proof = layer
+            .generate_proof(&report)
+            .expect("Proof generation should succeed");
+
+        // Verify proof data exists
+        assert!(!proof.proof_data.is_empty(), "Proof data should not be empty");
+        assert!(!proof.public_inputs.is_empty(), "Public inputs should not be empty");
+        assert_eq!(proof.metadata.curve, "BN254");
+        assert_eq!(proof.metadata.circuit_version, "v1");
+
+        // Verify the proof
+        let is_valid = layer
+            .verify_proof(&proof)
+            .expect("Proof verification should succeed");
+
+        assert!(is_valid, "Proof should be valid");
+    }
+
+    #[test]
+    fn test_different_severity_levels() {
+        let mut layer = PrivacyLayer::new();
+        layer.setup().expect("Setup should succeed");
+
+        // Test all severity levels
+        let severities = vec![
+            Severity::Low,
+            Severity::Medium,
+            Severity::High,
+            Severity::Critical,
+        ];
+
+        for severity in severities {
+            let report = VulnerabilityReport {
+                severity,
+                category: "test".to_string(),
+                description: "Test vulnerability".to_string(),
+                affected_code: "code".to_string(),
+                remediation: None,
+                reporter_id: None,
+            };
+
+            let proof = layer
+                .generate_proof(&report)
+                .expect("Proof generation should succeed");
+
+            let is_valid = layer
+                .verify_proof(&proof)
+                .expect("Verification should succeed");
+
+            assert!(is_valid, "Proof should be valid for severity {:?}", severity);
+        }
+    }
+
+    #[test]
+    fn test_proof_with_different_descriptions() {
+        let mut layer = PrivacyLayer::new();
+        layer.setup().expect("Setup should succeed");
+
+        let descriptions = vec![
+            "Integer overflow in arithmetic operation",
+            "Missing access control on admin function",
+            "XCM decimal precision mismatch",
+        ];
+
+        for desc in descriptions {
+            let report = VulnerabilityReport {
+                severity: Severity::High,
+                category: "test".to_string(),
+                description: desc.to_string(),
+                affected_code: "code".to_string(),
+                remediation: None,
+                reporter_id: None,
+            };
+
+            let proof = layer
+                .generate_proof(&report)
+                .expect("Proof generation should succeed");
+
+            let is_valid = layer
+                .verify_proof(&proof)
+                .expect("Verification should succeed");
+
+            assert!(is_valid, "Proof should be valid");
+        }
+    }
 }

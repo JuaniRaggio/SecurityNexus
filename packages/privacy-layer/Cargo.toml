@@ -11,6 +11,7 @@ ark-ff.workspace = true
 ark-ec.workspace = true
 ark-std.workspace = true
 ark-relations.workspace = true
+ark-snark = { version = "0.4", default-features = false }
 ark-groth16.workspace = true
 ark-bn254.workspace = true
 ark-serialize.workspace = true
