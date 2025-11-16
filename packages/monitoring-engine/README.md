@@ -93,7 +93,7 @@ The Monitoring Engine provides real-time detection of security threats and attac
 ### Build
 
 ```bash
-# Build the library
+# Build the library and binary
 cargo build --release
 
 # Run unit tests
@@ -107,7 +107,59 @@ cargo test --test integration -- --ignored --test-threads=1
 cargo bench
 ```
 
-### Usage Example
+### Running the Monitoring Engine
+
+**IMPORTANT:** The monitoring engine binary REQUIRES environment variables for configuration. This is the CORRECT way to run it.
+
+```bash
+# STEP 1: Export environment variables (REQUIRED)
+export WS_ENDPOINT="wss://westend-rpc.polkadot.io"
+export CHAIN_NAME="westend"
+export RUST_LOG=monitoring_engine=info
+
+# Optional: Enable database support
+# export DATABASE_URL="postgresql://user:password@localhost:5432/security_nexus"
+
+# STEP 2: Run the monitoring engine
+./target/release/monitoring-engine
+
+# Or with cargo (slower startup):
+# cargo run --release --package monitoring-engine
+```
+
+**Available Chain Presets:**
+- `westend` - Westend Testnet (default)
+- `polkadot` - Polkadot Mainnet
+- `kusama` - Kusama
+- `asset-hub` - Asset Hub on Westend
+
+**Example with different chain:**
+```bash
+export WS_ENDPOINT="wss://kusama-rpc.polkadot.io"
+export CHAIN_NAME="kusama"
+./target/release/monitoring-engine
+```
+
+**Output:**
+```
+INFO  monitoring_engine: Starting Polkadot Security Nexus - Monitoring Engine
+INFO  monitoring_engine: Configuration:
+INFO  monitoring_engine:   WebSocket: wss://westend-rpc.polkadot.io
+INFO  monitoring_engine:   Chain: westend
+INFO  monitoring_engine: Successfully connected to Substrate node
+INFO  monitoring_engine: API server running on 0.0.0.0:8080
+INFO  monitoring_engine: Processing block #28518471 (hash: 0x28d1d954) on westend
+INFO  monitoring_engine: Extracted 1 transactions from block #28518471
+```
+
+**API Endpoints (http://localhost:8080):**
+- `GET /health` - Health check
+- `GET /stats` - Engine statistics
+- `GET /alerts` - Recent security alerts
+- `GET /detectors` - Detector status
+- `GET /chains` - Available chain configurations
+
+### Library Usage Example
 
 ```rust
 use monitoring_engine::*;
@@ -124,6 +176,7 @@ async fn main() -> Result<()> {
         alert_webhook: Some("https://your-webhook.com/alerts".to_string()),
         min_alert_severity: AlertSeverity::Medium,
         buffer_size: 1000,
+        max_reconnect_attempts: 5,
     };
 
     // Create and start the engine
