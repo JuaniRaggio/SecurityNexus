@@ -70,4 +70,25 @@ target/ink/
 
 # Redis
 dump.rdb
-test-samples/
+
+# SSL Certificates (NEVER commit private keys!)
+ssl/
+*.crt
+*.key
+*.csr
+*.pem
+dhparam.pem
+
+# Backups
+backup-*.tar.gz
+*.backup
+*.bak
+
+# Docker override
+docker-compose.override.yml
+docker-compose.prod.yml
+docker-compose.local.yml
+
+# Deployment artifacts
+.deployment/
+deployment-*.log
