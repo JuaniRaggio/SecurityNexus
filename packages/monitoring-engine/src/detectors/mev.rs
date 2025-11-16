@@ -336,6 +336,7 @@ impl Detector for MevDetector {
                     tx.pallet, tx.call
                 ),
                 evidence,
+                metadata: std::collections::HashMap::new(),
             }
         } else {
             DetectionResult::no_detection()

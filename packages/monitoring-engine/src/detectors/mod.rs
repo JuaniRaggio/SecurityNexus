@@ -4,11 +4,13 @@ pub mod flash_loan;
 pub mod mev;
 pub mod volume;
 pub mod frontrunning;
+pub mod hyperbridge;
 
 pub use flash_loan::FlashLoanDetector;
 pub use mev::MevDetector;
 pub use volume::VolumeAnomalyDetector;
 pub use frontrunning::FrontRunningDetector;
+pub use hyperbridge::{CrossChainBridgeDetector, StateProofVerificationDetector};
 
 use crate::types::{DetectionResult, TransactionContext};
 use async_trait::async_trait;

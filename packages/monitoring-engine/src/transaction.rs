@@ -104,15 +104,12 @@ impl TransactionExtractor {
         transaction: ParsedTransaction,
         all_events: &[ChainEvent],
     ) -> TransactionContext {
-        // Filter events that belong to this transaction
-        let tx_events: Vec<ChainEvent> = all_events
-            .iter()
-            .filter(|e| e.extrinsic_index == Some(transaction.index))
-            .cloned()
-            .collect();
+        // For now, include all events since we simplified ChainEvent structure
+        // TODO: Re-add extrinsic_index filtering when event extraction is improved
+        let tx_events: Vec<ChainEvent> = all_events.to_vec();
 
         debug!(
-            "Transaction {} has {} associated events",
+            "Transaction {} context created with {} events",
             transaction.index,
             tx_events.len()
         );
@@ -150,19 +147,13 @@ impl TransactionExtractor {
 
             // Get the extrinsic index if this event is associated with one
             // Note: field_bytes() returns the raw event data, we'll parse extrinsic_index later if needed
-            let extrinsic_index = None; // TODO: Extract extrinsic index from event phase
-
-            // Get event data
-            let event_data = event.bytes().to_vec();
+            // Try to parse event data as JSON (simplified for now)
+            let event_data_json = None; // TODO: Parse event fields into JSON
 
             chain_events.push(ChainEvent {
-                block_number,
-                event_index,
-                extrinsic_index,
                 pallet: pallet_name,
                 event_name,
-                data: event_data,
-                topics: Vec::new(), // TODO: Extract topics if needed
+                event_data: event_data_json,
             });
 
             event_index += 1;

@@ -228,6 +228,8 @@ impl Default for EngineState {
         detector_stats.insert("MEV Detector".to_string(), DetectorStatsInternal::default());
         detector_stats.insert("Volume Anomaly Detector".to_string(), DetectorStatsInternal::default());
         detector_stats.insert("FrontRunning Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Cross-Chain Bridge Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("State Proof Verification Detector".to_string(), DetectorStatsInternal::default());
 
         Self {
             is_running: false,
@@ -391,6 +393,24 @@ impl MonitoringEngine {
                 last_detection: state.detector_stats.get("FrontRunning Detector")
                     .and_then(|s| s.last_detection),
             },
+            DetectorStats {
+                name: "Cross-Chain Bridge Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("Cross-Chain Bridge Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("Cross-Chain Bridge Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "State Proof Verification Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("State Proof Verification Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("State Proof Verification Detector")
+                    .and_then(|s| s.last_detection),
+            },
         ];
 
         AllDetectorStats { detectors }
@@ -403,6 +423,8 @@ impl MonitoringEngine {
             Box::new(detectors::MevDetector::new()),
             Box::new(detectors::VolumeAnomalyDetector::new()),
             Box::new(detectors::FrontRunningDetector::new()),
+            Box::new(detectors::CrossChainBridgeDetector::new()),
+            Box::new(detectors::StateProofVerificationDetector::new()),
         ];
 
         Arc::new(detectors)
