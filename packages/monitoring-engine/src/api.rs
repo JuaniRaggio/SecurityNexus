@@ -3,6 +3,7 @@
 //! Provides HTTP endpoints to access monitoring statistics and status
 
 use crate::{MonitoringEngine, MonitorConfig, ChainInfo, Result};
+use crate::config;
 use actix_web::{http::header, web, App, HttpResponse, HttpServer, middleware};
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
@@ -24,6 +25,19 @@ pub struct HealthResponse {
     pub status: String,
     pub version: String,
     pub uptime_seconds: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SwitchChainRequest {
+    pub chain_name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SwitchChainResponse {
+    pub success: bool,
+    pub message: String,
+    pub chain_name: String,
+    pub requires_restart: bool,
 }
 
 /// State shared across API handlers
@@ -121,6 +135,45 @@ async fn get_current_chain(data: web::Data<ApiState>) -> HttpResponse {
     HttpResponse::Ok().json(current_chain)
 }
 
+/// POST /api/chains/switch - Switch to a different chain
+async fn switch_chain(
+    request: web::Json<SwitchChainRequest>,
+) -> HttpResponse {
+    let chain_name = &request.chain_name;
+
+    // Validate that the chain exists
+    if MonitorConfig::from_chain_name(chain_name).is_none() {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "success": false,
+            "error": format!("Unknown chain: {}", chain_name),
+            "available_chains": ["westend", "asset-hub", "polkadot", "kusama"]
+        }));
+    }
+
+    // Save the configuration
+    match config::save_chain_config(chain_name) {
+        Ok(_) => {
+            tracing::info!("Chain configuration saved: {}", chain_name);
+            HttpResponse::Ok().json(SwitchChainResponse {
+                success: true,
+                message: format!(
+                    "Chain configuration saved to '{}'. Please restart the monitoring engine to apply changes.",
+                    chain_name
+                ),
+                chain_name: chain_name.clone(),
+                requires_restart: true,
+            })
+        }
+        Err(e) => {
+            tracing::error!("Failed to save chain configuration: {}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "success": false,
+                "error": format!("Failed to save configuration: {}", e)
+            }))
+        }
+    }
+}
+
 /// Configure API routes
 fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg
@@ -131,7 +184,8 @@ fn configure_routes(cfg: &mut web::ServiceConfig) {
         .route("/alerts/unacknowledged", web::get().to(get_unacknowledged_alerts))
         .route("/alerts/{id}/acknowledge", web::post().to(acknowledge_alert))
         .route("/chains", web::get().to(get_available_chains))
-        .route("/chains/current", web::get().to(get_current_chain));
+        .route("/chains/current", web::get().to(get_current_chain))
+        .route("/chains/switch", web::post().to(switch_chain));
 }
 
 /// Start the API server

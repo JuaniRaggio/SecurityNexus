@@ -10,6 +10,7 @@ pub mod types;
 pub mod connection;
 pub mod api;
 pub mod transaction;
+pub mod config;
 
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
