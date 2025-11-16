@@ -1,6 +1,6 @@
 //! Monitoring Engine Binary
 
-use monitoring_engine::{MonitorConfig, MonitoringEngine, api::start_api_server};
+use monitoring_engine::{MonitorConfig, MonitoringEngine, api::start_api_server, config, database::DatabaseClient};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use std::sync::Arc;
@@ -17,18 +17,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("Starting Polkadot Security Nexus - Monitoring Engine");
 
-    // Create configuration
-    let config = MonitorConfig {
-        ws_endpoint: std::env::var("WS_ENDPOINT")
-            .unwrap_or_else(|_| "ws://localhost:9944".to_string()),
-        chain_name: std::env::var("CHAIN_NAME")
-            .unwrap_or_else(|_| "polkadot-local".to_string()),
-        enable_mempool: true,
-        enable_blocks: true,
-        enable_events: true,
-        alert_webhook: std::env::var("ALERT_WEBHOOK").ok(),
-        ..Default::default()
-    };
+    // Load configuration from saved file, or use default
+    let mut config = config::load_monitor_config();
+
+    // Allow environment variables to override saved configuration
+    if let Ok(ws_endpoint) = std::env::var("WS_ENDPOINT") {
+        tracing::info!("Overriding WebSocket endpoint from environment variable");
+        config.ws_endpoint = ws_endpoint;
+    }
+    if let Ok(chain_name) = std::env::var("CHAIN_NAME") {
+        tracing::info!("Overriding chain name from environment variable");
+        config.chain_name = chain_name;
+    }
+    if let Ok(webhook) = std::env::var("ALERT_WEBHOOK") {
+        config.alert_webhook = Some(webhook);
+    }
 
     tracing::info!("Configuration:");
     tracing::info!("  WebSocket: {}", config.ws_endpoint);
@@ -37,8 +40,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("  Block monitoring: {}", config.enable_blocks);
     tracing::info!("  Event monitoring: {}", config.enable_events);
 
+    // Initialize database client if DATABASE_URL is provided
+    let database = if let Ok(database_url) = std::env::var("DATABASE_URL") {
+        let max_connections = std::env::var("DATABASE_MAX_CONNECTIONS")
+            .unwrap_or_else(|_| "10".to_string())
+            .parse::<usize>()
+            .unwrap_or(10);
+
+        match DatabaseClient::new(&database_url, max_connections).await {
+            Ok(client) => {
+                tracing::info!("Successfully connected to TimescaleDB");
+                Some(Arc::new(client))
+            }
+            Err(e) => {
+                tracing::warn!("Failed to connect to database: {}. Running without database support.", e);
+                None
+            }
+        }
+    } else {
+        tracing::info!("DATABASE_URL not provided. Running without database support.");
+        None
+    };
+
     // Create and start monitoring engine
-    let engine = Arc::new(MonitoringEngine::new(config));
+    let engine = Arc::new(if let Some(db) = database {
+        MonitoringEngine::with_database(config, db)
+    } else {
+        MonitoringEngine::new(config)
+    });
 
     match engine.start().await {
         Ok(_) => {

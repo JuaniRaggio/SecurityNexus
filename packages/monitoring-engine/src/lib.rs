@@ -10,6 +10,9 @@ pub mod types;
 pub mod connection;
 pub mod api;
 pub mod transaction;
+pub mod config;
+pub mod database;
+pub mod ml;
 
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
@@ -77,9 +80,17 @@ fn default_max_reconnect_attempts() -> u32 {
 
 impl Default for MonitorConfig {
     fn default() -> Self {
+        Self::westend()
+    }
+}
+
+/// Chain configuration presets
+impl MonitorConfig {
+    /// Westend testnet configuration
+    pub fn westend() -> Self {
         Self {
-            ws_endpoint: "ws://localhost:9944".to_string(),
-            chain_name: "local".to_string(),
+            ws_endpoint: "wss://westend-rpc.polkadot.io".to_string(),
+            chain_name: "westend".to_string(),
             enable_mempool: true,
             enable_blocks: true,
             enable_events: true,
@@ -89,6 +100,101 @@ impl Default for MonitorConfig {
             max_reconnect_attempts: 5,
         }
     }
+
+    /// Asset Hub (Westend) configuration
+    pub fn asset_hub() -> Self {
+        Self {
+            ws_endpoint: "wss://westend-asset-hub-rpc.polkadot.io".to_string(),
+            chain_name: "asset-hub".to_string(),
+            enable_mempool: true,
+            enable_blocks: true,
+            enable_events: true,
+            alert_webhook: None,
+            min_alert_severity: AlertSeverity::Medium,
+            buffer_size: 1000,
+            max_reconnect_attempts: 5,
+        }
+    }
+
+    /// Polkadot mainnet configuration
+    pub fn polkadot() -> Self {
+        Self {
+            ws_endpoint: "wss://rpc.polkadot.io".to_string(),
+            chain_name: "polkadot".to_string(),
+            enable_mempool: true,
+            enable_blocks: true,
+            enable_events: true,
+            alert_webhook: None,
+            min_alert_severity: AlertSeverity::Medium,
+            buffer_size: 1000,
+            max_reconnect_attempts: 5,
+        }
+    }
+
+    /// Kusama configuration
+    pub fn kusama() -> Self {
+        Self {
+            ws_endpoint: "wss://kusama-rpc.polkadot.io".to_string(),
+            chain_name: "kusama".to_string(),
+            enable_mempool: true,
+            enable_blocks: true,
+            enable_events: true,
+            alert_webhook: None,
+            min_alert_severity: AlertSeverity::Medium,
+            buffer_size: 1000,
+            max_reconnect_attempts: 5,
+        }
+    }
+
+    /// Get chain config by name
+    pub fn from_chain_name(name: &str) -> Option<Self> {
+        match name.to_lowercase().as_str() {
+            "westend" => Some(Self::westend()),
+            "asset-hub" | "asset_hub" | "assethub" => Some(Self::asset_hub()),
+            "polkadot" => Some(Self::polkadot()),
+            "kusama" => Some(Self::kusama()),
+            _ => None,
+        }
+    }
+
+    /// Get list of available chain presets
+    pub fn available_chains() -> Vec<ChainInfo> {
+        vec![
+            ChainInfo {
+                name: "westend".to_string(),
+                display_name: "Westend Testnet".to_string(),
+                endpoint: "wss://westend-rpc.polkadot.io".to_string(),
+                description: "Polkadot's primary testnet for protocol development".to_string(),
+            },
+            ChainInfo {
+                name: "asset-hub".to_string(),
+                display_name: "Asset Hub (Westend)".to_string(),
+                endpoint: "wss://westend-asset-hub-rpc.polkadot.io".to_string(),
+                description: "Asset management parachain on Westend".to_string(),
+            },
+            ChainInfo {
+                name: "polkadot".to_string(),
+                display_name: "Polkadot Mainnet".to_string(),
+                endpoint: "wss://rpc.polkadot.io".to_string(),
+                description: "Polkadot relay chain (production network)".to_string(),
+            },
+            ChainInfo {
+                name: "kusama".to_string(),
+                display_name: "Kusama".to_string(),
+                endpoint: "wss://kusama-rpc.polkadot.io".to_string(),
+                description: "Polkadot's canary network".to_string(),
+            },
+        ]
+    }
+}
+
+/// Chain information for API responses
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChainInfo {
+    pub name: String,
+    pub display_name: String,
+    pub endpoint: String,
+    pub description: String,
 }
 
 /// Main monitoring engine
@@ -97,15 +203,47 @@ pub struct MonitoringEngine {
     state: Arc<RwLock<EngineState>>,
     pub alert_manager: Arc<alerts::AlertManager>,
     pub connection: Arc<connection::ConnectionManager>,
+    pub database: Option<Arc<database::DatabaseClient>>,
 }
 
 /// Internal engine state
-#[derive(Debug, Default)]
 struct EngineState {
     is_running: bool,
     blocks_processed: u64,
     transactions_analyzed: u64,
     alerts_triggered: u64,
+    detector_stats: std::collections::HashMap<String, DetectorStatsInternal>,
+    feature_extractor: ml::FeatureExtractor,
+}
+
+#[derive(Debug, Default, Clone)]
+struct DetectorStatsInternal {
+    detections: u64,
+    last_detection: Option<u64>,
+}
+
+impl Default for EngineState {
+    fn default() -> Self {
+        let mut detector_stats = std::collections::HashMap::new();
+        detector_stats.insert("Flash Loan Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("MEV Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Volume Anomaly Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("FrontRunning Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Cross-Chain Bridge Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("State Proof Verification Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Omnipool Manipulation Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Liquidity Drain Detector".to_string(), DetectorStatsInternal::default());
+        detector_stats.insert("Collateral Manipulation Detector".to_string(), DetectorStatsInternal::default());
+
+        Self {
+            is_running: false,
+            blocks_processed: 0,
+            transactions_analyzed: 0,
+            alerts_triggered: 0,
+            detector_stats,
+            feature_extractor: ml::FeatureExtractor::new(),
+        }
+    }
 }
 
 impl MonitoringEngine {
@@ -125,6 +263,27 @@ impl MonitoringEngine {
             state: Arc::new(RwLock::new(EngineState::default())),
             alert_manager,
             connection,
+            database: None,
+        }
+    }
+
+    /// Create a new monitoring engine with database support
+    pub fn with_database(config: MonitorConfig, database: Arc<database::DatabaseClient>) -> Self {
+        let alert_manager = Arc::new(alerts::AlertManager::new(
+            config.min_alert_severity,
+            config.alert_webhook.clone(),
+        ));
+
+        let connection = Arc::new(connection::ConnectionManager::new(
+            config.ws_endpoint.clone(),
+        ));
+
+        Self {
+            config,
+            state: Arc::new(RwLock::new(EngineState::default())),
+            alert_manager,
+            connection,
+            database: Some(database),
         }
     }
 
@@ -199,6 +358,69 @@ impl MonitoringEngine {
         }
     }
 
+    /// Get statistics for all detectors
+    pub async fn get_detector_stats(&self) -> AllDetectorStats {
+        let state = self.state.read().await;
+        let detectors = vec![
+            DetectorStats {
+                name: "Flash Loan Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("Flash Loan Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("Flash Loan Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "MEV Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("MEV Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("MEV Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "Volume Anomaly Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("Volume Anomaly Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("Volume Anomaly Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "FrontRunning Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("FrontRunning Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("FrontRunning Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "Cross-Chain Bridge Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("Cross-Chain Bridge Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("Cross-Chain Bridge Detector")
+                    .and_then(|s| s.last_detection),
+            },
+            DetectorStats {
+                name: "State Proof Verification Detector".to_string(),
+                enabled: true,
+                detections: state.detector_stats.get("State Proof Verification Detector")
+                    .map(|s| s.detections)
+                    .unwrap_or(0),
+                last_detection: state.detector_stats.get("State Proof Verification Detector")
+                    .and_then(|s| s.last_detection),
+            },
+        ];
+
+        AllDetectorStats { detectors }
+    }
+
     /// Initialize attack pattern detectors
     fn initialize_detectors(&self) -> Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>> {
         let detectors: Vec<Box<dyn detectors::Detector + Send + Sync>> = vec![
@@ -206,6 +428,11 @@ impl MonitoringEngine {
             Box::new(detectors::MevDetector::new()),
             Box::new(detectors::VolumeAnomalyDetector::new()),
             Box::new(detectors::FrontRunningDetector::new()),
+            Box::new(detectors::CrossChainBridgeDetector::new()),
+            Box::new(detectors::StateProofVerificationDetector::new()),
+            Box::new(detectors::OmnipoolManipulationDetector::new()),
+            Box::new(detectors::LiquidityDrainDetector::new()),
+            Box::new(detectors::CollateralManipulationDetector::new()),
         ];
 
         Arc::new(detectors)
@@ -224,7 +451,7 @@ impl MonitoringEngine {
     /// Start block monitoring
     async fn start_block_monitoring(
         &self,
-        _detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
+        detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
     ) -> Result<()> {
         tracing::info!("Starting block monitoring");
 
@@ -233,10 +460,12 @@ impl MonitoringEngine {
 
         let state = self.state.clone();
         let chain_name = self.config.chain_name.clone();
+        let alert_manager = self.alert_manager.clone();
+        let database = self.database.clone();
 
         // Spawn background task for block subscription
         tokio::spawn(async move {
-            match Self::subscribe_to_blocks(client, state, chain_name).await {
+            match Self::subscribe_to_blocks(client, state, chain_name, detectors, alert_manager, database).await {
                 Ok(_) => tracing::info!("Block subscription ended"),
                 Err(e) => tracing::error!("Block subscription error: {}", e),
             }
@@ -250,6 +479,9 @@ impl MonitoringEngine {
         client: subxt::OnlineClient<subxt::PolkadotConfig>,
         state: Arc<RwLock<EngineState>>,
         chain_name: String,
+        detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
+        alert_manager: Arc<alerts::AlertManager>,
+        database: Option<Arc<database::DatabaseClient>>,
     ) -> Result<()> {
         tracing::info!("Subscribing to finalized blocks on {}", chain_name);
 
@@ -268,10 +500,10 @@ impl MonitoringEngine {
                     let block_number = block.number();
                     let block_hash = block.hash();
 
-                    tracing::debug!(
-                        "Received block #{} (hash: {:?}) on {}",
+                    tracing::info!(
+                        "Processing block #{} (hash: 0x{}) on {}",
                         block_number,
-                        block_hash,
+                        hex::encode(&block_hash.0[..8]),
                         chain_name
                     );
 
@@ -284,7 +516,7 @@ impl MonitoringEngine {
                     match extractor.extract_from_block(block_hash, block.number() as u64).await {
                         Ok(transactions) => {
                             if !transactions.is_empty() {
-                                tracing::debug!(
+                                tracing::info!(
                                     "Extracted {} transactions from block #{}",
                                     transactions.len(),
                                     block_number
@@ -295,10 +527,17 @@ impl MonitoringEngine {
                                 state_lock.transactions_analyzed += transactions.len() as u64;
                                 drop(state_lock);
 
-                                // TODO: Pass transactions to detectors
-                                // for tx in transactions {
-                                //     Self::process_transaction(tx, &detectors).await?;
-                                // }
+                                // Process each transaction through detectors
+                                for tx in transactions {
+                                    Self::process_transaction(
+                                        tx,
+                                        &detectors,
+                                        &state,
+                                        &alert_manager,
+                                        &chain_name,
+                                        &database
+                                    ).await;
+                                }
                             }
                         }
                         Err(e) => {
@@ -318,6 +557,172 @@ impl MonitoringEngine {
         }
 
         Ok(())
+    }
+
+    /// Process a transaction through all detectors
+    async fn process_transaction(
+        tx: ParsedTransaction,
+        detectors: &[Box<dyn detectors::Detector + Send + Sync>],
+        state: &Arc<RwLock<EngineState>>,
+        alert_manager: &Arc<alerts::AlertManager>,
+        chain_name: &str,
+        database: &Option<Arc<database::DatabaseClient>>,
+    ) {
+        // Store transaction in database if available
+        if let Some(db) = database {
+            // Convert args bytes to JSON Value
+            let args_json = if !tx.args.is_empty() {
+                match serde_json::from_slice::<serde_json::Value>(&tx.args) {
+                    Ok(value) => Some(value),
+                    Err(_) => {
+                        // If parsing fails, store as hex string
+                        Some(serde_json::json!({
+                            "raw": hex::encode(&tx.args)
+                        }))
+                    }
+                }
+            } else {
+                None
+            };
+
+            let db_tx = database::models::Transaction {
+                timestamp: chrono::Utc::now(),
+                tx_hash: tx.hash.clone(),
+                block_number: tx.block_number as i64,
+                chain: chain_name.to_string(),
+                pallet: tx.pallet.clone(),
+                call_name: tx.call.clone(),
+                caller: tx.caller.clone(),
+                success: tx.success,
+                args: args_json,
+                gas_used: None,  // TODO: Extract from transaction
+                fee_paid: None,  // TODO: Extract from transaction
+            };
+
+            if let Err(e) = db.insert_transaction(&db_tx).await {
+                tracing::warn!("Failed to store transaction in database: {}", e);
+            }
+        }
+
+        // Create transaction context (simplified - no events/state changes for now)
+        let ctx = TransactionContext {
+            transaction: tx.clone(),
+            events: vec![],
+            state_changes: vec![],
+        };
+
+        // Extract ML features and store in database
+        if database.is_some() {
+            let mut state_lock = state.write().await;
+            let features = state_lock.feature_extractor.extract_features(&ctx);
+            drop(state_lock);
+
+            if let Some(db) = database {
+                if let Err(e) = db.insert_ml_features(&features).await {
+                    tracing::warn!("Failed to store ML features in database: {}", e);
+                }
+            }
+        }
+
+        // Run all detectors
+        for detector in detectors {
+            let result = detector.analyze_transaction(&ctx).await;
+
+            if result.detected && result.confidence > 0.5 {
+                let detector_name = detector.name();
+                tracing::warn!(
+                    "🚨 {} detected suspicious activity in tx {}",
+                    detector_name,
+                    tx.hash
+                );
+                tracing::warn!("   Confidence: {:.2}%", result.confidence * 100.0);
+                tracing::warn!("   Description: {}", result.description);
+                tracing::warn!("   Evidence: {:?}", result.evidence);
+
+                // Determine severity based on confidence
+                let severity = if result.confidence >= 0.9 {
+                    AlertSeverity::Critical
+                } else if result.confidence >= 0.75 {
+                    AlertSeverity::High
+                } else if result.confidence >= 0.6 {
+                    AlertSeverity::Medium
+                } else {
+                    AlertSeverity::Low
+                };
+
+                // Update detector statistics
+                let mut state_lock = state.write().await;
+                if let Some(detector_stat) = state_lock.detector_stats.get_mut(detector_name) {
+                    detector_stat.detections += 1;
+                    detector_stat.last_detection = Some(
+                        std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs()
+                    );
+                }
+                state_lock.alerts_triggered += 1;
+                drop(state_lock);
+
+                // Create recommended actions from evidence
+                let recommended_actions = if !result.evidence.is_empty() {
+                    vec![
+                        "Review transaction details and evidence".to_string(),
+                        format!("Investigate pattern: {}", result.pattern),
+                        "Monitor related transactions from same sender".to_string(),
+                    ]
+                } else {
+                    vec!["Review transaction for suspicious activity".to_string()]
+                };
+
+                // Create and trigger alert
+                let alert_id = uuid::Uuid::new_v4().to_string();
+                let alert = Alert {
+                    id: alert_id.clone(),
+                    timestamp: std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs(),
+                    severity: severity.clone(),
+                    pattern: result.pattern.clone(),
+                    description: result.description.clone(),
+                    transaction_hash: Some(tx.hash.clone()),
+                    block_number: Some(tx.block_number),
+                    chain: chain_name.to_string(),
+                    metadata: std::collections::HashMap::new(),
+                    recommended_actions,
+                    acknowledged: false,
+                };
+
+                // Store detection in database if available
+                if let Some(db) = database {
+                    let detection = database::models::Detection {
+                        timestamp: chrono::Utc::now(),
+                        detection_id: alert_id.clone(),
+                        tx_hash: tx.hash.clone(),
+                        detector_name: detector_name.to_string(),
+                        attack_pattern: result.pattern.clone().to_string(),
+                        confidence: result.confidence,
+                        severity: match severity {
+                            AlertSeverity::Critical => "critical",
+                            AlertSeverity::High => "high",
+                            AlertSeverity::Medium => "medium",
+                            AlertSeverity::Low => "low",
+                        }.to_string(),
+                        description: Some(result.description.clone()),
+                        evidence: Some(serde_json::json!(result.evidence)),
+                        metadata: None,
+                        acknowledged: false,
+                    };
+
+                    if let Err(e) = db.insert_detection(&detection).await {
+                        tracing::warn!("Failed to store detection in database: {}", e);
+                    }
+                }
+
+                alert_manager.trigger_alert(alert).await;
+            }
+        }
     }
 
     /// Start event monitoring
@@ -412,6 +817,21 @@ pub struct EngineStats {
     pub alerts_triggered: u64,
 }
 
+/// Statistics for a specific detector
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DetectorStats {
+    pub name: String,
+    pub enabled: bool,
+    pub detections: u64,
+    pub last_detection: Option<u64>, // Unix timestamp
+}
+
+/// Collection of all detector statistics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllDetectorStats {
+    pub detectors: Vec<DetectorStats>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -438,8 +858,8 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = MonitorConfig::default();
-        assert_eq!(config.ws_endpoint, "ws://localhost:9944");
-        assert_eq!(config.chain_name, "local");
+        assert_eq!(config.ws_endpoint, "wss://westend-rpc.polkadot.io");
+        assert_eq!(config.chain_name, "westend");
         assert!(config.enable_mempool);
     }
 }

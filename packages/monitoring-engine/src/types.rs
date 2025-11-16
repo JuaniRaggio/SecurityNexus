@@ -46,6 +46,16 @@ pub enum AttackPattern {
     VolumeAnomaly,
     /// Suspicious approval pattern
     SuspiciousApproval,
+    /// Cross-chain bridge attack (Hyperbridge)
+    CrossChainBridge,
+    /// State proof manipulation (Hyperbridge)
+    StateProofManipulation,
+    /// Omnipool manipulation (Hydration)
+    OmnipoolManipulation,
+    /// Liquidity drain (Hydration)
+    LiquidityDrain,
+    /// Collateral manipulation (Hydration)
+    CollateralManipulation,
     /// Unknown pattern
     Unknown,
 }
@@ -62,6 +72,11 @@ impl std::fmt::Display for AttackPattern {
             AttackPattern::Reentrancy => write!(f, "Reentrancy"),
             AttackPattern::VolumeAnomaly => write!(f, "Volume Anomaly"),
             AttackPattern::SuspiciousApproval => write!(f, "Suspicious Approval"),
+            AttackPattern::CrossChainBridge => write!(f, "Cross-Chain Bridge Attack"),
+            AttackPattern::StateProofManipulation => write!(f, "State Proof Manipulation"),
+            AttackPattern::OmnipoolManipulation => write!(f, "Omnipool Manipulation"),
+            AttackPattern::LiquidityDrain => write!(f, "Liquidity Drain"),
+            AttackPattern::CollateralManipulation => write!(f, "Collateral Manipulation"),
             AttackPattern::Unknown => write!(f, "Unknown"),
         }
     }
@@ -121,20 +136,13 @@ pub struct Transaction {
 /// A blockchain event
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainEvent {
-    /// Block number
-    pub block_number: u64,
-    /// Event index in the block
-    pub event_index: u32,
-    /// Extrinsic index (if associated with a transaction)
-    pub extrinsic_index: Option<u32>,
     /// Pallet name
     pub pallet: String,
     /// Event variant name
     pub event_name: String,
-    /// Event data
-    pub data: Vec<u8>,
-    /// Topics for indexing
-    pub topics: Vec<String>,
+    /// Event data (parsed as JSON if possible)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event_data: Option<serde_json::Value>,
 }
 
 /// A parsed transaction extracted from a block
@@ -201,6 +209,8 @@ pub struct DetectionResult {
     pub description: String,
     /// Evidence supporting the detection
     pub evidence: Vec<String>,
+    /// Additional metadata
+    pub metadata: HashMap<String, String>,
 }
 
 impl DetectionResult {
@@ -212,7 +222,13 @@ impl DetectionResult {
             pattern: AttackPattern::Unknown,
             description: "No suspicious pattern detected".to_string(),
             evidence: Vec::new(),
+            metadata: HashMap::new(),
         }
+    }
+
+    /// Create a safe result (no detection)
+    pub fn safe() -> Self {
+        Self::no_detection()
     }
 
     /// Create a detection result for a found pattern
@@ -228,6 +244,7 @@ impl DetectionResult {
             pattern,
             description,
             evidence,
+            metadata: HashMap::new(),
         }
     }
 }

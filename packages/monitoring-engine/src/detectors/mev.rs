@@ -288,14 +288,59 @@ impl Default for MevDetector {
 #[async_trait]
 impl Detector for MevDetector {
     fn name(&self) -> &str {
-        "MevDetector"
+        "MEV Detector"
     }
 
-    async fn analyze_transaction(&self, _ctx: &TransactionContext) -> DetectionResult {
-        // MEV detection requires batch context
-        // Single transaction analysis returns no detection
-        // Use analyze_batch() for proper MEV detection
-        DetectionResult::no_detection()
+    async fn analyze_transaction(&self, ctx: &TransactionContext) -> DetectionResult {
+        let tx = &ctx.transaction;
+        let mut suspicion_score: f64 = 0.0;
+        let mut evidence = Vec::new();
+
+        // Check for DEX/swap operations
+        if Self::is_dex_operation(tx) {
+            suspicion_score += 0.4;
+            evidence.push(format!("DEX operation detected: {}::{}", tx.pallet, tx.call));
+        }
+
+        // Check for utility batch calls (multiple operations at once)
+        if tx.pallet.to_lowercase() == "utility" && tx.call.contains("batch") {
+            suspicion_score += 0.3;
+            evidence.push("Batch transaction - potential MEV opportunity".to_string());
+        }
+
+        // Check for rapid transactions (low nonce gaps suggest speed)
+        if let Some(nonce) = tx.nonce {
+            if nonce > 0 && nonce < 5 {
+                suspicion_score += 0.15;
+                evidence.push(format!("Low nonce ({}) - potential rapid execution", nonce));
+            }
+        }
+
+        // Check for multiple swap-related events
+        if ctx.events.iter().any(|e| {
+            let event_lower = e.event_name.to_lowercase();
+            event_lower.contains("swap") || event_lower.contains("trade") || event_lower.contains("exchange")
+        }) {
+            suspicion_score += 0.2;
+            evidence.push("Swap-related events detected".to_string());
+        }
+
+        // If we have suspicion, report it
+        if suspicion_score > 0.55 {
+            DetectionResult {
+                detected: true,
+                confidence: suspicion_score.min(0.90),
+                pattern: AttackPattern::Mev,
+                description: format!(
+                    "Potential MEV opportunity in {}::{} - could be arbitrage or front-running attempt",
+                    tx.pallet, tx.call
+                ),
+                evidence,
+                metadata: std::collections::HashMap::new(),
+            }
+        } else {
+            DetectionResult::no_detection()
+        }
     }
 
     async fn analyze_batch(&self, contexts: &[TransactionContext]) -> Vec<DetectionResult> {
@@ -352,7 +397,7 @@ mod tests {
     #[tokio::test]
     async fn test_mev_detector() {
         let detector = MevDetector::new();
-        assert_eq!(detector.name(), "MevDetector");
+        assert_eq!(detector.name(), "MEV Detector");
         assert!(detector.is_enabled());
     }
 }

@@ -308,7 +308,7 @@ async fn test_flash_loan_detector_enabled() {
 
     // Then: Should be enabled by default
     assert!(detector.is_enabled(), "Detector should be enabled");
-    assert_eq!(detector.name(), "FlashLoanDetector");
+    assert_eq!(detector.name(), "Flash Loan Detector");
 }
 
 #[tokio::test]

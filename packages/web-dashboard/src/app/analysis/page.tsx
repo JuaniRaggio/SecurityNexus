@@ -67,12 +67,19 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Static Analysis</h1>
-        <p className="text-gray-600 mt-2">
-          Upload and analyze FRAME pallets for security vulnerabilities
-        </p>
+    <div className="space-y-8">
+      {/* Header with gradient */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <FileSearch className="h-10 w-10 text-white" />
+            <h1 className="text-4xl font-bold text-white">Static Analysis</h1>
+          </div>
+          <p className="text-white/90 text-lg">
+            Upload and analyze FRAME pallets for security vulnerabilities using SAFT Enhanced
+          </p>
+        </div>
       </div>
 
       {/* Results Display */}
@@ -84,79 +91,114 @@ export default function AnalysisPage() {
       )}
 
       {/* Upload Area */}
-      <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
           Upload Pallet for Analysis
         </h2>
 
         <div
-          className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
+          className={`relative group border-2 border-dashed rounded-2xl p-16 text-center transition-all duration-300 ${
             dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 scale-[1.02]'
+              : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
           } ${isPending ? 'opacity-50 pointer-events-none' : ''}`}
           onDragEnter={() => setDragActive(true)}
           onDragLeave={() => setDragActive(false)}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          {isPending ? (
-            <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
-          ) : (
-            <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          )}
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {isPending ? 'Analyzing pallet...' : 'Drop your pallet files here'}
-          </h3>
-          <p className="text-gray-600 mb-4">
-            {isPending ? 'This may take a few seconds' : 'or click to browse for Rust files (.rs)'}
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".rs"
-            onChange={handleChange}
-            className="hidden"
-            disabled={isPending}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isPending}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isPending ? 'Analyzing...' : 'Choose File'}
-          </button>
+          {/* Background gradient effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          <div className="relative z-10">
+            {isPending ? (
+              <div className="space-y-4">
+                <div className="relative inline-block">
+                  <Loader2 className="w-20 h-20 text-blue-600 animate-spin" />
+                  <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Analyzing pallet...
+                </h3>
+                <p className="text-gray-600 text-lg">
+                  Running comprehensive security scan
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="relative inline-block">
+                  <Upload className="w-20 h-20 text-blue-500 transform transition-transform duration-300 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Drop your pallet files here
+                  </h3>
+                  <p className="text-gray-600 text-lg">
+                    or click to browse for Rust files (.rs)
+                  </p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".rs"
+                  onChange={handleChange}
+                  className="hidden"
+                  disabled={isPending}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isPending}
+                  className="group/btn inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:shadow-xl hover:shadow-blue-500/50 transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FileSearch className="w-5 h-5 group-hover/btn:rotate-12 transition-transform" />
+                  Choose File
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <FileSearch className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <h4 className="font-medium text-gray-900">Comprehensive Scan</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              All vulnerability types
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="group text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="inline-flex p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <FileSearch className="w-8 h-8 text-white" />
+            </div>
+            <h4 className="font-bold text-gray-900 text-lg mb-2">Comprehensive Scan</h4>
+            <p className="text-sm text-gray-600">
+              Detects all vulnerability types including integer overflows, reentrancy, and XCM issues
             </p>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <History className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <h4 className="font-medium text-gray-900">Quick Analysis</h4>
-            <p className="text-sm text-gray-600 mt-1">Results in seconds</p>
+          <div className="group text-center p-6 bg-gradient-to-br from-green-50 to-emerald-100/50 rounded-xl border border-green-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="inline-flex p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <History className="w-8 h-8 text-white" />
+            </div>
+            <h4 className="font-bold text-gray-900 text-lg mb-2">Quick Analysis</h4>
+            <p className="text-sm text-gray-600">
+              Lightning-fast results in seconds using advanced AST parsing
+            </p>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <FileSearch className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <h4 className="font-medium text-gray-900">Detailed Reports</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Actionable remediation
+          <div className="group text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl border border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="inline-flex p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <FileSearch className="w-8 h-8 text-white" />
+            </div>
+            <h4 className="font-bold text-gray-900 text-lg mb-2">Detailed Reports</h4>
+            <p className="text-sm text-gray-600">
+              Actionable remediation steps with code examples
             </p>
           </div>
         </div>
       </div>
 
       {/* Analysis History */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Recent Analyses
-          </h2>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center gap-3">
+            <History className="w-6 h-6 text-blue-600" />
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Recent Analyses
+            </h2>
+          </div>
         </div>
         <div className="p-6">
           {!historyData || historyData.history.length === 0 ? (
@@ -177,7 +219,7 @@ export default function AnalysisPage() {
                   <button
                     key={item.id}
                     onClick={() => setCurrentResult(item.result)}
-                    className="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    className="w-full text-left p-5 bg-gradient-to-br from-gray-50 to-white hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all duration-300 border border-gray-200 hover:border-blue-300 hover:shadow-lg group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

@@ -21,14 +21,50 @@ export interface Alert {
   id: string
   timestamp: number
   chain: string
+  chain_name?: string
   severity: 'low' | 'medium' | 'high' | 'critical'
   pattern: string
   description: string
+  confidence: number // 0.0 to 1.0
+  evidence: string[] // Array of evidence strings from detectors
   transaction_hash?: string
   block_number?: number
   metadata: Record<string, string>
   recommended_actions: string[]
   acknowledged: boolean
+}
+
+export interface DetectorStats {
+  name: string
+  enabled: boolean
+  detections: number
+  last_detection?: number // Unix timestamp
+}
+
+export interface AllDetectorStats {
+  detectors: DetectorStats[]
+}
+
+export interface ChainInfo {
+  name: string
+  display_name: string
+  endpoint: string
+  description: string
+}
+
+export interface AvailableChainsResponse {
+  chains: ChainInfo[]
+}
+
+export interface SwitchChainRequest {
+  chain_name: string
+}
+
+export interface SwitchChainResponse {
+  success: boolean
+  message: string
+  chain_name: string
+  requires_restart: boolean
 }
 
 async function fetchMonitoringStats(): Promise<MonitoringStats> {
@@ -44,6 +80,47 @@ async function fetchHealthStatus(): Promise<HealthStatus> {
   if (!response.ok) {
     throw new Error('Failed to fetch health status')
   }
+  return response.json()
+}
+
+async function fetchDetectorStats(): Promise<AllDetectorStats> {
+  const response = await fetch('/api/monitoring?endpoint=detectors')
+  if (!response.ok) {
+    throw new Error('Failed to fetch detector stats')
+  }
+  return response.json()
+}
+
+async function fetchAvailableChains(): Promise<AvailableChainsResponse> {
+  const response = await fetch('/api/monitoring?endpoint=chains')
+  if (!response.ok) {
+    throw new Error('Failed to fetch available chains')
+  }
+  return response.json()
+}
+
+async function fetchCurrentChain(): Promise<ChainInfo> {
+  const response = await fetch('/api/monitoring?endpoint=chains/current')
+  if (!response.ok) {
+    throw new Error('Failed to fetch current chain')
+  }
+  return response.json()
+}
+
+async function switchChain(request: SwitchChainRequest): Promise<SwitchChainResponse> {
+  const response = await fetch('/api/monitoring?endpoint=chains/switch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to switch chain')
+  }
+
   return response.json()
 }
 
@@ -66,6 +143,46 @@ export function useHealthStatus(refreshInterval = 5000) {
     refetchOnWindowFocus: true,
     retry: 3,
     retryDelay: 1000,
+  })
+}
+
+export function useDetectorStats(refreshInterval = 5000) {
+  return useQuery<AllDetectorStats>({
+    queryKey: ['monitoring', 'detectors'],
+    queryFn: fetchDetectorStats,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
+  })
+}
+
+export function useAvailableChains() {
+  return useQuery<AvailableChainsResponse>({
+    queryKey: ['monitoring', 'chains'],
+    queryFn: fetchAvailableChains,
+    staleTime: 60000, // Chains don't change often, cache for 1 minute
+  })
+}
+
+export function useCurrentChain(refreshInterval = 10000) {
+  return useQuery<ChainInfo>({
+    queryKey: ['monitoring', 'chains', 'current'],
+    queryFn: fetchCurrentChain,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
+  })
+}
+
+export function useSwitchChain() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: switchChain,
+    onSuccess: () => {
+      // Invalidate and refetch current chain
+      queryClient.invalidateQueries({ queryKey: ['monitoring', 'chains', 'current'] })
+    },
   })
 }
 
@@ -191,4 +308,23 @@ export function getSeverityColor(severity: Alert['severity']): string {
     default:
       return 'gray'
   }
+}
+
+// Format detector last detection time
+export function formatLastDetection(timestamp?: number): string {
+  if (!timestamp) return 'Never'
+
+  const date = new Date(timestamp * 1000)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString()
 }

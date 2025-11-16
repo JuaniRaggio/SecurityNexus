@@ -237,7 +237,7 @@ impl Default for FrontRunningDetector {
 #[async_trait]
 impl Detector for FrontRunningDetector {
     fn name(&self) -> &str {
-        "FrontRunningDetector"
+        "FrontRunning Detector"
     }
 
     async fn analyze_transaction(&self, ctx: &TransactionContext) -> DetectionResult {
@@ -248,10 +248,27 @@ impl Detector for FrontRunningDetector {
         let indicators = self.analyze_mempool_pattern(ctx).await;
 
         // Calculate confidence score
-        let confidence = Self::calculate_confidence(&indicators);
+        let mut confidence = Self::calculate_confidence(&indicators);
 
-        // Only report if we have reasonable confidence (>30%)
-        if confidence >= 0.3 {
+        // Additional checks for sensitivity
+        // Detect popular pallets that are often targets
+        let popular_pallets = ["balances", "assets", "staking", "democracy", "utility"];
+        if popular_pallets.iter().any(|p| ctx.transaction.pallet.to_lowercase().contains(p)) {
+            confidence += 0.15;
+        }
+
+        // Detect if same caller has recent activity (rapid transactions)
+        let history = self.recent_transactions.read().await;
+        let same_caller_count = history.iter()
+            .filter(|tx| tx.caller == ctx.transaction.caller && tx.block_number == ctx.transaction.block_number)
+            .count();
+        if same_caller_count > 1 {
+            confidence += 0.2;
+        }
+        drop(history);
+
+        // Only report if we have reasonable confidence (>25% - lowered threshold)
+        if confidence >= 0.25 {
             let evidence = Self::build_evidence(&indicators, ctx);
             let pattern = Self::determine_pattern(&indicators);
 
@@ -313,7 +330,7 @@ mod tests {
     #[tokio::test]
     async fn test_frontrunning_detector_basic() {
         let detector = FrontRunningDetector::new();
-        assert_eq!(detector.name(), "FrontRunningDetector");
+        assert_eq!(detector.name(), "FrontRunning Detector");
         assert!(detector.is_enabled());
     }
 
