@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+# Set LIBCLANG_PATH for bindgen
+ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+
 RUN cargo install cargo-chef
 WORKDIR /app
 
