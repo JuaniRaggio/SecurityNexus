@@ -401,7 +401,7 @@ mod tests {
     fn test_default_config() {
         let config = AnalyzerConfig::default();
         assert_eq!(config.min_severity, Severity::Info);
-        assert_eq!(config.enabled_categories.len(), 10);
+        assert_eq!(config.enabled_categories.len(), 11);
         assert!(config.max_file_size > 0);
     }
 }

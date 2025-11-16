@@ -36,8 +36,9 @@ export default function AlertsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showStats, setShowStats] = useState(true)
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set())
+  const [demoMode, setDemoMode] = useState(false)
 
-  const { data: allAlerts = [], isLoading } = useAlerts(5000)
+  const { data: allAlerts = [], isLoading } = useAlerts(5000, demoMode)
   const acknowledgeMutation = useAcknowledgeAlert()
 
   const toggleAlertExpansion = (alertId: string) => {
@@ -331,6 +332,19 @@ export default function AlertsPage() {
           </div>
 
           <div className="flex gap-2">
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                onClick={() => setDemoMode(!demoMode)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  demoMode
+                    ? 'bg-purple-600 text-white hover:bg-purple-700'
+                    : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                {demoMode ? 'Exit' : 'Demo'} Mode
+              </button>
+            )}
             <button
               onClick={() => setShowStats(!showStats)}
               className="px-4 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg font-medium transition-all flex items-center gap-2"

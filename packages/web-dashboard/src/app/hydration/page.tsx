@@ -28,7 +28,14 @@ export default function HydrationPage() {
   const fetchTrends = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:8080/api/analytics/attack-trends?hours=${hours}`)
+      // Try real API first, fallback to demo data
+      let response = await fetch(`http://localhost:8080/api/analytics/attack-trends?hours=${hours}`)
+
+      if (!response.ok) {
+        // Fallback to demo data
+        response = await fetch(`/api/demo-monitoring?hours=${hours}`)
+      }
+
       if (response.ok) {
         const data = await response.json()
         setTrends(data.filter((t: AttackTrend) =>
@@ -38,7 +45,20 @@ export default function HydrationPage() {
         ))
       }
     } catch (error) {
-      toast.error('Failed to fetch Hydration data')
+      // Use demo data on error
+      try {
+        const demoResponse = await fetch(`/api/demo-monitoring?hours=${hours}`)
+        if (demoResponse.ok) {
+          const data = await demoResponse.json()
+          setTrends(data.filter((t: AttackTrend) =>
+            t.attack_pattern.includes('Omnipool') ||
+            t.attack_pattern.includes('Liquidity') ||
+            t.attack_pattern.includes('Collateral')
+          ))
+        }
+      } catch (demoError) {
+        toast.error('Failed to fetch Hydration data')
+      }
     } finally {
       setLoading(false)
     }
