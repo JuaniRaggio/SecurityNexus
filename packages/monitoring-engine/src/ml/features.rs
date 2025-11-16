@@ -4,6 +4,7 @@
 //! for ML-based attack detection and prediction.
 
 use crate::types::TransactionContext;
+use chrono::{Datelike, Timelike};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -336,8 +337,8 @@ impl FeatureExtractor {
             return (0.0, 0.0);
         }
 
-        let mut total_magnitude = 0.0;
-        let mut max_change = 0.0;
+        let mut total_magnitude: f64 = 0.0;
+        let mut max_change: f64 = 0.0;
 
         for sc in state_changes {
             // Calculate magnitude as number of bytes that changed
@@ -443,7 +444,7 @@ impl FeatureExtractor {
         }
     }
 
-    fn update_caller_history(&mut self, caller: &str, block: u64, nonce: u64) {
+    fn update_caller_history(&mut self, caller: &str, block: u64, _nonce: u64) {
         let history = self.caller_history
             .entry(caller.to_string())
             .or_insert_with(CallerHistory::default);
