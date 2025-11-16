@@ -1,6 +1,6 @@
 'use client'
 
-import { Bridge } from 'lucide-react'
+import { GitBranch } from 'lucide-react'
 import { Activity } from 'lucide-react'
 import { AlertTriangle } from 'lucide-react'
 import { CheckCircle2 } from 'lucide-react'
@@ -53,7 +53,7 @@ export default function HyperbridgePage() {
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <Bridge className="h-10 w-10 text-white" />
+            <GitBranch className="h-10 w-10 text-white" />
             <h1 className="text-4xl font-bold text-white">Hyperbridge Monitoring</h1>
           </div>
           <p className="text-white/90 text-lg">

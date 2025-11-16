@@ -9,7 +9,7 @@ import { Shield } from 'lucide-react'
 import { AlertTriangle } from 'lucide-react'
 import { Settings } from 'lucide-react'
 import { Database } from 'lucide-react'
-import { Bridge } from 'lucide-react'
+import { GitBranch } from 'lucide-react'
 import { Droplet } from 'lucide-react'
 import { BarChart3 } from 'lucide-react'
 import clsx from 'clsx'
@@ -19,7 +19,7 @@ const navigation = [
   { name: 'Static Analysis', href: '/analysis', icon: FileSearch },
   { name: 'Monitoring', href: '/monitoring', icon: Activity },
   { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
-  { name: 'Hyperbridge', href: '/hyperbridge', icon: Bridge },
+  { name: 'Hyperbridge', href: '/hyperbridge', icon: GitBranch },
   { name: 'Hydration', href: '/hydration', icon: Droplet },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Privacy Layer', href: '/privacy', icon: Shield },
