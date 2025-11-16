@@ -1,75 +1,75 @@
 # Testing Guide - Monitoring Engine
 
-Este documento describe cómo probar el Monitoring Engine con una blockchain local.
+This document describes how to test the Monitoring Engine with a local blockchain.
 
-## Prerrequisitos
+## Prerequisites
 
-1. **Substrate Node Local**
-   - Necesitas tener un nodo Substrate corriendo localmente
-   - Puerto por defecto: `ws://127.0.0.1:9944`
+1. **Local Substrate Node**
+   - You need a Substrate node running locally
+   - Default port: `ws://127.0.0.1:9944`
 
-### Opción 1: Usar substrate-contracts-node
+### Option 1: Using substrate-contracts-node
 
 ```bash
-# Instalar substrate-contracts-node
+# Install substrate-contracts-node
 cargo install contracts-node --git https://github.com/paritytech/substrate-contracts-node.git
 
-# Ejecutar en modo desarrollo
+# Run in development mode
 substrate-contracts-node --dev
 ```
 
-### Opción 2: Usar Polkadot
+### Option 2: Using Polkadot
 
 ```bash
-# Clonar polkadot-sdk
+# Clone polkadot-sdk
 git clone https://github.com/paritytech/polkadot-sdk.git
 cd polkadot-sdk
 
-# Build y ejecutar
+# Build and run
 cargo build --release
 ./target/release/polkadot --dev
 ```
 
-## Ejecutar Tests
+## Running Tests
 
-### 1. Unit Tests (no requieren blockchain)
+### 1. Unit Tests (no blockchain required)
 
 ```bash
 cd packages/monitoring-engine
 cargo test --lib
 ```
 
-**Resultado esperado:** 17 tests passing
+**Expected result:** 17 tests passing
 
-### 2. Integration Tests (sin blockchain)
+### 2. Integration Tests (without blockchain)
 
 ```bash
 cargo test --test connection_tests
 ```
 
-**Resultado esperado:** 4 tests passing, 2 ignored
+**Expected result:** 4 tests passing, 2 ignored
 
-### 3. Integration Tests (CON blockchain local)
+### 3. Integration Tests (WITH local blockchain)
 
-Primero, asegúrate de tener un nodo corriendo en `ws://127.0.0.1:9944`, luego:
+First, ensure you have a node running at `ws://127.0.0.1:9944`, then:
 
 ```bash
 cargo test --test connection_tests -- --ignored --test-threads=1
 ```
 
-**Resultado esperado:**
+**Expected result:**
 - `test_connection_to_local_chain` - ✓ PASS
-- `test_block_subscription` - ✓ PASS (verifica que blocks_processed > 0)
+- `test_block_subscription` - ✓ PASS (verifies blocks_processed > 0)
 
-### 4. Tests con output detallado
+### 4. Tests with detailed output
 
-Para ver los logs de tracing durante los tests:
+To see tracing logs during tests:
 
 ```bash
 RUST_LOG=monitoring_engine=debug cargo test --test connection_tests -- --ignored --nocapture --test-threads=1
 ```
 
-Deberías ver logs como:
+You should see logs like:
 ```
 INFO  monitoring_engine: Connecting to Substrate node at ws://127.0.0.1:9944
 INFO  monitoring_engine: Successfully connected to Substrate node
@@ -80,9 +80,41 @@ INFO  monitoring_engine: Starting event monitoring
 DEBUG monitoring_engine: Block #123 on development contains 5 events
 ```
 
-## Verificación Manual
+## Manual Verification
 
-Puedes crear un pequeño programa para verificar manualmente:
+### Option 1: Using the binary (RECOMMENDED)
+
+**IMPORTANT:** This is the CORRECT way to run the monitoring engine.
+
+```bash
+# 1. Ensure the binary is compiled
+cargo build --release --package monitoring-engine
+
+# 2. Export environment variables (REQUIRED)
+export WS_ENDPOINT="ws://127.0.0.1:9944"
+export CHAIN_NAME="local-dev"
+export RUST_LOG=monitoring_engine=info
+
+# 3. Run the monitoring engine
+./target/release/monitoring-engine
+
+# Or with cargo:
+# cargo run --release --package monitoring-engine
+```
+
+You will see output similar to:
+```
+INFO  monitoring_engine: Starting Polkadot Security Nexus - Monitoring Engine
+INFO  monitoring_engine: Configuration:
+INFO  monitoring_engine:   WebSocket: ws://127.0.0.1:9944
+INFO  monitoring_engine:   Chain: local-dev
+INFO  monitoring_engine: Successfully connected to Substrate node
+INFO  monitoring_engine: Processing block #123 on local-dev
+```
+
+### Option 2: Create a custom program
+
+If you need advanced customization, you can create a program:
 
 ```rust
 use monitoring_engine::*;
@@ -101,6 +133,7 @@ async fn main() -> Result<()> {
         alert_webhook: None,
         min_alert_severity: AlertSeverity::Low,
         buffer_size: 100,
+        max_reconnect_attempts: 5,
     };
 
     let engine = MonitoringEngine::new(config);
@@ -128,27 +161,27 @@ async fn main() -> Result<()> {
 ## Troubleshooting
 
 ### Error: "Connection timeout"
-- Verifica que el nodo esté corriendo: `curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "system_health"}' http://localhost:9944`
-- Verifica el puerto correcto (9944 por defecto)
+- Verify the node is running: `curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "system_health"}' http://localhost:9944`
+- Verify the correct port (9944 by default)
 
 ### Error: "Failed to subscribe to blocks"
-- Verifica que el nodo esté en modo dev: `--dev`
-- Revisa los logs del nodo para ver errores
+- Verify the node is in dev mode: `--dev`
+- Check the node logs for errors
 
-### No se procesan bloques
-- En modo dev, los bloques se producen cuando hay transacciones
-- Puedes forzar la producción de bloques con `--sealing instant`
+### No blocks are being processed
+- In dev mode, blocks are produced when there are transactions
+- You can force block production with `--sealing instant`
 
 ## Benchmarks
 
 ```bash
-# Compilar benchmarks
+# Compile benchmarks
 cargo bench --no-run
 
-# Ejecutar benchmarks
+# Run benchmarks
 cargo bench
 
-# Ver resultados
+# View results
 open target/criterion/report/index.html
 ```
 
@@ -158,18 +191,18 @@ open target/criterion/report/index.html
 # Linter
 cargo clippy -- -D warnings
 
-# Formateo
+# Formatting
 cargo fmt
 
-# Documentación
+# Documentation
 cargo doc --no-deps --open
 ```
 
-## Próximos Pasos
+## Next Steps
 
-Una vez que los tests con blockchain local pasen:
-- [ ] Implementar automatic reconnection logic
-- [ ] Implementar transaction extraction from blocks
-- [ ] Conectar detectors con el event processing pipeline
+Once tests with local blockchain pass:
+- [ ] Implement automatic reconnection logic
+- [ ] Implement transaction extraction from blocks
+- [ ] Connect detectors with event processing pipeline
 - [ ] Story 3.2: Mempool Monitoring
 - [ ] Story 3.3: Flash Loan Detector
