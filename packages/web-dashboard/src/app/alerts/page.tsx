@@ -14,6 +14,8 @@ import {
   Calendar,
   Lock,
   BarChart3,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import {
   useAlerts,
@@ -33,9 +35,22 @@ export default function AlertsPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('24h')
   const [searchQuery, setSearchQuery] = useState('')
   const [showStats, setShowStats] = useState(true)
+  const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set())
 
   const { data: allAlerts = [], isLoading } = useAlerts(5000)
   const acknowledgeMutation = useAcknowledgeAlert()
+
+  const toggleAlertExpansion = (alertId: string) => {
+    setExpandedAlerts((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(alertId)) {
+        newSet.delete(alertId)
+      } else {
+        newSet.add(alertId)
+      }
+      return newSet
+    })
+  }
 
   // Filter alerts
   const filteredAlerts = allAlerts.filter((alert) => {
@@ -418,95 +433,174 @@ export default function AlertsPage() {
               </p>
             </div>
           ) : (
-            filteredAlerts.map((alert) => (
-              <div
-                key={alert.id}
-                className={`p-5 hover:bg-gray-50 transition-colors ${
-                  alert.acknowledged ? 'opacity-60' : ''
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      {getSeverityBadge(alert.severity)}
-                      <span className="text-xs text-gray-500">
-                        {formatAlertTime(alert.timestamp)}
-                      </span>
-                      {alert.acknowledged && (
-                        <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 border border-green-200 rounded">
-                          ACKNOWLEDGED
+            filteredAlerts.map((alert) => {
+              const isExpanded = expandedAlerts.has(alert.id)
+              return (
+                <div
+                  key={alert.id}
+                  className={`p-5 hover:bg-gray-50 transition-colors ${
+                    alert.acknowledged ? 'opacity-60' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        {getSeverityBadge(alert.severity)}
+                        <span className="text-xs text-gray-500">
+                          {formatAlertTime(alert.timestamp)}
                         </span>
+                        {alert.acknowledged && (
+                          <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 border border-green-200 rounded">
+                            ACKNOWLEDGED
+                          </span>
+                        )}
+                        <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200 rounded">
+                          {Math.round(alert.confidence * 100)}% confidence
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900 mb-1">
+                          {alert.pattern.replace(/_/g, ' ')}
+                        </h3>
+                        <button
+                          onClick={() => toggleAlertExpansion(alert.id)}
+                          className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <span>Hide Details</span>
+                              <ChevronUp className="w-4 h-4" />
+                            </>
+                          ) : (
+                            <>
+                              <span>Show Details</span>
+                              <ChevronDown className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <p className="text-sm text-gray-700 mb-2">{alert.description}</p>
+
+                      {alert.transaction_hash && (
+                        <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                          <span className="font-medium">Transaction:</span>
+                          <code className="bg-gray-100 px-2 py-1 rounded font-mono">
+                            {alert.transaction_hash.slice(0, 10)}...
+                            {alert.transaction_hash.slice(-8)}
+                          </code>
+                          {alert.block_number && (
+                            <span>Block #{alert.block_number}</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Expandable Evidence Section */}
+                      {isExpanded && (
+                        <div className="mt-4 space-y-3 border-t border-gray-200 pt-3">
+                          {/* Evidence */}
+                          {alert.evidence && alert.evidence.length > 0 && (
+                            <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                              <p className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                                <Shield className="w-4 h-4" />
+                                Detection Evidence
+                              </p>
+                              <ul className="space-y-1.5">
+                                {alert.evidence.map((item, idx) => (
+                                  <li key={idx} className="text-xs text-blue-800 flex items-start gap-2">
+                                    <span className="text-blue-500 mt-0.5">•</span>
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Recommended Actions */}
+                          {alert.recommended_actions.length > 0 && (
+                            <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                              <p className="text-sm font-semibold text-yellow-900 mb-2 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                Recommended Actions
+                              </p>
+                              <ul className="space-y-1.5">
+                                {alert.recommended_actions.map((action, idx) => (
+                                  <li key={idx} className="text-xs text-yellow-800 flex items-start gap-2">
+                                    <span className="text-yellow-500 mt-0.5">→</span>
+                                    <span>{action}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Technical Details */}
+                          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <p className="text-sm font-semibold text-gray-900 mb-2">
+                              Technical Details
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-gray-600">Pattern:</span>
+                                <span className="ml-2 font-mono text-gray-900">{alert.pattern}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Confidence:</span>
+                                <span className="ml-2 font-mono text-gray-900">
+                                  {(alert.confidence * 100).toFixed(2)}%
+                                </span>
+                              </div>
+                              {alert.chain_name && (
+                                <div>
+                                  <span className="text-gray-600">Chain:</span>
+                                  <span className="ml-2 font-mono text-gray-900">{alert.chain_name}</span>
+                                </div>
+                              )}
+                              <div>
+                                <span className="text-gray-600">Alert ID:</span>
+                                <span className="ml-2 font-mono text-gray-900">{alert.id.slice(0, 8)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
 
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      {alert.pattern.replace(/_/g, ' ')}
-                    </h3>
-
-                    <p className="text-sm text-gray-700 mb-2">{alert.description}</p>
-
-                    {alert.transaction_hash && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                        <span className="font-medium">Transaction:</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded font-mono">
-                          {alert.transaction_hash.slice(0, 10)}...
-                          {alert.transaction_hash.slice(-8)}
-                        </code>
-                        {alert.block_number && (
-                          <span>Block #{alert.block_number}</span>
-                        )}
-                      </div>
-                    )}
-
-                    {alert.recommended_actions.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs font-medium text-gray-700 mb-1">
-                          Recommended Actions:
-                        </p>
-                        <ul className="list-disc list-inside space-y-1">
-                          {alert.recommended_actions.map((action, idx) => (
-                            <li key={idx} className="text-xs text-gray-600">
-                              {action}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    {!alert.acknowledged && (
+                    <div className="flex flex-col gap-2">
+                      {!alert.acknowledged && (
+                        <button
+                          onClick={() => acknowledgeMutation.mutate(alert.id)}
+                          disabled={acknowledgeMutation.isPending}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                          title="Acknowledge alert"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                      )}
                       <button
-                        onClick={() => acknowledgeMutation.mutate(alert.id)}
-                        disabled={acknowledgeMutation.isPending}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
-                        title="Acknowledge alert"
+                        onClick={() => handleCreateZKPReport(alert)}
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                        title="Create anonymous ZKP report"
                       >
-                        <CheckCircle className="w-5 h-5" />
+                        <Lock className="w-5 h-5" />
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleCreateZKPReport(alert)}
-                      className="p-2 text-purple-600 hover:bg-purple-50 rounded transition-colors"
-                      title="Create anonymous ZKP report"
-                    >
-                      <Lock className="w-5 h-5" />
-                    </button>
-                    {alert.transaction_hash && (
-                      <a
-                        href={`https://polkadot.js.org/apps/#/explorer/query/${alert.transaction_hash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="View on explorer"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                      </a>
-                    )}
+                      {alert.transaction_hash && (
+                        <a
+                          href={`https://polkadot.js.org/apps/#/explorer/query/${alert.transaction_hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="View on explorer"
+                        >
+                          <ExternalLink className="w-5 h-5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>

@@ -21,9 +21,12 @@ export interface Alert {
   id: string
   timestamp: number
   chain: string
+  chain_name?: string
   severity: 'low' | 'medium' | 'high' | 'critical'
   pattern: string
   description: string
+  confidence: number // 0.0 to 1.0
+  evidence: string[] // Array of evidence strings from detectors
   transaction_hash?: string
   block_number?: number
   metadata: Record<string, string>
