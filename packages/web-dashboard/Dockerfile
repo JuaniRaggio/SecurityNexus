@@ -1,123 +1,40 @@
-# ============================================
-# Stage 1: cargo-chef for SAFT dependencies
-# ============================================
-FROM rust:1.88 AS chef
-RUN apt-get update && apt-get install -y \
-    protobuf-compiler \
-    clang \
-    libclang-dev \
-    cmake \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Dockerfile for Web Dashboard
+# Multi-stage build
 
-# Set LIBCLANG_PATH for bindgen
-ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+FROM node:20-bookworm-slim as builder
 
-RUN cargo install cargo-chef
+# Install pnpm
+RUN npm install -g pnpm@latest
+
 WORKDIR /build
 
-# ============================================
-# Stage 2: Prepare Rust dependencies recipe
-# ============================================
-FROM chef AS planner
-# Copy workspace structure (lightweight, just metadata)
-COPY Cargo.toml Cargo.lock ./
-COPY packages packages
-COPY pallets pallets
-COPY runtime runtime
-COPY node node
-RUN cargo chef prepare --recipe-path recipe.json --bin saft
-
-# ============================================
-# Stage 3: Build Rust dependencies (CACHED)
-# ============================================
-FROM chef AS rust-deps
-COPY --from=planner /build/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
-
-# ============================================
-# Stage 4: Build SAFT binary
-# ============================================
-FROM chef AS saft-builder
-# Copy workspace structure
-COPY Cargo.toml Cargo.lock ./
-COPY packages packages
-COPY pallets pallets
-COPY runtime runtime
-COPY node node
-
-# Copy cached dependencies
-COPY --from=rust-deps /build/target target
-COPY --from=rust-deps /usr/local/cargo /usr/local/cargo
-
-# Build ONLY saft-enhanced package (not the whole workspace)
-WORKDIR /build
-RUN cargo build --release -p saft-enhanced
-
-# ============================================
-# Stage 5: Install Node.js dependencies (CACHED)
-# ============================================
-FROM node:18-alpine AS node-deps
-WORKDIR /app
-
-# Install pnpm globally
-RUN npm install -g pnpm@8
-
-# Copy only package files first (for better caching)
+# Copy package files
 COPY packages/web-dashboard/package.json packages/web-dashboard/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod=false
 
-# ============================================
-# Stage 6: Build Next.js app
-# ============================================
-FROM node:18-alpine AS node-builder
-WORKDIR /app
-
-# Copy dependencies from previous stage
-COPY --from=node-deps /app/node_modules ./node_modules
-COPY --from=node-deps /app/package.json ./package.json
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
-COPY packages/web-dashboard .
+COPY packages/web-dashboard ./
 
-# Ensure public directory exists
-RUN mkdir -p public
+# Build the application
+RUN pnpm build
 
-# Build Next.js app
-RUN npm install -g pnpm@8 && pnpm build
+# Runtime stage
+FROM node:20-bookworm-slim
 
-# ============================================
-# Stage 7: Production runtime image
-# ============================================
-FROM node:18-alpine
+RUN npm install -g pnpm@latest
+
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
-
-# Copy Next.js build
-COPY --from=node-builder /app/.next ./.next
-COPY --from=node-builder /app/public ./public
-COPY --from=node-builder /app/package.json ./package.json
-COPY --from=node-builder /app/node_modules ./node_modules
-
-# Copy SAFT binary for static analysis
-COPY --from=saft-builder /build/target/release/saft /usr/local/bin/saft
-
-# Create non-root user for security
-RUN addgroup -g 1000 nexus && \
-    adduser -D -u 1000 -G nexus nexus && \
-    chown -R nexus:nexus /app
-USER nexus
-
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV SAFT_BINARY_PATH=/usr/local/bin/saft
+# Copy built application
+COPY --from=builder /build/.next/standalone ./
+COPY --from=builder /build/.next/static ./.next/static
+COPY --from=builder /build/public ./public
 
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
+ENV NODE_ENV=production
+ENV PORT=3000
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

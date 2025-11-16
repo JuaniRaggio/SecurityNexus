@@ -46,7 +46,44 @@ Specialized monitoring for Hydration Omnipool and lending protocols
 ### 6. Web Dashboard
 Professional interface with real-time updates and comprehensive API
 
-## Quick Start
+## Quick Start (For Judges & Evaluators)
+
+### Prerequisites
+- Docker Desktop installed ([Download here](https://www.docker.com/products/docker-desktop/))
+- That's it! No Rust, Node, or other dependencies needed.
+
+### Start Everything (5 Minutes)
+
+```bash
+# Clone the repository
+git clone https://github.com/JuaniRaggio/SecurityNexus.git
+cd SecurityNexus
+
+# Start all services
+docker-compose up -d
+
+# Wait for build (first time: ~15 minutes, subsequent: instant)
+# Watch progress:
+docker-compose logs -f
+```
+
+### Access the Dashboard
+
+Open http://localhost:3000 in your browser.
+
+### Demo Mode
+
+1. Navigate to **Alerts**: http://localhost:3000/alerts
+2. Click **"Demo Mode"** button (top right)
+3. See 8 realistic security alerts showcasing all detection capabilities
+
+### Full Documentation
+
+See **[GETTING_STARTED.md](./GETTING_STARTED.md)** for detailed instructions, troubleshooting, and features.
+
+---
+
+## Quick Start (For Developers)
 
 ### Prerequisites
 

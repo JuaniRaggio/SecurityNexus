@@ -1,84 +1,46 @@
-# ============================================
-# Stage 1: cargo-chef planner
-# ============================================
-FROM rust:1.88 AS chef
+# Dockerfile for Monitoring Engine
+# Multi-stage build to keep final image small
+
+FROM rust:1.88-bookworm as builder
+
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     protobuf-compiler \
-    clang \
-    libclang-dev \
-    cmake \
-    build-essential \
+    libprotobuf-dev \
+    pkg-config \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set LIBCLANG_PATH for bindgen
-ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+WORKDIR /build
 
-RUN cargo install cargo-chef
-WORKDIR /app
-
-# ============================================
-# Stage 2: Prepare dependencies recipe
-# ============================================
-FROM chef AS planner
-# Copy workspace structure (lightweight, just metadata)
+# Copy ALL workspace files (workspace requires all members)
 COPY Cargo.toml Cargo.lock ./
-COPY packages packages
-COPY pallets pallets
-COPY runtime runtime
-COPY node node
-RUN cargo chef prepare --recipe-path recipe.json --bin monitoring-engine
+COPY packages ./packages
 
-# ============================================
-# Stage 3: Build dependencies (CACHED LAYER)
-# ============================================
-FROM chef AS builder-deps
-COPY --from=planner /app/recipe.json recipe.json
-# Build dependencies - this layer will be cached
-RUN cargo chef cook --release --recipe-path recipe.json
+# Build release binary
+RUN cargo build --release --package monitoring-engine
 
-# ============================================
-# Stage 4: Build application
-# ============================================
-FROM chef AS builder
-# Copy workspace structure
-COPY Cargo.toml Cargo.lock ./
-COPY packages packages
-COPY pallets pallets
-COPY runtime runtime
-COPY node node
-
-# Copy cached dependencies from previous stage
-COPY --from=builder-deps /app/target target
-COPY --from=builder-deps /usr/local/cargo /usr/local/cargo
-
-# Build ONLY monitoring-engine package (not the whole workspace)
-WORKDIR /app
-RUN cargo build --release -p monitoring-engine
-
-# ============================================
-# Stage 5: Runtime image (minimal)
-# ============================================
+# Runtime stage
 FROM debian:bookworm-slim
 
-# Install runtime dependencies
-RUN apt-get update && \
-    apt-get install -y ca-certificates libssl3 && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libssl3 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Copy binary from builder
+COPY --from=builder /build/target/release/monitoring-engine /usr/local/bin/monitoring-engine
 
-# Copy only the compiled binary
-COPY --from=builder /app/target/release/monitoring-engine /app/monitoring-engine
-
-# Create non-root user for security
-RUN useradd -m -u 1000 nexus && \
-    chown -R nexus:nexus /app
-USER nexus
+# Copy schema for reference
+COPY --from=builder /build/packages/monitoring-engine/schema.sql /schema.sql
 
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/api/health || exit 1
+ENV RUST_LOG=monitoring_engine=info,sqlx=warn
+ENV API_PORT=8080
 
-CMD ["./monitoring-engine"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["monitoring-engine"]
