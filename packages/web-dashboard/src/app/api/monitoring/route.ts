@@ -80,6 +80,17 @@ export async function GET(request: Request) {
       })
     }
 
+    if (endpoint === 'detectors') {
+      return NextResponse.json({
+        detectors: [
+          { name: 'Flash Loan Detector', enabled: true, detections: 0, last_detection: null },
+          { name: 'MEV Detector', enabled: true, detections: 0, last_detection: null },
+          { name: 'Volume Anomaly Detector', enabled: true, detections: 0, last_detection: null },
+          { name: 'FrontRunning Detector', enabled: true, detections: 0, last_detection: null },
+        ],
+      })
+    }
+
     // In development, return demo alerts if monitoring engine is down
     if (process.env.NODE_ENV === 'development' &&
         (endpoint === 'alerts' || endpoint === 'alerts/unacknowledged')) {

@@ -12,12 +12,32 @@ export default function Home() {
   const stats = statsData?.stats;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
-        <p className="text-gray-600 mt-2">
-          Real-time security monitoring for Polkadot ecosystem
-        </p>
+    <div className="space-y-8">
+      {/* Hero Section with Gradient */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-pink-500 via-purple-600 to-blue-600 p-8 shadow-2xl">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+              <Shield className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-white">Security Dashboard</h1>
+          </div>
+          <p className="text-white/90 text-lg max-w-2xl">
+            Real-time security monitoring and static analysis for the Polkadot ecosystem
+          </p>
+          <div className="mt-6 flex gap-4">
+            <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+              <p className="text-white/80 text-sm">Powered by SAFT Enhanced</p>
+            </div>
+            <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+              <p className="text-white/80 text-sm">ZK Privacy Layer</p>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+        <div className="absolute -left-12 -bottom-12 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
       </div>
 
       {/* Stats Grid */}

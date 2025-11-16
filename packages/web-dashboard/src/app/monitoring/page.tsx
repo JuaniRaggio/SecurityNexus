@@ -4,20 +4,17 @@ import { Activity, TrendingUp, AlertTriangle, CheckCircle, Wifi, WifiOff } from 
 import {
   useMonitoringStats,
   useHealthStatus,
+  useDetectorStats,
   calculateBlocksPerSecond,
   formatUptime,
+  formatLastDetection,
 } from '@/hooks/useMonitoring'
 import AlertsPanel from '@/components/AlertsPanel'
 
-const detectorStats = [
-  { name: 'Flash Loan Detector', active: true, detections: 0, lastAlert: 'Never' },
-  { name: 'MEV Detector', active: true, detections: 0, lastAlert: 'Never' },
-  { name: 'Volume Anomaly', active: true, detections: 0, lastAlert: 'Never' },
-]
-
 export default function MonitoringPage() {
-  const { data: stats, isLoading: statsLoading, error: statsError } = useMonitoringStats(2000)
+  const { data: stats, isLoading: statsLoading, error: _statsError } = useMonitoringStats(2000)
   const { data: health, isLoading: healthLoading } = useHealthStatus(5000)
+  const { data: detectorStats, isLoading: detectorsLoading } = useDetectorStats(5000)
 
   const isConnected = stats?.is_running && !stats?.error
   const blocksPerSecond = health?.uptime_seconds
@@ -182,34 +179,41 @@ export default function MonitoringPage() {
           </p>
         </div>
         <div className="p-6">
-          <div className="space-y-4">
-            {detectorStats.map((detector) => (
-              <div
-                key={detector.name}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-3 h-3 rounded-full ${
-                      detector.active && isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
-                    }`}
-                  />
-                  <div>
-                    <h3 className="font-medium text-gray-900">{detector.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      Last alert: {detector.lastAlert}
+          {detectorsLoading ? (
+            <div className="text-center py-8 text-gray-500">
+              <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full mx-auto mb-2"></div>
+              Loading detectors...
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {detectorStats?.detectors.map((detector) => (
+                <div
+                  key={detector.name}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        detector.enabled && isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
+                      }`}
+                    />
+                    <div>
+                      <h3 className="font-medium text-gray-900">{detector.name}</h3>
+                      <p className="text-sm text-gray-600">
+                        Last detection: {formatLastDetection(detector.last_detection)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {detector.detections}
                     </p>
+                    <p className="text-sm text-gray-600">detections total</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {detector.detections}
-                  </p>
-                  <p className="text-sm text-gray-600">detections today</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

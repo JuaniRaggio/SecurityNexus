@@ -31,6 +31,17 @@ export interface Alert {
   acknowledged: boolean
 }
 
+export interface DetectorStats {
+  name: string
+  enabled: boolean
+  detections: number
+  last_detection?: number // Unix timestamp
+}
+
+export interface AllDetectorStats {
+  detectors: DetectorStats[]
+}
+
 async function fetchMonitoringStats(): Promise<MonitoringStats> {
   const response = await fetch('/api/monitoring?endpoint=stats')
   if (!response.ok) {
@@ -43,6 +54,14 @@ async function fetchHealthStatus(): Promise<HealthStatus> {
   const response = await fetch('/api/monitoring?endpoint=health')
   if (!response.ok) {
     throw new Error('Failed to fetch health status')
+  }
+  return response.json()
+}
+
+async function fetchDetectorStats(): Promise<AllDetectorStats> {
+  const response = await fetch('/api/monitoring?endpoint=detectors')
+  if (!response.ok) {
+    throw new Error('Failed to fetch detector stats')
   }
   return response.json()
 }
@@ -62,6 +81,17 @@ export function useHealthStatus(refreshInterval = 5000) {
   return useQuery<HealthStatus>({
     queryKey: ['monitoring', 'health'],
     queryFn: fetchHealthStatus,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
+  })
+}
+
+export function useDetectorStats(refreshInterval = 5000) {
+  return useQuery<AllDetectorStats>({
+    queryKey: ['monitoring', 'detectors'],
+    queryFn: fetchDetectorStats,
     refetchInterval: refreshInterval,
     refetchOnWindowFocus: true,
     retry: 3,
@@ -191,4 +221,23 @@ export function getSeverityColor(severity: Alert['severity']): string {
     default:
       return 'gray'
   }
+}
+
+// Format detector last detection time
+export function formatLastDetection(timestamp?: number): string {
+  if (!timestamp) return 'Never'
+
+  const date = new Date(timestamp * 1000)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString()
 }
