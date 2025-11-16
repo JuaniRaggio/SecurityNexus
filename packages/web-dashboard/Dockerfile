@@ -72,6 +72,9 @@ COPY --from=node-deps /app/package.json ./package.json
 # Copy source code
 COPY packages/web-dashboard .
 
+# Ensure public directory exists
+RUN mkdir -p public
+
 # Build Next.js app
 RUN npm install -g pnpm@8 && pnpm build
 
