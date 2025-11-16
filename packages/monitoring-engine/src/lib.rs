@@ -12,6 +12,7 @@ pub mod api;
 pub mod transaction;
 pub mod config;
 pub mod database;
+pub mod ml;
 
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
@@ -206,13 +207,13 @@ pub struct MonitoringEngine {
 }
 
 /// Internal engine state
-#[derive(Debug)]
 struct EngineState {
     is_running: bool,
     blocks_processed: u64,
     transactions_analyzed: u64,
     alerts_triggered: u64,
     detector_stats: std::collections::HashMap<String, DetectorStatsInternal>,
+    feature_extractor: ml::FeatureExtractor,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -240,6 +241,7 @@ impl Default for EngineState {
             transactions_analyzed: 0,
             alerts_triggered: 0,
             detector_stats,
+            feature_extractor: ml::FeatureExtractor::new(),
         }
     }
 }
