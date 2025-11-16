@@ -1,8 +1,9 @@
 //! Monitoring Engine Binary
 
-use monitoring_engine::{MonitorConfig, MonitoringEngine};
+use monitoring_engine::{MonitorConfig, MonitoringEngine, api::start_api_server};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
+use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,16 +38,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("  Event monitoring: {}", config.enable_events);
 
     // Create and start monitoring engine
-    let engine = MonitoringEngine::new(config);
+    let engine = Arc::new(MonitoringEngine::new(config));
 
     match engine.start().await {
         Ok(_) => {
-            tracing::info!("Monitoring engine running. Press Ctrl+C to stop.");
+            tracing::info!("Monitoring engine started.");
 
-            // Wait for shutdown signal
-            tokio::signal::ctrl_c().await?;
+            // Start API server
+            let api_bind = std::env::var("API_BIND_ADDRESS")
+                .unwrap_or_else(|_| "0.0.0.0:8080".to_string());
 
-            tracing::info!("Shutdown signal received");
+            tracing::info!("Press Ctrl+C to stop.");
+
+            // Run API server (blocks until shutdown)
+            let api_result = tokio::select! {
+                result = start_api_server(engine.clone(), &api_bind) => {
+                    result
+                }
+                _ = tokio::signal::ctrl_c() => {
+                    tracing::info!("Shutdown signal received");
+                    Ok(())
+                }
+            };
+
+            // Stop the monitoring engine
             engine.stop().await?;
 
             // Print final statistics
@@ -56,6 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tracing::info!("  Transactions analyzed: {}", stats.transactions_analyzed);
             tracing::info!("  Alerts triggered: {}", stats.alerts_triggered);
 
+            api_result?;
             Ok(())
         }
         Err(e) => {

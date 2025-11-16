@@ -367,11 +367,11 @@ graph TD
 - Custom pallet validation
 - Real-time monitoring stress testing
 
-**Deployment Timeline:**
-1. Week 8: Initial Kusama testnet deployment
-2. Week 9: Real transaction monitoring testing
-3. Week 10: Alert validation
-4. Week 11: Kusama mainnet deployment (optional)
+**Deployment Timeline (Post-Hackathon):**
+1. Post-hackathon: Initial Kusama testnet deployment
+2. Future: Real transaction monitoring testing
+3. Future: Alert validation
+4. Future: Kusama mainnet deployment (optional)
 
 ---
 
@@ -455,46 +455,34 @@ Supported chains via Hyperbridge:
 
 ```mermaid
 gantt
-    title Development Phases - 12 Week Plan
-    dateFormat W
-    axisFormat Week %U
+    title Development Phases - 3 Day Hackathon
+    dateFormat D
+    axisFormat Day %d
 
-    section Phase 1: Core Foundation
+    section Day 1: Foundation & Monitoring
     Project Setup & Config : 1, 1
-    SAFT Enhanced MVP : 1, 2
-    Substrate Node & CI/CD : 2, 1
+    SAFT Enhanced MVP : 1, 1
+    Monitoring Engine Base : 1, 1
+    Attack Pattern Detectors : 1, 1
 
-    section Phase 2: Real-Time Monitoring
-    Monitoring Engine Base : 3, 2
-    Attack Pattern Detectors : 3, 2
-    Alert System & API : 4, 1
+    section Day 2: Integration & Testing
+    Alert System & API : 2, 1
+    Dashboard Integration : 2, 1
+    API Server & Testing : 2, 1
+    Multi-Chain Dashboard MVP : 2, 1
 
-    section Phase 3: Privacy Layer (ZKP)
-    ZK Circuits (arkworks) : 5, 2
-    ink! Smart Contracts : 6, 1
-    Integration Layer : 6, 1
-
-    section Phase 4: Ecosystem Integrations
-    Hyperbridge & Hydration Modules : 7, 2
-    Kusama Deployment : 8, 1
-    Multi-Chain Dashboard MVP : 8, 1
-
-    section Phase 5: Dashboard & UX
-    Complete Web Dashboard : 9, 2
-    API Server & Full Docs : 10, 1
-    Create Video Demo : 10, 1
-
-    section Phase 6: Production & Refinement
-    Stress Testing & Audit : 11, 2
-    Optimization & Bug Fixes : 11, 2
-    Final Report & Materials : 12, 1
+    section Day 3: Polish & Demo
+    Final Integration : 3, 1
+    Documentation & Demo Video : 3, 1
+    Bug Fixes & Refinement : 3, 1
 ```
 
 ## Development Phases
 
-### Phase 1: Core Foundation (Weeks 1-2)
+### Phase 1: Core Foundation (Day 1)
 
 **Objective:** Complete project setup and basic static analysis
+**Duration:** 8-10 hours
 
 **Deliverables:**
 
@@ -539,9 +527,10 @@ gantt
 
 ---
 
-### Phase 2: Real-Time Monitoring (Weeks 3-4)
+### Phase 2: Real-Time Monitoring (Day 1-2)
 
 **Objective:** Active monitoring system with attack detection
+**Duration:** 6-8 hours
 
 **Deliverables:**
 
@@ -589,9 +578,10 @@ gantt
 
 ---
 
-### Phase 3: Privacy Layer with ZKP (Weeks 5-6)
+### Phase 3: Privacy Layer with ZKP (Day 2-3)
 
 **Objective:** Private reporting system with zero-knowledge proofs
+**Duration:** 4-6 hours (MVP scope)
 
 **Deliverables:**
 
@@ -661,9 +651,10 @@ gantt
 
 ---
 
-### Phase 4: Ecosystem Integrations (Weeks 7-8)
+### Phase 4: Ecosystem Integrations (Day 2)
 
 **Objective:** Complete integration with all ecosystem partners
+**Duration:** 4-5 hours
 
 **Deliverables:**
 
@@ -717,9 +708,10 @@ gantt
 
 ---
 
-### Phase 5: Dashboard & UX (Weeks 9-10)
+### Phase 5: Dashboard & UX (Day 2-3)
 
 **Objective:** Professional interface and exceptional user experience
+**Duration:** 6-8 hours
 
 **Deliverables:**
 
@@ -813,9 +805,10 @@ gantt
 
 ---
 
-### Phase 6: Production Testing & Refinement (Weeks 11-12)
+### Phase 6: Polish & Demo (Day 3)
 
-**Objective:** Production-ready system with professional quality
+**Objective:** Production-ready demo with professional quality
+**Duration:** 6-8 hours
 
 **Deliverables:**
 

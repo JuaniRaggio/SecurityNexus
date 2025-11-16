@@ -121,6 +121,8 @@ pub enum VulnerabilityCategory {
     DenialOfService,
     /// Best practices violations
     BestPractice,
+    /// XCM decimal precision issues
+    XcmDecimalPrecision,
 }
 
 /// A detected vulnerability
@@ -221,6 +223,7 @@ impl Default for AnalyzerConfig {
                 VulnerabilityCategory::WeakRandomness,
                 VulnerabilityCategory::DenialOfService,
                 VulnerabilityCategory::BestPractice,
+                VulnerabilityCategory::XcmDecimalPrecision,
             ],
             exclude_paths: vec![],
             max_file_size: 10 * 1024 * 1024, // 10 MB
@@ -288,6 +291,12 @@ impl Analyzer {
         if self.is_category_enabled(&VulnerabilityCategory::Reentrancy) {
             let reentrancy_vulns = analyzers::reentrancy::analyze(&ast, path)?;
             vulnerabilities.extend(reentrancy_vulns);
+        }
+
+        // XCM decimal precision analysis
+        if self.is_category_enabled(&VulnerabilityCategory::XcmDecimalPrecision) {
+            let xcm_vulns = analyzers::xcm_precision::analyze(&ast, path)?;
+            vulnerabilities.extend(xcm_vulns);
         }
 
         // Filter by minimum severity

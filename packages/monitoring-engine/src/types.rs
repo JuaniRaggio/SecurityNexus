@@ -90,6 +90,9 @@ pub struct Alert {
     pub metadata: HashMap<String, String>,
     /// Suggested actions
     pub recommended_actions: Vec<String>,
+    /// Whether this alert has been acknowledged
+    #[serde(default)]
+    pub acknowledged: bool,
 }
 
 /// A blockchain transaction
@@ -122,6 +125,8 @@ pub struct ChainEvent {
     pub block_number: u64,
     /// Event index in the block
     pub event_index: u32,
+    /// Extrinsic index (if associated with a transaction)
+    pub extrinsic_index: Option<u32>,
     /// Pallet name
     pub pallet: String,
     /// Event variant name
@@ -130,6 +135,57 @@ pub struct ChainEvent {
     pub data: Vec<u8>,
     /// Topics for indexing
     pub topics: Vec<String>,
+}
+
+/// A parsed transaction extracted from a block
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ParsedTransaction {
+    /// Transaction hash
+    pub hash: String,
+    /// Block number
+    pub block_number: u64,
+    /// Block hash
+    pub block_hash: String,
+    /// Extrinsic index in the block
+    pub index: u32,
+    /// Caller/sender address
+    pub caller: String,
+    /// Target pallet name
+    pub pallet: String,
+    /// Call/function name
+    pub call: String,
+    /// Call arguments (encoded)
+    pub args: Vec<u8>,
+    /// Signature (if signed extrinsic)
+    pub signature: Option<Vec<u8>>,
+    /// Nonce (if signed extrinsic)
+    pub nonce: Option<u64>,
+    /// Timestamp when extracted
+    pub timestamp: u64,
+    /// Whether the transaction succeeded
+    pub success: bool,
+}
+
+/// Full context for a transaction including associated events
+#[derive(Debug, Clone)]
+pub struct TransactionContext {
+    /// The parsed transaction
+    pub transaction: ParsedTransaction,
+    /// Events emitted by this transaction
+    pub events: Vec<ChainEvent>,
+    /// State changes caused by this transaction (future)
+    pub state_changes: Vec<StateChange>,
+}
+
+/// A state change in the blockchain
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StateChange {
+    /// Storage key that changed
+    pub key: Vec<u8>,
+    /// Previous value (if any)
+    pub old_value: Option<Vec<u8>>,
+    /// New value (if any)
+    pub new_value: Option<Vec<u8>>,
 }
 
 /// Pattern matching result

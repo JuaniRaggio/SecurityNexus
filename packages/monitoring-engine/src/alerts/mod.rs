@@ -2,6 +2,7 @@
 
 use crate::types::{Alert, AlertSeverity};
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
 
 /// Alert manager handles alert creation, storage, and notifications
@@ -9,6 +10,7 @@ pub struct AlertManager {
     min_severity: AlertSeverity,
     webhook_url: Option<String>,
     alert_history: Arc<RwLock<Vec<Alert>>>,
+    max_webhook_retries: u32,
 }
 
 impl AlertManager {
@@ -18,6 +20,21 @@ impl AlertManager {
             min_severity,
             webhook_url,
             alert_history: Arc::new(RwLock::new(Vec::new())),
+            max_webhook_retries: 3,
+        }
+    }
+
+    /// Create alert manager with custom retry configuration
+    pub fn with_retries(
+        min_severity: AlertSeverity,
+        webhook_url: Option<String>,
+        max_retries: u32,
+    ) -> Self {
+        Self {
+            min_severity,
+            webhook_url,
+            alert_history: Arc::new(RwLock::new(Vec::new())),
+            max_webhook_retries: max_retries,
         }
     }
 
@@ -72,25 +89,77 @@ impl AlertManager {
         counts
     }
 
-    /// Send alert to webhook
+    /// Send alert to webhook with retry logic
+    ///
+    /// Uses exponential backoff: 1s, 2s, 4s delays between retries
     async fn send_webhook(&self, url: &str, alert: &Alert) {
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(10))
+            .build()
+            .expect("Failed to create HTTP client");
 
-        match client.post(url).json(alert).send().await {
-            Ok(response) => {
-                if response.status().is_success() {
-                    tracing::info!("Alert webhook sent successfully");
-                } else {
-                    tracing::error!(
-                        "Alert webhook failed with status: {}",
-                        response.status()
+        for attempt in 0..=self.max_webhook_retries {
+            match client.post(url).json(alert).send().await {
+                Ok(response) => {
+                    if response.status().is_success() {
+                        tracing::info!(
+                            "Alert webhook sent successfully (attempt {})",
+                            attempt + 1
+                        );
+                        return; // Success, exit retry loop
+                    } else {
+                        tracing::warn!(
+                            "Alert webhook failed with status: {} (attempt {})",
+                            response.status(),
+                            attempt + 1
+                        );
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!(
+                        "Failed to send alert webhook: {} (attempt {})",
+                        e,
+                        attempt + 1
                     );
                 }
             }
-            Err(e) => {
-                tracing::error!("Failed to send alert webhook: {}", e);
+
+            // Don't sleep after the last attempt
+            if attempt < self.max_webhook_retries {
+                let delay = Duration::from_secs(2u64.pow(attempt));
+                tracing::debug!("Retrying webhook in {:?}...", delay);
+                tokio::time::sleep(delay).await;
             }
         }
+
+        tracing::error!(
+            "Alert webhook failed after {} attempts",
+            self.max_webhook_retries + 1
+        );
+    }
+
+    /// Acknowledge an alert by ID
+    pub async fn acknowledge_alert(&self, alert_id: &str) -> bool {
+        let mut history = self.alert_history.write().await;
+
+        if let Some(alert) = history.iter_mut().find(|a| a.id == alert_id) {
+            alert.acknowledged = true;
+            tracing::info!("Alert {} acknowledged", alert_id);
+            true
+        } else {
+            tracing::warn!("Alert {} not found for acknowledgment", alert_id);
+            false
+        }
+    }
+
+    /// Get all unacknowledged alerts
+    pub async fn get_unacknowledged_alerts(&self) -> Vec<Alert> {
+        let history = self.alert_history.read().await;
+        history
+            .iter()
+            .filter(|a| !a.acknowledged)
+            .cloned()
+            .collect()
     }
 
     /// Clear alert history
@@ -144,6 +213,7 @@ mod tests {
             block_number: Some(100),
             metadata: HashMap::new(),
             recommended_actions: vec![],
+            acknowledged: false,
         };
 
         manager.trigger_alert(alert).await;
@@ -168,6 +238,7 @@ mod tests {
             block_number: Some(100),
             metadata: HashMap::new(),
             recommended_actions: vec![],
+            acknowledged: false,
         };
 
         manager.trigger_alert(low_alert).await;
@@ -191,6 +262,7 @@ mod tests {
             block_number: Some(100),
             metadata: HashMap::new(),
             recommended_actions: vec![],
+            acknowledged: false,
         };
 
         manager.trigger_alert(alert).await;

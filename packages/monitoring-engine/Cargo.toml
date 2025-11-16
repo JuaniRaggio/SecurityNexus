@@ -9,6 +9,7 @@ license.workspace = true
 # Async runtime
 tokio.workspace = true
 async-trait.workspace = true
+futures = "0.3"
 
 # HTTP client
 reqwest.workspace = true
@@ -31,14 +32,57 @@ chrono.workspace = true
 # Utils
 once_cell.workspace = true
 
-# Substrate dependencies will be added when implementing actual chain connection
-# subxt.workspace = true
-# sp-core.workspace = true
-# sp-runtime.workspace = true
+# Substrate connection
+subxt = { version = "0.35", features = ["substrate-compat"] }
+# Note: subxt includes necessary sp-* types, we don't need to add them separately
+# sp-core and sp-runtime are pulled in as dependencies of subxt
+
+# Web server (for REST API)
+actix-web = { version = "4", default-features = false, features = ["macros"] }
+actix-cors = "0.7"
+
+# Concurrent data structures
+dashmap = "6.1"
+
+# Rate limiting
+governor = "0.6"
+
+# UUID generation
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Hex encoding/decoding
+hex = "0.4"
+
+# Hashing
+blake3 = "1.5"
 
 [dev-dependencies]
 mockall.workspace = true
 pretty_assertions.workspace = true
+tokio-test = "0.4"
+proptest = "1.0"
+# wiremock = "0.6" - Temporarily removed due to Rust version compatibility
+# Will re-add when needed for HTTP mocking tests
+
+[[test]]
+name = "transaction_tests"
+path = "tests/transaction_tests.rs"
+
+[[test]]
+name = "flash_loan_detector_tests"
+path = "tests/flash_loan_detector_tests.rs"
+
+[[test]]
+name = "mev_detector_tests"
+path = "tests/mev_detector_tests.rs"
+
+[[bench]]
+name = "detection_benchmarks"
+harness = false
+
+[dev-dependencies.criterion]
+version = "0.5"
+features = ["html_reports"]
 
 [lib]
 name = "monitoring_engine"

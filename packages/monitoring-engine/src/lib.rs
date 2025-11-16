@@ -7,13 +7,17 @@ pub mod detectors;
 pub mod mempool;
 pub mod alerts;
 pub mod types;
+pub mod connection;
+pub mod api;
+pub mod transaction;
 
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::RwLock;
 
-pub use types::{Alert, AlertSeverity, AttackPattern, ChainEvent, Transaction};
+pub use types::{Alert, AlertSeverity, AttackPattern, ChainEvent, DetectionResult, Transaction, ParsedTransaction, TransactionContext};
 
 /// Main error type for the monitoring engine
 #[derive(Error, Debug)]
@@ -62,6 +66,13 @@ pub struct MonitorConfig {
     pub min_alert_severity: AlertSeverity,
     /// Buffer size for event processing
     pub buffer_size: usize,
+    /// Maximum reconnection attempts (0 = no retry, use connect_with_retry)
+    #[serde(default = "default_max_reconnect_attempts")]
+    pub max_reconnect_attempts: u32,
+}
+
+fn default_max_reconnect_attempts() -> u32 {
+    5
 }
 
 impl Default for MonitorConfig {
@@ -75,15 +86,17 @@ impl Default for MonitorConfig {
             alert_webhook: None,
             min_alert_severity: AlertSeverity::Medium,
             buffer_size: 1000,
+            max_reconnect_attempts: 5,
         }
     }
 }
 
 /// Main monitoring engine
 pub struct MonitoringEngine {
-    config: MonitorConfig,
+    pub config: MonitorConfig,
     state: Arc<RwLock<EngineState>>,
-    alert_manager: Arc<alerts::AlertManager>,
+    pub alert_manager: Arc<alerts::AlertManager>,
+    pub connection: Arc<connection::ConnectionManager>,
 }
 
 /// Internal engine state
@@ -103,10 +116,15 @@ impl MonitoringEngine {
             config.alert_webhook.clone(),
         ));
 
+        let connection = Arc::new(connection::ConnectionManager::new(
+            config.ws_endpoint.clone(),
+        ));
+
         Self {
             config,
             state: Arc::new(RwLock::new(EngineState::default())),
             alert_manager,
+            connection,
         }
     }
 
@@ -120,6 +138,20 @@ impl MonitoringEngine {
         }
         state.is_running = true;
         drop(state);
+
+        // Connect to the Substrate node with automatic retry
+        let connect_result = if self.config.max_reconnect_attempts > 0 {
+            self.connection.connect_with_retry(self.config.max_reconnect_attempts).await
+        } else {
+            self.connection.connect().await
+        };
+
+        if let Err(e) = connect_result {
+            // Reset is_running flag on connection failure
+            let mut state = self.state.write().await;
+            state.is_running = false;
+            return Err(e);
+        }
 
         // Initialize detectors
         let detectors = self.initialize_detectors();
@@ -147,6 +179,10 @@ impl MonitoringEngine {
 
         let mut state = self.state.write().await;
         state.is_running = false;
+        drop(state);
+
+        // Disconnect from the node
+        self.connection.disconnect().await;
 
         tracing::info!("Monitoring engine stopped");
         Ok(())
@@ -165,16 +201,11 @@ impl MonitoringEngine {
 
     /// Initialize attack pattern detectors
     fn initialize_detectors(&self) -> Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>> {
-        let mut detectors: Vec<Box<dyn detectors::Detector + Send + Sync>> = Vec::new();
-
-        // Add flash loan detector
-        detectors.push(Box::new(detectors::FlashLoanDetector::new()));
-
-        // Add MEV detector
-        detectors.push(Box::new(detectors::MevDetector::new()));
-
-        // Add unusual volume detector
-        detectors.push(Box::new(detectors::VolumeAnomalyDetector::new()));
+        let detectors: Vec<Box<dyn detectors::Detector + Send + Sync>> = vec![
+            Box::new(detectors::FlashLoanDetector::new()),
+            Box::new(detectors::MevDetector::new()),
+            Box::new(detectors::VolumeAnomalyDetector::new()),
+        ];
 
         Arc::new(detectors)
     }
@@ -195,7 +226,96 @@ impl MonitoringEngine {
         _detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
     ) -> Result<()> {
         tracing::info!("Starting block monitoring");
-        // TODO: Implement block monitoring using subxt
+
+        let client = self.connection.get_client().await
+            .ok_or_else(|| Error::ConnectionError("Not connected to node".to_string()))?;
+
+        let state = self.state.clone();
+        let chain_name = self.config.chain_name.clone();
+
+        // Spawn background task for block subscription
+        tokio::spawn(async move {
+            match Self::subscribe_to_blocks(client, state, chain_name).await {
+                Ok(_) => tracing::info!("Block subscription ended"),
+                Err(e) => tracing::error!("Block subscription error: {}", e),
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Subscribe to finalized blocks
+    async fn subscribe_to_blocks(
+        client: subxt::OnlineClient<subxt::PolkadotConfig>,
+        state: Arc<RwLock<EngineState>>,
+        chain_name: String,
+    ) -> Result<()> {
+        tracing::info!("Subscribing to finalized blocks on {}", chain_name);
+
+        // Create transaction extractor
+        let extractor = Arc::new(transaction::TransactionExtractor::new(Arc::new(client.clone())));
+
+        let mut blocks_sub = client
+            .blocks()
+            .subscribe_finalized()
+            .await
+            .map_err(|e| Error::SubscriptionError(format!("Failed to subscribe to blocks: {}", e)))?;
+
+        while let Some(block_result) = blocks_sub.next().await {
+            match block_result {
+                Ok(block) => {
+                    let block_number = block.number();
+                    let block_hash = block.hash();
+
+                    tracing::debug!(
+                        "Received block #{} (hash: {:?}) on {}",
+                        block_number,
+                        block_hash,
+                        chain_name
+                    );
+
+                    // Update block statistics
+                    let mut state_lock = state.write().await;
+                    state_lock.blocks_processed += 1;
+                    drop(state_lock);
+
+                    // Extract transactions from block
+                    match extractor.extract_from_block(block_hash, block.number() as u64).await {
+                        Ok(transactions) => {
+                            if !transactions.is_empty() {
+                                tracing::debug!(
+                                    "Extracted {} transactions from block #{}",
+                                    transactions.len(),
+                                    block_number
+                                );
+
+                                // Update transaction statistics
+                                let mut state_lock = state.write().await;
+                                state_lock.transactions_analyzed += transactions.len() as u64;
+                                drop(state_lock);
+
+                                // TODO: Pass transactions to detectors
+                                // for tx in transactions {
+                                //     Self::process_transaction(tx, &detectors).await?;
+                                // }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!(
+                                "Failed to extract transactions from block #{}: {}",
+                                block_number,
+                                e
+                            );
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Error receiving block: {}", e);
+                    return Err(Error::SubscriptionError(format!("Block stream error: {}", e)));
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -205,7 +325,79 @@ impl MonitoringEngine {
         _detectors: Arc<Vec<Box<dyn detectors::Detector + Send + Sync>>>,
     ) -> Result<()> {
         tracing::info!("Starting event monitoring");
-        // TODO: Implement event monitoring using subxt
+
+        let client = self.connection.get_client().await
+            .ok_or_else(|| Error::ConnectionError("Not connected to node".to_string()))?;
+
+        let chain_name = self.config.chain_name.clone();
+
+        // Spawn background task for event subscription
+        tokio::spawn(async move {
+            match Self::subscribe_to_events(client, chain_name).await {
+                Ok(_) => tracing::info!("Event subscription ended"),
+                Err(e) => tracing::error!("Event subscription error: {}", e),
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Subscribe to runtime events
+    async fn subscribe_to_events(
+        client: subxt::OnlineClient<subxt::PolkadotConfig>,
+        chain_name: String,
+    ) -> Result<()> {
+        tracing::info!("Subscribing to runtime events on {}", chain_name);
+
+        let mut blocks_sub = client
+            .blocks()
+            .subscribe_finalized()
+            .await
+            .map_err(|e| Error::SubscriptionError(format!("Failed to subscribe to blocks for events: {}", e)))?;
+
+        while let Some(block_result) = blocks_sub.next().await {
+            match block_result {
+                Ok(block) => {
+                    let block_number = block.number();
+
+                    // Get events from this block
+                    match block.events().await {
+                        Ok(events) => {
+                            let event_count = events.iter().count();
+
+                            if event_count > 0 {
+                                tracing::debug!(
+                                    "Block #{} on {} contains {} events",
+                                    block_number,
+                                    chain_name,
+                                    event_count
+                                );
+                            }
+
+                            // TODO: Process events and pass to detectors
+                            // for event in events.iter() {
+                            //     match event {
+                            //         Ok(event_details) => {
+                            //             // Process event
+                            //         }
+                            //         Err(e) => {
+                            //             tracing::warn!("Error decoding event: {}", e);
+                            //         }
+                            //     }
+                            // }
+                        }
+                        Err(e) => {
+                            tracing::error!("Error fetching events for block #{}: {}", block_number, e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Error receiving block for events: {}", e);
+                    return Err(Error::SubscriptionError(format!("Event stream error: {}", e)));
+                }
+            }
+        }
+
         Ok(())
     }
 }
