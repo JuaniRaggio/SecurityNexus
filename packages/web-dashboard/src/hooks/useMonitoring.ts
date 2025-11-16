@@ -56,6 +56,17 @@ export interface AvailableChainsResponse {
   chains: ChainInfo[]
 }
 
+export interface SwitchChainRequest {
+  chain_name: string
+}
+
+export interface SwitchChainResponse {
+  success: boolean
+  message: string
+  chain_name: string
+  requires_restart: boolean
+}
+
 async function fetchMonitoringStats(): Promise<MonitoringStats> {
   const response = await fetch('/api/monitoring?endpoint=stats')
   if (!response.ok) {
@@ -93,6 +104,23 @@ async function fetchCurrentChain(): Promise<ChainInfo> {
   if (!response.ok) {
     throw new Error('Failed to fetch current chain')
   }
+  return response.json()
+}
+
+async function switchChain(request: SwitchChainRequest): Promise<SwitchChainResponse> {
+  const response = await fetch('/api/monitoring?endpoint=chains/switch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to switch chain')
+  }
+
   return response.json()
 }
 
@@ -143,6 +171,18 @@ export function useCurrentChain(refreshInterval = 10000) {
     queryFn: fetchCurrentChain,
     refetchInterval: refreshInterval,
     refetchOnWindowFocus: true,
+  })
+}
+
+export function useSwitchChain() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: switchChain,
+    onSuccess: () => {
+      // Invalidate and refetch current chain
+      queryClient.invalidateQueries({ queryKey: ['monitoring', 'chains', 'current'] })
+    },
   })
 }
 

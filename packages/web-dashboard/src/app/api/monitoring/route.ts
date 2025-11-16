@@ -160,16 +160,21 @@ export async function POST(request: Request) {
   const endpoint = searchParams.get('endpoint') || ''
 
   try {
+    // Read the request body
+    const body = await request.json()
+
     const response = await fetch(`${MONITORING_ENGINE_URL}/api/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify(body),
     })
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
-        { error: `Monitoring engine returned ${response.status}` },
+        { error: `Monitoring engine returned ${response.status}`, ...errorData },
         { status: response.status }
       )
     }
