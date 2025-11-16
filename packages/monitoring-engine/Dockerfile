@@ -1,7 +1,14 @@
 # ============================================
 # Stage 1: cargo-chef planner
 # ============================================
-FROM rust:1.85 AS chef
+FROM rust:1.88 AS chef
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    clang \
+    libclang-dev \
+    cmake \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 RUN cargo install cargo-chef
 WORKDIR /app
 

@@ -40,9 +40,6 @@ services:
     build:
       context: .
       dockerfile: ./packages/monitoring-engine/Dockerfile
-      # Use BuildKit for better caching
-      cache_from:
-        - monitoring-engine:latest
     image: ${COMPOSE_PROJECT_NAME:-security-nexus}/monitoring-engine:latest
     container_name: ${COMPOSE_PROJECT_NAME:-security-nexus}-monitoring-engine
     environment:
@@ -79,8 +76,6 @@ services:
     build:
       context: .
       dockerfile: ./packages/web-dashboard/Dockerfile
-      cache_from:
-        - dashboard:latest
     image: ${COMPOSE_PROJECT_NAME:-security-nexus}/dashboard:latest
     container_name: ${COMPOSE_PROJECT_NAME:-security-nexus}-dashboard
     environment:
