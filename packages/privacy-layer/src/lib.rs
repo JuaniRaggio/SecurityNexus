@@ -12,6 +12,7 @@ pub mod types;
 use ark_bn254::Bn254;
 use ark_groth16::{Groth16, Proof, ProvingKey, VerifyingKey};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use ark_snark::SNARK;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -63,13 +64,25 @@ impl PrivacyLayer {
         }
     }
 
-    /// Setup the proving and verifying keys
+    /// Setup the proving and verifying keys using Groth16
     pub fn setup(&mut self) -> Result<()> {
+        use ark_std::rand::SeedableRng;
+        use crate::circuits::VulnerabilityCircuit;
+
         tracing::info!("Setting up privacy layer with Groth16...");
 
-        // TODO: Implement actual trusted setup
-        // For now, this is a placeholder
-        // In production, use a multi-party computation (MPC) ceremony
+        // Create an empty circuit for setup
+        let circuit = VulnerabilityCircuit::empty();
+
+        // Generate random parameters (in production, use MPC ceremony)
+        let mut rng = ark_std::rand::rngs::StdRng::seed_from_u64(0u64);
+
+        // Generate proving and verifying keys
+        let (pk, vk) = Groth16::<PairingCurve>::circuit_specific_setup(circuit, &mut rng)
+            .map_err(|e| Error::CircuitError(format!("Setup failed: {}", e)))?;
+
+        self.proving_key = Some(pk);
+        self.verifying_key = Some(vk);
 
         tracing::info!("Privacy layer setup complete");
         Ok(())
@@ -80,26 +93,78 @@ impl PrivacyLayer {
         &self,
         report: &VulnerabilityReport,
     ) -> Result<VulnerabilityProof> {
+        use ark_bn254::Fr;
+        use ark_ff::PrimeField;
+        use ark_std::rand::SeedableRng;
+        use ark_std::UniformRand;
+        use blake2::{Blake2b512, Digest};
+        use crate::circuits::VulnerabilityCircuit;
+
         tracing::debug!("Generating ZK proof for vulnerability report");
 
-        if self.proving_key.is_none() {
-            return Err(Error::ProofGenerationError(
+        let proving_key = self.proving_key.as_ref().ok_or_else(|| {
+            Error::ProofGenerationError(
                 "Proving key not initialized. Call setup() first.".to_string(),
-            ));
-        }
+            )
+        })?;
 
-        // TODO: Implement actual proof generation using Groth16
-        // This involves:
-        // 1. Create witness from vulnerability data
-        // 2. Generate proof using proving key
-        // 3. Create commitment to the vulnerability details
+        // Convert severity to field element (0=Low, 1=Medium, 2=High, 3=Critical)
+        let severity_value = match report.severity {
+            types::Severity::Low => 0u64,
+            types::Severity::Medium => 1u64,
+            types::Severity::High => 2u64,
+            types::Severity::Critical => 3u64,
+        };
+        let severity_fr = Fr::from(severity_value);
 
-        let commitment = self.create_commitment(report)?;
+        // Hash the description to get description_hash
+        let mut hasher = Blake2b512::new();
+        hasher.update(report.description.as_bytes());
+        let desc_hash_bytes = hasher.finalize();
+        let description_hash_fr = Fr::from_le_bytes_mod_order(&desc_hash_bytes[..32]);
+
+        // Generate random blinding factor
+        let mut rng = ark_std::rand::rngs::StdRng::seed_from_u64(chrono::Utc::now().timestamp() as u64);
+        let blinding_factor_fr = Fr::rand(&mut rng);
+
+        // Compute commitment: severity + description_hash * 2 + blinding_factor * 3
+        let commitment_fr = severity_fr
+            + description_hash_fr * Fr::from(2u64)
+            + blinding_factor_fr * Fr::from(3u64);
+
+        // Create circuit with witness
+        let circuit = VulnerabilityCircuit::new(
+            severity_fr,
+            description_hash_fr,
+            blinding_factor_fr,
+            commitment_fr,
+        );
+
+        // Generate proof
+        let proof = Groth16::<PairingCurve>::prove(proving_key, circuit, &mut rng)
+            .map_err(|e| Error::ProofGenerationError(format!("Proof generation failed: {}", e)))?;
+
+        // Serialize proof
+        let mut proof_bytes = Vec::new();
+        proof.serialize_compressed(&mut proof_bytes)
+            .map_err(|e| Error::SerializationError(format!("Proof serialization failed: {}", e)))?;
+
+        // Serialize public inputs (just the commitment)
+        let mut commitment_bytes = Vec::new();
+        commitment_fr.serialize_compressed(&mut commitment_bytes)
+            .map_err(|e| Error::SerializationError(format!("Commitment serialization failed: {}", e)))?;
 
         Ok(VulnerabilityProof {
-            commitment,
-            proof_data: vec![], // Placeholder for actual proof
-            public_inputs: vec![],
+            commitment: ReportCommitment {
+                hash: hex::encode(&commitment_bytes),
+                blinding_factor: {
+                    let mut bf_bytes = Vec::new();
+                    blinding_factor_fr.serialize_compressed(&mut bf_bytes).ok();
+                    bf_bytes
+                },
+            },
+            proof_data: proof_bytes,
+            public_inputs: vec![hex::encode(&commitment_bytes)],
             metadata: ProofMetadata {
                 created_at: chrono::Utc::now().timestamp() as u64,
                 circuit_version: "v1".to_string(),
@@ -110,21 +175,42 @@ impl PrivacyLayer {
 
     /// Verify a zero-knowledge proof
     pub fn verify_proof(&self, proof: &VulnerabilityProof) -> Result<bool> {
+        use ark_bn254::Fr;
+
         tracing::debug!("Verifying ZK proof");
 
-        if self.verifying_key.is_none() {
-            return Err(Error::ProofVerificationError(
+        let verifying_key = self.verifying_key.as_ref().ok_or_else(|| {
+            Error::ProofVerificationError(
                 "Verifying key not initialized. Call setup() first.".to_string(),
+            )
+        })?;
+
+        // Deserialize the proof
+        let groth_proof = Proof::<PairingCurve>::deserialize_compressed(&proof.proof_data[..])
+            .map_err(|e| Error::ProofVerificationError(format!("Proof deserialization failed: {}", e)))?;
+
+        // Deserialize public inputs (commitment)
+        if proof.public_inputs.is_empty() {
+            return Err(Error::ProofVerificationError(
+                "No public inputs provided".to_string(),
             ));
         }
 
-        // TODO: Implement actual proof verification using Groth16
-        // This involves:
-        // 1. Deserialize proof data
-        // 2. Verify using verifying key and public inputs
-        // 3. Check commitment validity
+        let commitment_bytes = hex::decode(&proof.public_inputs[0])
+            .map_err(|e| Error::ProofVerificationError(format!("Public input decode failed: {}", e)))?;
 
-        Ok(true) // Placeholder
+        let commitment_fr = Fr::deserialize_compressed(&commitment_bytes[..])
+            .map_err(|e| Error::ProofVerificationError(format!("Commitment deserialization failed: {}", e)))?;
+
+        // Prepare public inputs for verification
+        let public_inputs = vec![commitment_fr];
+
+        // Verify the proof
+        let is_valid = Groth16::<PairingCurve>::verify(verifying_key, &public_inputs, &groth_proof)
+            .map_err(|e| Error::ProofVerificationError(format!("Verification failed: {}", e)))?;
+
+        tracing::debug!("Proof verification result: {}", is_valid);
+        Ok(is_valid)
     }
 
     /// Create a commitment to vulnerability details
