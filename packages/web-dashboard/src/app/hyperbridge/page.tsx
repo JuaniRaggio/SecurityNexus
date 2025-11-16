@@ -1,6 +1,10 @@
 'use client'
 
-import { Bridge, Activity, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react'
+import { Bridge } from 'lucide-react'
+import { Activity } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 
