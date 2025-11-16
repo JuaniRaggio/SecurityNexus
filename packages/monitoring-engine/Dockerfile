@@ -1,34 +1,71 @@
-# Build stage
-FROM rust:1.85 AS builder
-
+# ============================================
+# Stage 1: cargo-chef planner
+# ============================================
+FROM rust:1.85 AS chef
+RUN cargo install cargo-chef
 WORKDIR /app
 
-# Copiamos los archivos raíz del workspace
+# ============================================
+# Stage 2: Prepare dependencies recipe
+# ============================================
+FROM chef AS planner
 COPY Cargo.toml Cargo.lock ./
+COPY packages ./packages
+COPY pallets ./pallets
+COPY runtime ./runtime
+COPY node ./node
+RUN cargo chef prepare --recipe-path recipe.json
 
-# Copiamos TODAS las carpetas que el workspace necesita
+# ============================================
+# Stage 3: Build dependencies (CACHED LAYER)
+# ============================================
+FROM chef AS builder-deps
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this layer will be cached
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# ============================================
+# Stage 4: Build application
+# ============================================
+FROM chef AS builder
+COPY Cargo.toml Cargo.lock ./
 COPY packages ./packages
 COPY pallets ./pallets
 COPY runtime ./runtime
 COPY node ./node
 
-# Entramos al crate específico
-WORKDIR /app/packages/monitoring-engine
+# Copy cached dependencies from previous stage
+COPY --from=builder-deps /app/target target
+COPY --from=builder-deps /usr/local/cargo /usr/local/cargo
 
-# Build del binario real
+# Build only the monitoring-engine binary
+WORKDIR /app/packages/monitoring-engine
 RUN cargo build --release --bin monitoring-engine
 
-# -----------------------------------------------------------
-# Runtime image
-# -----------------------------------------------------------
+# ============================================
+# Stage 5: Runtime image (minimal)
+# ============================================
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates libssl3 && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copiamos el binario final
+# Copy only the compiled binary
 COPY --from=builder /app/target/release/monitoring-engine /app/monitoring-engine
 
+# Create non-root user for security
+RUN useradd -m -u 1000 nexus && \
+    chown -R nexus:nexus /app
+USER nexus
+
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
+
 CMD ["./monitoring-engine"]
