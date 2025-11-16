@@ -24,13 +24,13 @@
 |------|--------|-----------|-------------|---------|--------------|
 | 1. Infrastructure | 75% | 3 | 0 | 1 | 8 pts |
 | 2. SAFT Enhanced | 100% | 6 | 0 | 1 | 24 pts |
-| 3. Monitoring Engine | 15% | 1 | 1 | 5 | 27 pts |
+| 3. Monitoring Engine | 30% | 2 | 0 | 5 | 27 pts |
 | 4. Privacy Layer (ZKP) | 10% | 0 | 1 | 5 | 32 pts |
 | 5. Hyperbridge Integration | 0% | 0 | 0 | 5 | 21 pts |
 | 6. Hydration Integration | 0% | 0 | 0 | 5 | 19 pts |
 | 7. Web Dashboard | 79% | 5 | 0 | 3 | 38 pts |
 | 8. API Server | 52% | 2 | 1 | 5 | 23 pts |
-| **TOTAL** | **44.8%** | **17** | **3** | **29** | **192 pts** |
+| **TOTAL** | **46.9%** | **18** | **2** | **29** | **192 pts** |
 
 ---
 
@@ -211,7 +211,7 @@
 
 ---
 
-## 🚧 EPIC 3: Real-Time Monitoring Engine (4/27 points completed - 15%)
+## 🚧 EPIC 3: Real-Time Monitoring Engine (8/27 points completed - 30%)
 
 ### ✅ Story 3.1: Parachain Node Connection
 **Type:** Feature | **Points:** 3 | **Status:** COMPLETED
@@ -225,17 +225,35 @@
 
 ---
 
-### 🚧 Story 3.2: Mempool Monitoring
-**Type:** Feature | **Points:** 4 | **Status:** IN PROGRESS
+### ✅ Story 3.2: Mempool Monitoring
+**Type:** Feature | **Points:** 4 | **Status:** COMPLETED
+
+**As a** security engineer,
+**I want** real-time mempool monitoring with attack detection,
+**So that** I can identify front-running and sandwich attacks before they execute.
 
 **Completed:**
-- ✅ MempoolMonitor structure (src/mempool/mod.rs)
-- ✅ add_transaction, get_pending_transactions methods
-- ✅ Basic transaction tracking
+- ✅ MempoolMonitor with detector integration
+- ✅ FrontRunningDetector (new) - Detects front-running and sandwich attacks
+- ✅ Transaction history tracking (last 100 transactions)
+- ✅ Cross-transaction pattern analysis
+- ✅ Automatic alert generation with AlertManager integration
+- ✅ Confidence-based severity mapping (Low/Medium/High/Critical)
+- ✅ Recommended actions per attack pattern
+- ✅ Methods: analyze_transaction(), analyze_batch()
+- ✅ 25 tests passing including front-running detection tests
 
-**Pending:**
-- ⏳ Integration with real-time detectors
-- ⏳ Mempool-specific attack patterns
+**Key Features:**
+- **Front-running detection:** Identifies duplicate calls from competing senders
+- **Sandwich attack detection:** Detects victim transactions surrounded by attacker transactions
+- **Real-time analysis:** Integrates with MonitoringEngine for live transaction analysis
+- **Smart alerting:** Generates detailed alerts with evidence and remediation steps
+
+**Location:**
+- `packages/monitoring-engine/src/mempool/mod.rs`
+- `packages/monitoring-engine/src/detectors/frontrunning.rs`
+
+**Verified:** All 25 unit tests passing, including front-running and sandwich attack detection scenarios
 
 ---
 
@@ -506,24 +524,25 @@ All stories 6.1-6.5 are pending.
 
 ## 📈 Progress Tracking
 
-### Completed Features (86 points - +4 from last update)
+### Completed Features (90 points - +4 from last update)
 - ✅ Monorepo infrastructure
 - ✅ SAFT Enhanced CLI with 4 detectors (overflow, access control, reentrancy, XCM precision)
-- ✅ **XCM Decimal Precision Detector** (NEW - Story 2.5)
+- ✅ XCM Decimal Precision Detector (Story 2.5)
+- ✅ **Mempool Monitoring with Front-running Detection** (NEW - Story 3.2)
 - ✅ Web Dashboard with real-time integration
 - ✅ Monitoring Page fully functional (Story 7.5)
+- ✅ Monitoring Engine with 4 detectors (FlashLoan, MEV, VolumeAnomaly, FrontRunning)
 - ✅ File upload and analysis
 - ✅ Next.js API routes for SAFT
 - ✅ Dashboard statistics and alerts
 - ✅ Analysis history tracking
 - ✅ Demo mode for presentations (development only)
 
-### Current Sprint (In Progress - 12 points)
-- 🚧 Mempool monitoring integration (Story 3.2 - 4 pts)
+### Current Sprint (In Progress - 8 points)
 - 🚧 Privacy layer ZKP circuits (Story 4.1 - 3 pts)
 - 🚧 PostgreSQL database migration (Story 8.4 - 5 pts)
 
-### Backlog (94 points remaining for MVP)
+### Backlog (90 points remaining for MVP)
 - ⏳ CI/CD pipeline (Story 1.3 - 3 pts)
 - ⏳ Ownership detector (Story 2.4 - 3 pts)
 - ⏳ Complete monitoring engine detectors
@@ -537,11 +556,12 @@ All stories 6.1-6.5 are pending.
 **Current Velocity:** ~30-40 points/day during hackathon sprint (team of 2)
 
 **Hackathon Timeline (3 days):**
-- **Days 1-2 (MVP Core):** ✅ COMPLETED - 86 points
-  - SAFT Enhanced static analysis fully functional
+- **Days 1-2 (MVP Core):** ✅ COMPLETED - 90 points
+  - SAFT Enhanced static analysis fully functional (4 detectors)
   - Web Dashboard with real-time integration
   - Monitoring page with Polkadot mainnet connection
   - XCM Decimal Precision detector implemented
+  - Mempool monitoring with front-running detection
 
 - **Day 3 (Demo & Polish):** 🚧 IN PROGRESS - Final touches
   - Testing and bug fixes
@@ -550,11 +570,11 @@ All stories 6.1-6.5 are pending.
   - Presentation materials
 
 **Post-Hackathon Roadmap:**
-- **Phase 2 (Enhancement):** ⏳ PLANNED - 27 points remaining
+- **Phase 2 (Enhancement):** ⏳ PLANNED - 23 points remaining
 - **Phase 3 (Advanced Features):** ⏳ PLANNED - 69 points
 - **Phase 4 (Production Ready):** ⏳ PLANNED - 33 points
 
-**Recent Progress:** Story 2.5 (XCM Decimal Precision Detector) completed - EPIC 2 SAFT Enhanced now 100% complete
+**Recent Progress:** Story 3.2 (Mempool Monitoring) completed - Front-running and sandwich attack detection now functional
 
 ---
 
@@ -586,9 +606,20 @@ All stories 6.1-6.5 are pending.
 
 ---
 
-**Last Updated:** 2025-11-15 23:45
-**Version:** 2.2 (XCM Decimal Precision Detector completed)
+**Last Updated:** 2025-11-16 00:15
+**Version:** 2.3 (Mempool Monitoring with Front-running Detection completed)
 **Contributors:** Juan Ignacio Raggio, Victoria Helena Park
+
+**Changelog v2.3:**
+- Story 3.2 (Mempool Monitoring): IN PROGRESS → COMPLETED (+4 points)
+- Implemented FrontRunningDetector for mempool-based attacks
+- Added front-running and sandwich attack detection capabilities
+- Enhanced MempoolMonitor with full detector integration
+- Automatic alert generation with confidence-based severity mapping
+- 25 unit tests passing including front-running detection scenarios
+- Total progress: 44.8% → 46.9% (90/192 points)
+- EPIC 3 (Monitoring Engine): 15% → 30%
+- Monitoring Engine now has 4 active detectors: FlashLoan, MEV, VolumeAnomaly, FrontRunning
 
 **Changelog v2.2:**
 - Story 2.5 (XCM Decimal Precision Detector): PLANNED → COMPLETED (+4 points)

@@ -205,6 +205,7 @@ impl MonitoringEngine {
             Box::new(detectors::FlashLoanDetector::new()),
             Box::new(detectors::MevDetector::new()),
             Box::new(detectors::VolumeAnomalyDetector::new()),
+            Box::new(detectors::FrontRunningDetector::new()),
         ];
 
         Arc::new(detectors)

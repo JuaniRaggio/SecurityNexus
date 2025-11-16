@@ -3,10 +3,12 @@
 pub mod flash_loan;
 pub mod mev;
 pub mod volume;
+pub mod frontrunning;
 
 pub use flash_loan::FlashLoanDetector;
 pub use mev::MevDetector;
 pub use volume::VolumeAnomalyDetector;
+pub use frontrunning::FrontRunningDetector;
 
 use crate::types::{DetectionResult, TransactionContext};
 use async_trait::async_trait;

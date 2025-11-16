@@ -3,7 +3,7 @@
 > Comprehensive security platform for the Polkadot ecosystem
 
 [![CI](https://github.com/your-org/polkadot-security-nexus/workflows/CI/badge.svg)](https://github.com/your-org/polkadot-security-nexus/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **Polkadot Security Nexus** is the first comprehensive security platform specifically built for the Polkadot ecosystem. It combines static analysis, real-time monitoring, cross-chain security, and privacy-preserving vulnerability reporting to protect the growing Polkadot parachain ecosystem.
 
@@ -422,7 +422,9 @@ See [PLAN.md](./PLAN.md) for the complete development plan. Core features (SAFT 
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE)
+Apache License 2.0 - see [LICENSE](./LICENSE)
+
+When using this code, you must provide attribution to the original authors as required by the Apache License 2.0.
 
 ## Acknowledgments
 
